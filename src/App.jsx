@@ -225,16 +225,18 @@ const GlobalStyles = () => (
     }
 
     .city-card {
-      background: #fff;
       border-radius: 14px;
       overflow: hidden;
       cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.14);
     }
     .city-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      transform: translateY(-5px);
+      box-shadow: 0 14px 36px rgba(0,0,0,0.22);
+    }
+    .city-card:hover img {
+      transform: scale(1.06);
     }
 
     .pill-btn {
@@ -540,57 +542,90 @@ function CityCard({ city, onSelect }) {
   const [imgErr, setImgErr] = useState(false);
 
   return (
-    <div className="city-card" onClick={() => onSelect(city)} style={{ borderTop: `3px solid ${sc.color}` }}>
-      {/* Image */}
-      <div style={{ height: 140, overflow: "hidden", position: "relative" }}>
-        {imgUrl && !imgErr ? (
-          <img
-            src={imgUrl} alt={city.city} onError={() => setImgErr(true)}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
-        ) : (
-          <div style={{ height: "100%", background: `linear-gradient(135deg, ${sc.color}33, ${TYPO_C[city.urban_typology]}22)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontSize: 36, opacity: 0.25 }}>◎</span>
-          </div>
-        )}
-        {/* Rank badge */}
+    <div
+      className="city-card"
+      onClick={() => onSelect(city)}
+      style={{
+        position: "relative",
+        height: 260,
+        overflow: "hidden",
+        borderRadius: 14,
+        cursor: "pointer",
+        border: "none",
+      }}
+    >
+      {/* Background image or gradient fallback */}
+      {imgUrl && !imgErr ? (
+        <img
+          src={imgUrl}
+          alt={city.city}
+          onError={() => setImgErr(true)}
+          style={{
+            position: "absolute", inset: 0,
+            width: "100%", height: "100%",
+            objectFit: "cover", objectPosition: "center",
+            transition: "transform 0.4s ease",
+          }}
+        />
+      ) : (
         <div style={{
-          position: "absolute", top: 10, left: 10,
+          position: "absolute", inset: 0,
+          background: `linear-gradient(135deg, ${sc.color}88, #0D1117)`,
+        }} />
+      )}
+
+      {/* Dark gradient overlay — bottom-heavy for legibility */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.45) 50%, rgba(0,0,0,0.18) 100%)",
+      }} />
+
+      {/* Top-left: rank + typology */}
+      <div style={{
+        position: "absolute", top: 12, left: 12,
+        display: "flex", gap: 6, alignItems: "center",
+      }}>
+        <div style={{
           background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: 10,
-          fontWeight: 800, padding: "3px 8px", borderRadius: 8, backdropFilter: "blur(4px)",
+          fontWeight: 800, padding: "3px 8px", borderRadius: 8, backdropFilter: "blur(6px)",
         }}>#{city.rank}</div>
+        <span style={{
+          fontSize: 10, fontWeight: 700,
+          color: TYPO_C[city.urban_typology],
+          background: "rgba(0,0,0,0.55)",
+          backdropFilter: "blur(6px)",
+          padding: "3px 8px", borderRadius: 8,
+        }}>{city.urban_typology}</span>
       </div>
 
-      {/* Content */}
-      <div style={{ padding: "16px" }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 6, gap: 8 }}>
-          <div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: "#1a1a1a", lineHeight: 1.2 }}>{city.city}</div>
-            <div style={{ fontSize: 11, color: "#888", marginTop: 2 }}>{city.state}</div>
-          </div>
-          <span style={{
-            fontSize: 10, fontWeight: 700, color: sc.color,
-            background: sc.bg, padding: "3px 9px", borderRadius: 10,
-            whiteSpace: "nowrap", flexShrink: 0,
-          }}>{city.stress}</span>
-        </div>
+      {/* Top-right: stress badge */}
+      <div style={{ position: "absolute", top: 12, right: 12 }}>
+        <span style={{
+          fontSize: 10, fontWeight: 700, color: sc.color,
+          background: "rgba(0,0,0,0.6)", backdropFilter: "blur(6px)",
+          border: `1px solid ${sc.color}66`,
+          padding: "3px 9px", borderRadius: 10,
+        }}>{city.stress}</span>
+      </div>
 
+      {/* Bottom: city name, state, one-liner */}
+      <div style={{
+        position: "absolute", bottom: 0, left: 0, right: 0,
+        padding: "20px 16px 16px",
+      }}>
+        <div style={{ fontSize: 20, fontWeight: 900, color: "#fff", lineHeight: 1.15, letterSpacing: "-0.3px" }}>
+          {city.city}
+        </div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 2, marginBottom: 8 }}>
+          {city.state} · {fmt(city.population)} people
+        </div>
         <p style={{
-          fontSize: 13, color: "#555", fontFamily: "Georgia, serif",
-          fontStyle: "italic", lineHeight: 1.5, marginBottom: 12,
+          fontSize: 12, color: "rgba(255,255,255,0.82)", fontFamily: "Georgia, serif",
+          fontStyle: "italic", lineHeight: 1.45, margin: 0,
           display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
         }}>
           "{city.one_liner}"
         </p>
-
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{
-            fontSize: 10, color: TYPO_C[city.urban_typology],
-            background: TYPO_C[city.urban_typology] + "18",
-            padding: "3px 8px", borderRadius: 8, fontWeight: 600,
-          }}>{city.urban_typology}</span>
-          <span style={{ fontSize: 11, color: "#aaa" }}>{fmt(city.population)} people</span>
-        </div>
       </div>
     </div>
   );
