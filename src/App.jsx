@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { CITY_ISSUES, CIVIC_ORGS, CITIES_WITH_DATA } from "./cityData.js";
 
 // ─── City Data ────────────────────────────────────────────────────────────────
 const cities = [
@@ -788,6 +789,9 @@ function CityPage({ city, onBack }) {
   const typoColor = TYPO_C[city.urban_typology];
   const imgUrl = CITY_IMAGES[city.city];
   const [imgErr, setImgErr] = useState(false);
+  const hasData = CITIES_WITH_DATA.has(city.city);
+  const issues = CITY_ISSUES[city.city] || [];
+  const orgs = CIVIC_ORGS[city.city] || [];
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -800,104 +804,225 @@ function CityPage({ city, onBack }) {
 
   return (
     <div style={{ background: "#FAF8F4", minHeight: "100vh" }}>
-      {/* Hero Banner */}
+
+      {/* ── Hero Banner ── */}
       <div style={{ height: 380, position: "relative", overflow: "hidden", background: "#0D1117" }}>
         {imgUrl && !imgErr ? (
           <img src={imgUrl} alt={city.city} onError={() => setImgErr(true)}
-            style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.6 }} />
+            style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.55 }} />
         ) : (
           <div style={{ height: "100%", background: `linear-gradient(135deg, ${sc.color}44, ${typoColor}33)` }} />
         )}
-        {/* Gradient overlay */}
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 30%, rgba(13,17,23,0.9) 100%)" }} />
-
-        {/* Back button */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(13,17,23,0.2) 0%, rgba(13,17,23,0.85) 100%)" }} />
         <button onClick={onBack} style={{
           position: "absolute", top: 76, left: 32,
           background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.2)",
           color: "#fff", padding: "8px 18px", borderRadius: 20, fontSize: 13,
-          cursor: "pointer", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", gap: 6,
-        }}>
-          ← All Cities
-        </button>
-
-        {/* City name overlay */}
+          cursor: "pointer", backdropFilter: "blur(8px)",
+        }}>← All Cities</button>
         <div style={{ position: "absolute", bottom: 32, left: 32, right: 32 }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: sc.color, background: "rgba(0,0,0,0.5)", padding: "4px 12px", borderRadius: 12, backdropFilter: "blur(4px)" }}>{city.stress} Stress</span>
-            <span style={{ fontSize: 11, fontWeight: 700, color: typoColor, background: "rgba(0,0,0,0.5)", padding: "4px 12px", borderRadius: 12, backdropFilter: "blur(4px)" }}>{city.urban_typology}</span>
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", background: "rgba(0,0,0,0.5)", padding: "4px 12px", borderRadius: 12, backdropFilter: "blur(4px)" }}>{city.tier}</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: sc.color, background: "rgba(0,0,0,0.55)", padding: "4px 12px", borderRadius: 12, backdropFilter: "blur(4px)" }}>{city.stress} Stress</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: typoColor, background: "rgba(0,0,0,0.55)", padding: "4px 12px", borderRadius: 12, backdropFilter: "blur(4px)" }}>{city.urban_typology}</span>
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", background: "rgba(0,0,0,0.55)", padding: "4px 12px", borderRadius: 12, backdropFilter: "blur(4px)" }}>{city.tier}</span>
           </div>
-          <h1 style={{ fontSize: 44, fontFamily: "Georgia, serif", fontWeight: 800, color: "#fff", lineHeight: 1.1, letterSpacing: "-0.02em" }}>
+          <h1 style={{ fontSize: 48, fontFamily: "Georgia, serif", fontWeight: 800, color: "#fff", lineHeight: 1.1, letterSpacing: "-0.02em", marginBottom: 8 }}>
             {city.city}
           </h1>
-          <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 15, marginTop: 6 }}>
+          <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 15 }}>
             {city.state}{city.formerName ? ` · formerly ${city.formerName}` : ""}
           </div>
         </div>
       </div>
 
-      {/* Main content */}
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "48px 32px" }}>
-        {/* One-liner */}
-        <blockquote style={{
-          fontSize: 22, fontFamily: "Georgia, serif", fontStyle: "italic",
-          color: "#333", lineHeight: 1.5, borderLeft: `4px solid ${sc.color}`,
-          paddingLeft: 24, marginBottom: 48,
-        }}>
-          "{city.one_liner}"
-        </blockquote>
+      {/* ── Panel 1: City Health ── */}
+      <div style={{ background: "#FAF8F4", padding: "52px 32px 0" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
 
-        {/* Stats grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 20, marginBottom: 48 }}>
-          {stats.map(s => (
-            <div key={s.label} style={{ background: "#fff", borderRadius: 12, padding: "20px", textAlign: "center", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-              <div style={{ fontSize: 24, fontWeight: 900, color: "#1a1a1a", fontFamily: "Georgia, serif" }}>{s.value}</div>
-              <div style={{ fontSize: 11, color: "#999", marginTop: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>{s.label}</div>
+          {/* Section label */}
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 20 }}>PANEL 1 — CITY HEALTH</div>
+
+          {/* One-liner */}
+          <blockquote style={{
+            fontSize: 22, fontFamily: "Georgia, serif", fontStyle: "italic",
+            color: "#2a2a2a", lineHeight: 1.6, borderLeft: `4px solid ${sc.color}`,
+            paddingLeft: 24, marginBottom: 40,
+          }}>"{city.one_liner}"</blockquote>
+
+          {/* Stats */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 28 }}>
+            {stats.map(s => (
+              <div key={s.label} style={{ background: "#fff", borderRadius: 12, padding: "20px 16px", textAlign: "center", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: "#1a1a1a", fontFamily: "Georgia, serif" }}>{s.value}</div>
+                <div style={{ fontSize: 10, color: "#aaa", marginTop: 5, textTransform: "uppercase", letterSpacing: "0.08em" }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Stress + Typology */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 64 }}>
+            <div style={{ background: "#fff", borderRadius: 14, padding: 28, borderTop: `3px solid ${sc.color}`, boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: sc.color, letterSpacing: "0.12em", marginBottom: 10 }}>CIVIC STRESS</div>
+              <div style={{ fontSize: 24, fontWeight: 800, color: sc.color, fontFamily: "Georgia, serif", marginBottom: 6 }}>{city.stress}</div>
+              <div style={{ height: 6, background: "#f0ede8", borderRadius: 4, overflow: "hidden", marginBottom: 14 }}>
+                <div style={{ width: `${(sc.bar / 5) * 100}%`, height: "100%", background: sc.color, borderRadius: 4 }} />
+              </div>
+              <p style={{ fontSize: 13, color: "#666", lineHeight: 1.7 }}>{city.stress_reason}</p>
             </div>
-          ))}
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 48 }}>
-          {/* Civic Stress card */}
-          <div style={{ background: "#fff", borderRadius: 14, padding: 28, borderTop: `3px solid ${sc.color}`, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: sc.color, letterSpacing: "0.1em", marginBottom: 12 }}>CIVIC STRESS</div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: sc.color, fontFamily: "Georgia, serif", marginBottom: 8 }}>{city.stress}</div>
-            <p style={{ fontSize: 13, color: "#888", fontStyle: "italic", marginBottom: 16, lineHeight: 1.5 }}>{sc.tagline}</p>
-            {/* Stress bar */}
-            <div style={{ height: 8, background: "#f0ede8", borderRadius: 6, overflow: "hidden", marginBottom: 8 }}>
-              <div style={{ width: `${(sc.bar / 5) * 100}%`, height: "100%", background: sc.color, borderRadius: 6, transition: "width 0.8s ease" }} />
+            <div style={{ background: "#fff", borderRadius: 14, padding: 28, borderTop: `3px solid ${typoColor}`, boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: typoColor, letterSpacing: "0.12em", marginBottom: 10 }}>URBAN TYPOLOGY</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: typoColor, fontFamily: "Georgia, serif", marginBottom: 12 }}>{city.urban_typology}</div>
+              <p style={{ fontSize: 13, color: "#666", lineHeight: 1.7 }}>{TYPO_DESC[city.urban_typology]}</p>
             </div>
-            <p style={{ fontSize: 13, color: "#666", lineHeight: 1.6 }}>{city.stress_reason}</p>
-          </div>
-
-          {/* Urban Typology card */}
-          <div style={{ background: "#fff", borderRadius: 14, padding: 28, borderTop: `3px solid ${typoColor}`, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: typoColor, letterSpacing: "0.1em", marginBottom: 12 }}>URBAN TYPOLOGY</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: typoColor, fontFamily: "Georgia, serif", marginBottom: 12 }}>{city.urban_typology}</div>
-            <p style={{ fontSize: 14, color: "#555", lineHeight: 1.7 }}>{TYPO_DESC[city.urban_typology]}</p>
           </div>
         </div>
+      </div>
 
-        {/* Join the conversation CTA */}
-        <div style={{
-          background: "linear-gradient(135deg, #0D1117, #141920)",
-          borderRadius: 16, padding: "36px 40px", textAlign: "center", color: "#fff",
-        }}>
-          <div style={{ fontSize: 22, fontFamily: "Georgia, serif", fontWeight: 700, marginBottom: 10 }}>
-            What do you think about {city.city}?
+      {/* ── Panel 2: Live Issues ── */}
+      <div style={{ background: "#fff", padding: "52px 32px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 12 }}>PANEL 2 — LIVE ISSUES</div>
+          <h2 style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
+            What's happening in {city.city}.
+          </h2>
+          <p style={{ fontSize: 15, color: "#888", marginBottom: 40, lineHeight: 1.6 }}>
+            The issues that shape daily life in this city — explained plainly, without jargon.
+          </p>
+
+          {!hasData ? (
+            <div style={{ background: "#FAF8F4", borderRadius: 14, padding: "40px 32px", textAlign: "center", border: "2px dashed #e0ddd8" }}>
+              <div style={{ fontSize: 28, marginBottom: 12 }}>🗂️</div>
+              <div style={{ fontSize: 16, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
+                We're building {city.city}'s issue profile.
+              </div>
+              <p style={{ fontSize: 14, color: "#888", maxWidth: 400, margin: "0 auto 20px", lineHeight: 1.6 }}>
+                Know the civic issues shaping {city.city}? Know organizations working on them? Help us build this.
+              </p>
+              <a href="#join" style={{ background: "#E8660D", color: "#fff", padding: "10px 24px", borderRadius: 24, fontSize: 13, fontWeight: 700, display: "inline-block" }}>
+                Become a Cocreator →
+              </a>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              {issues.map((issue, i) => (
+                <div key={i} style={{
+                  background: "#FAF8F4", borderRadius: 14, padding: "28px 28px 28px 0",
+                  display: "flex", gap: 0, overflow: "hidden",
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+                }}>
+                  {/* Color strip */}
+                  <div style={{ width: 5, flexShrink: 0, background: issue.categoryColor, borderRadius: "14px 0 0 14px", marginRight: 28 }} />
+                  <div style={{ flex: 1 }}>
+                    {/* Tag + severity */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: issue.categoryColor, background: issue.categoryColor + "18", padding: "3px 10px", borderRadius: 8 }}>
+                        {issue.tag}
+                      </span>
+                      <span style={{
+                        fontSize: 10, fontWeight: 700, letterSpacing: "0.06em",
+                        color: STRESS[issue.severity]?.color || "#888",
+                        background: (STRESS[issue.severity]?.color || "#888") + "15",
+                        padding: "3px 8px", borderRadius: 6,
+                      }}>{issue.severity}</span>
+                    </div>
+                    {/* Title */}
+                    <h3 style={{ fontSize: 18, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", lineHeight: 1.4, marginBottom: 12 }}>
+                      {issue.title}
+                    </h3>
+                    {/* Body */}
+                    <p style={{ fontSize: 14, color: "#555", lineHeight: 1.75, marginBottom: 16 }}>
+                      {issue.body}
+                    </p>
+                    {/* What's being done */}
+                    <div style={{ background: "#fff", borderRadius: 8, padding: "12px 16px", borderLeft: "3px solid #e0ddd8" }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#aaa", letterSpacing: "0.08em", display: "block", marginBottom: 4 }}>WHAT'S BEING DONE</span>
+                      <p style={{ fontSize: 13, color: "#777", lineHeight: 1.6, margin: 0 }}>{issue.whatsBeing}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Panel 3: Civic Ecosystem ── */}
+      <div style={{ background: "#FAF8F4", padding: "52px 32px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 12 }}>PANEL 3 — CIVIC ECOSYSTEM</div>
+          <h2 style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
+            Who's fighting for {city.city}.
+          </h2>
+          <p style={{ fontSize: 15, color: "#888", marginBottom: 40, lineHeight: 1.6 }}>
+            Organizations, collectives, and initiatives doing real civic work in this city. They were here before you found them.
+          </p>
+
+          {orgs.length === 0 ? (
+            <div style={{ background: "#fff", borderRadius: 14, padding: "40px 32px", textAlign: "center", border: "2px dashed #e0ddd8" }}>
+              <div style={{ fontSize: 28, marginBottom: 12 }}>🤝</div>
+              <div style={{ fontSize: 16, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
+                Know who's working on {city.city}?
+              </div>
+              <p style={{ fontSize: 14, color: "#888", maxWidth: 400, margin: "0 auto 20px", lineHeight: 1.6 }}>
+                Help us map the civic ecosystem — NGOs, RWAs, collectives, journalists doing good work here.
+              </p>
+              <a href="#join" style={{ background: "#E8660D", color: "#fff", padding: "10px 24px", borderRadius: 24, fontSize: 13, fontWeight: 700, display: "inline-block" }}>
+                Nominate an Organization →
+              </a>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {orgs.map((org, i) => (
+                <div key={i} style={{ background: "#fff", borderRadius: 14, padding: 28, boxShadow: "0 1px 4px rgba(0,0,0,0.05)", borderTop: `3px solid ${org.focusColor}` }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 17, fontWeight: 800, color: "#1a1a1a", marginBottom: 4 }}>{org.name}</div>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: org.focusColor, background: org.focusColor + "18", padding: "3px 10px", borderRadius: 8 }}>
+                        {org.focus}
+                      </span>
+                    </div>
+                    <a href={org.link} target="_blank" rel="noreferrer" style={{
+                      fontSize: 12, fontWeight: 700, color: "#E8660D",
+                      border: "1.5px solid #E8660D", padding: "6px 16px",
+                      borderRadius: 20, whiteSpace: "nowrap", flexShrink: 0,
+                    }}>Visit →</a>
+                  </div>
+                  <p style={{ fontSize: 14, color: "#555", lineHeight: 1.75, marginBottom: 14 }}>{org.what}</p>
+                  <div style={{ background: "#FAF8F4", borderRadius: 8, padding: "12px 16px", borderLeft: `3px solid ${org.focusColor}` }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#aaa", letterSpacing: "0.08em", display: "block", marginBottom: 4 }}>HOW TO GET INVOLVED</span>
+                    <p style={{ fontSize: 13, color: "#666", lineHeight: 1.6, margin: 0 }}>{org.how}</p>
+                  </div>
+                </div>
+              ))}
+
+              {/* Nominate more */}
+              <div style={{ borderRadius: 14, padding: "24px 28px", border: "2px dashed #e0ddd8", textAlign: "center" }}>
+                <p style={{ fontSize: 14, color: "#aaa", margin: "0 0 12px" }}>Know an organization doing good work in {city.city} that should be here?</p>
+                <a href="#join" style={{ fontSize: 13, fontWeight: 700, color: "#E8660D" }}>Nominate them →</a>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Closing CTA ── */}
+      <div style={{ background: "#0D1117", padding: "60px 32px" }}>
+        <div style={{ maxWidth: 680, margin: "0 auto", textAlign: "center" }}>
+          <div style={{ fontSize: 26, fontFamily: "Georgia, serif", fontWeight: 700, color: "#fff", marginBottom: 12 }}>
+            {city.city} is your city too.
           </div>
-          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, lineHeight: 1.6, maxWidth: 440, margin: "0 auto 24px" }}>
-            MyCityPulse is building a community of people who care about how their cities work. If {city.city} is your city, we want to hear from you.
+          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.45)", lineHeight: 1.7, maxWidth: 440, margin: "0 auto 28px", fontFamily: "Georgia, serif" }}>
+            MyCityPulse exists to make the civic layer of your city legible — and to connect you with the people already working to fix it. Join the conversation.
           </p>
           <a href="#join" style={{
-            background: "#E8660D", color: "#fff", padding: "12px 28px",
-            borderRadius: 28, fontSize: 14, fontWeight: 700, display: "inline-block",
+            background: "#E8660D", color: "#fff", padding: "13px 32px",
+            borderRadius: 30, fontSize: 14, fontWeight: 700, display: "inline-block", letterSpacing: "0.02em",
           }}>
-            Join the Conversation →
+            Become a Cocreator →
           </a>
         </div>
       </div>
+
     </div>
   );
 }
