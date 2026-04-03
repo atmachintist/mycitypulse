@@ -214,6 +214,96 @@ export const CITY_ISSUES = {
     },
   ],
 
+  "Ahmedabad": [
+    {
+      category: "Heat",
+      categoryColor: "#e63946",
+      title: "Ahmedabad gets dangerously hot. The city is getting better at dealing with it — but not fast enough.",
+      body: "In 2010, a heatwave killed over 1,300 people in Ahmedabad in a matter of days. It was a wake-up call. The city became one of the first in the world to develop a formal Heat Action Plan — cooling centres, early warning systems, public awareness. It has genuinely saved lives. But the city is also getting hotter every year. The urban heat island effect — where concrete and asphalt absorb and radiate heat — is intensifying as the city grows. Peripheral areas with no tree cover, dense housing, and outdoor workers bear the worst of it.",
+      severity: "High",
+      tag: "🌡️ Heat",
+      whatsBeing: "Ahmedabad's Heat Action Plan is updated annually and is considered a model globally. But urban greening and heat-resilient design in new construction remain inadequate.",
+    },
+    {
+      category: "Air",
+      categoryColor: "#9b5de5",
+      title: "Vatva GIDC has been poisoning Ahmedabad's air for decades. Most residents don't know where it is.",
+      body: "The Vatva industrial estate — home to chemical, pharmaceutical, and textile dyeing industries — is one of Gujarat's oldest and most polluted industrial zones. It sits within the city's southeastern boundary. Residents of nearby areas deal with chemical odours, high particulate levels, and contaminated groundwater. The industries are legal. The pollution is chronic. And regulatory enforcement has historically been weak in a state where industrial growth is politically sacred.",
+      severity: "High",
+      tag: "🌫️ Air Quality",
+      whatsBeing: "GPCB (Gujarat Pollution Control Board) monitors emissions. Civil society has pushed for stricter enforcement. A common effluent treatment plant exists but does not cover all units.",
+    },
+    {
+      category: "Heritage",
+      categoryColor: "#d4ac0d",
+      title: "The old city is a UNESCO World Heritage Site that 5 lakh people actually live and work in. Nobody has figured out what that means.",
+      body: "Ahmedabad's walled city — with its intricate pols (residential clusters), wooden havelis, and mosque-temple proximity — became a UNESCO World Heritage Site in 2017. That's the good news. The complicated news is that it's a living city, not a museum. Residents want better roads, modern amenities, and the ability to modify their homes. Developers see opportunity. The heritage guidelines restrict what you can do but don't fully resource conservation. The result is slow decay in some areas, ad-hoc modification in others, and a heritage tag that means less on the ground than it should.",
+      severity: "Elevated",
+      tag: "🏛️ Heritage",
+      whatsBeing: "AMC and the Archaeological Survey of India have conservation plans. The Aga Khan Trust for Culture has done restoration work in parts of the old city.",
+    },
+  ],
+
+  "Thane": [
+    {
+      category: "Water",
+      categoryColor: "#0096c7",
+      title: "The creek that gives Thane its identity is also one of Maharashtra's most polluted water bodies.",
+      body: "Thane Creek was once a thriving tidal ecosystem — home to flamingos, mangroves, and rich marine life. Parts of it still are. But the creek also receives untreated sewage and industrial effluents from a city of 25 lakh people and the industrial zones along its banks. The Ulhas River, which feeds into the creek, carries pollution from the Ambernath-Badlapur industrial belt upstream. Thane's identity is inseparable from its water — and that water is under serious stress.",
+      severity: "High",
+      tag: "💧 Water",
+      whatsBeing: "MPCB monitors the creek. Some sewage treatment infrastructure exists but coverage is incomplete. The Thane Creek Flamingo Sanctuary offers partial protection to the ecologically sensitive zones.",
+    },
+    {
+      category: "Infrastructure",
+      categoryColor: "#f4a261",
+      title: "Thane went from a quiet suburb to a city of 25 lakh in 30 years. The infrastructure never caught up.",
+      body: "Through the 1990s and 2000s, Mumbai's housing unaffordability drove millions to Thane. Towers went up faster than roads, schools, water lines, or drainage. The city's internal road network is severely congested. Many areas still have irregular water supply. The sewer network doesn't cover large parts of the city. TMC (Thane Municipal Corporation) has been playing catch-up for two decades and is only partially succeeding.",
+      severity: "High",
+      tag: "🏗️ Infrastructure",
+      whatsBeing: "TMC has major infrastructure projects underway including road widening, sewage network expansion, and drainage upgrades. Progress is visible but slow relative to need.",
+    },
+    {
+      category: "Traffic",
+      categoryColor: "#f4a261",
+      title: "Thane's entire life runs through one railway station and a handful of roads. That's not sustainable.",
+      body: "Thane railway station is one of the busiest in India — handling over 5 lakh passengers daily on Central and Trans-Harbour lines. Almost all regional connectivity flows through it. The road network connecting Thane to Mumbai, Navi Mumbai, and the industrial belt is perpetually congested. Internal city movement is hampered by the creek geography, which limits bridge crossings. As the city grows northward into Kalyan and Dombivli, the pressure on these single points of connectivity intensifies.",
+      severity: "Elevated",
+      tag: "🚦 Traffic",
+      whatsBeing: "Thane Metro is under construction. The Thane-Bhiwandi-Kalyan metro corridor is planned. Road flyovers have been built at key junctions.",
+    },
+  ],
+
+  "Mira Bhayandar": [
+    {
+      category: "Water",
+      categoryColor: "#0096c7",
+      title: "Mira Bhayandar doesn't produce its own water. It buys it — and there's never enough.",
+      body: "Mira Bhayandar Municipal Corporation has no independent water source. It depends entirely on MIDC (Maharashtra Industrial Development Corporation) supply, which is allocated based on population figures that are years out of date. The city's actual population has far outgrown its official estimates — driven by more affordable housing compared to Mumbai. The result: daily water cuts, tanker dependency in newer areas, and a water supply system that was never built for the city it serves today.",
+      severity: "High",
+      tag: "💧 Water",
+      whatsBeing: "MBMC has been pushing for increased MIDC allocation. A new water supply project has been in planning for years. Residents in newer sectors depend on private tankers for regular supply.",
+    },
+    {
+      category: "Infrastructure",
+      categoryColor: "#f4a261",
+      title: "Mira Bhayandar is one of Maharashtra's fastest-growing cities. You wouldn't know it from its roads.",
+      body: "The city grew explosively through the 2000s and 2010s as Mumbai's housing prices pushed families northward. Thousands of residential towers were approved and built. Roads, drainage, footpaths, and public spaces did not keep pace. Large sections of the city have no proper stormwater drainage — flooding is annual. The MBMC has limited financial capacity compared to larger municipal corporations, and it shows in the quality of civic infrastructure.",
+      severity: "High",
+      tag: "🏗️ Infrastructure",
+      whatsBeing: "MBMC has capital projects underway for road improvement and drainage. State government grants under AMRUT have helped some infrastructure development.",
+    },
+    {
+      category: "Connectivity",
+      categoryColor: "#9b5de5",
+      title: "The entire city connects to Mumbai through one overcrowded train line and two clogged highways.",
+      body: "Mira Road and Bhayandar stations on the Western Railway line carry hundreds of thousands of daily commuters — the city is fundamentally a dormitory for Mumbai's workforce. The stations are among the most congested on the network. Road access via the Western Express Highway and SV Road is severely congested during peak hours. There is no metro, no bus rapid transit, and no meaningful internal public transport system. The city works only if you have a two-wheeler or a car.",
+      severity: "Elevated",
+      tag: "🚦 Connectivity",
+      whatsBeing: "Metro Line 9 (Dahisar to Mira-Bhayandar) has been proposed and approved. Construction timelines remain uncertain.",
+    },
+  ],
+
   "Jaipur": [
     {
       category: "Water",
@@ -456,10 +546,89 @@ export const CIVIC_ORGS = {
     },
   ],
 
+  "Ahmedabad": [
+    {
+      name: "Mahila Housing Trust",
+      shortName: "MHT",
+      focus: "Housing & Slum Upgradation",
+      focusColor: "#e63946",
+      what: "MHT works with women living in informal settlements across Ahmedabad to improve housing security, basic services, and livelihoods. They've helped thousands of families get land tenure, better water access, and drainage — through patient, community-led processes rather than top-down projects.",
+      how: "Support their work in the old city and peripheral settlements. Engage with their community savings groups if you live in or near an informal settlement.",
+      link: "https://mahilahousingtrust.org",
+      city: "Ahmedabad",
+    },
+    {
+      name: "JANVIKAS — Centre for Social Justice",
+      shortName: "JANVIKAS",
+      focus: "Urban Poor & Labour Rights",
+      focusColor: "#9b5de5",
+      what: "JANVIKAS works on the rights of marginalised communities in Gujarat — street vendors, construction workers, domestic workers, and residents of informal settlements. In a city as economically dynamic as Ahmedabad, the informal workforce is enormous and largely invisible. JANVIKAS makes it visible.",
+      how: "Attend their public forums. Support their campaigns on vendor rights and informal worker protections. Share their documentation of displacement cases.",
+      link: "https://janvikas.org",
+      city: "Ahmedabad",
+    },
+    {
+      name: "Paryavaran Mitra",
+      shortName: "Paryavaran Mitra",
+      focus: "Environment & Pollution",
+      focusColor: "#2dc653",
+      what: "Paryavaran Mitra (Friends of the Environment) monitors industrial pollution, air quality, and the health of the Sabarmati in Gujarat. They've filed landmark cases against polluting industries and pushed for stronger environmental enforcement in one of India's most industrialised states.",
+      how: "Report pollution incidents to them. Participate in Sabarmati clean-up drives. Use their data when engaging with local authorities on environmental issues.",
+      link: "https://paryavaranmitra.in",
+      city: "Ahmedabad",
+    },
+  ],
+
+  "Thane": [
+    {
+      name: "Vanashakti",
+      shortName: "Vanashakti",
+      focus: "Mangroves & Urban Ecology",
+      focusColor: "#2dc653",
+      what: "Vanashakti (Sanskrit for 'forest power') fights to protect Mumbai and Thane's mangrove forests — the coastal buffer zone that protects the city from flooding and provides habitat for hundreds of species. They've filed successful PILs that have stopped multiple illegal mangrove destructions.",
+      how: "Report mangrove destruction in your area. Join their coastal clean-up drives. Support their legal campaigns when they're fighting projects near your neighbourhood.",
+      link: "https://vanashakti.in",
+      city: "Thane",
+    },
+    {
+      name: "URBZ",
+      shortName: "URBZ",
+      focus: "Urban Research & Community Design",
+      focusColor: "#0096c7",
+      what: "URBZ is an urban research and design collective that works directly with communities in informal settlements across the Mumbai-Thane belt. They believe cities are built by their residents — not just by planners — and their work helps communities articulate and defend their right to shape their own neighbourhoods.",
+      how: "Engage with their community mapping projects. If you live in or near an informal settlement, connect with them for neighbourhood design support.",
+      link: "https://urbz.net",
+      city: "Thane",
+    },
+  ],
+
+  "Mira Bhayandar": [
+    {
+      name: "Mira Bhayandar Environment Foundation",
+      shortName: "MBEF",
+      focus: "Environment & Mangroves",
+      focusColor: "#2dc653",
+      what: "MBEF works on protecting the mangrove coastline, creek health, and green cover in Mira Bhayandar — one of Maharashtra's fastest-growing cities, where development pressure on natural ecosystems is intense. They run awareness campaigns, clean-up drives, and engage with MBMC on environmental planning.",
+      how: "Join their mangrove and creek clean-up drives. Report illegal dumping near the coastline. Follow their campaigns on local development approvals.",
+      link: "https://mbef.org.in",
+      city: "Mira Bhayandar",
+    },
+    {
+      name: "Vanashakti",
+      shortName: "Vanashakti",
+      focus: "Mangroves & Coastal Ecology",
+      focusColor: "#00b4d8",
+      what: "Vanashakti's work extends into the Mira Bhayandar coastline, which contains some of the last remaining intact mangrove patches in the Mumbai Metropolitan Region. They monitor and legally challenge mangrove destruction and coastal encroachment in this rapidly urbanising stretch.",
+      how: "Report mangrove damage to them directly. Support their PILs. Join coastal surveys they organise in the area.",
+      link: "https://vanashakti.in",
+      city: "Mira Bhayandar",
+    },
+  ],
+
 };
 
 // Cities that don't yet have issue/org data show a coming-soon state
 export const CITIES_WITH_DATA = new Set([
   "Bengaluru", "Mumbai", "Delhi", "Chennai", "Hyderabad",
-  "Pune", "Indore", "Jaipur"
+  "Pune", "Indore", "Jaipur", "Ahmedabad", "Thane", "Mira Bhayandar"
 ]);
