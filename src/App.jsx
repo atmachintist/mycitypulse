@@ -325,6 +325,7 @@ function Nav({ onLogoClick, onSearch }) {
           value={q}
           onChange={e => setQ(e.target.value)}
           onKeyDown={e => { if (e.key === "Enter" && results[0]) { onSearch(results[0]); setQ(""); setResults([]); } }}
+	  aria-label="Search cities from navigation"
           placeholder="Search any city..."
           style={{
             width: "100%", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)",
@@ -436,6 +437,7 @@ function Hero({ onCitySelect }) {
               value={q}
               onChange={e => setQ(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter" && results[0]) { onCitySelect(results[0]); } }}
+	      aria-label="Search cities"
               placeholder="Search your city..."
               style={{
                 width: "100%", padding: "16px 56px 16px 24px",
