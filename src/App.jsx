@@ -14,7 +14,7 @@ import useCitySearch from "./shared/hooks/useCitySearch.js";
 
 // â”€â”€â”€ City Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const cities = [
-  { rank:1,  city:"Delhi",                    state:"Delhi",           population:33807000, area:1484,  density:22781, tier:"Mega Metro",  density_descriptor:"Very Dense",       urban_typology:"Gravity City",           one_liner:"The republic's beating heart â€” every road, policy, and ambition seems to lead here.",                              stress:"Critical", stress_reason:"Extreme density, severe waste processing gap, governance fragmentation",                  formerName:null,          aliases:["New Delhi","NCT"] },
+  { rank:1,  city:"Delhi",                    state:"Delhi",           population:33807000, area:1484,  density:22781, tier:"Mega Metro",  density_descriptor:"Very Dense",       urban_typology:"Gravity City",           one_liner:"The republic's beating heart \u2014 every road, policy, and ambition seems to lead here.",                              stress:"Critical", stress_reason:"Extreme density, severe waste processing gap, governance fragmentation",                  formerName:null,          aliases:["New Delhi","NCT"] },
   { rank:2,  city:"Mumbai",                   state:"Maharashtra",     population:21297000, area:603.4, density:35295, tier:"Mega Metro",  density_descriptor:"Extremely Dense",  urban_typology:"Gravity City",           one_liner:"An island city that ran out of land but never stopped growing.",                                                    stress:"Critical", stress_reason:"Extreme density, legacy dumpsites, coastal vulnerability",                                 formerName:"Bombay",      aliases:["Bombay"] },
   { rank:3,  city:"Kolkata",                  state:"West Bengal",     population:15134000, area:205,   density:73824, tier:"Mega Metro",  density_descriptor:"Extremely Dense",  urban_typology:"Gravity City",           one_liner:"Once the capital of British India, carrying the weight of empire, partition, and reinvention.",                       stress:"Critical", stress_reason:"World's highest density major city, ageing infrastructure, drainage stress",             formerName:"Calcutta",    aliases:["Calcutta"] },
   { rank:4,  city:"Bengaluru",                state:"Karnataka",       population:14678000, area:741,   density:19808, tier:"Mega Metro",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"A cantonment town that became a global tech capital in one generation.",                                              stress:"High",     stress_reason:"Rapid growth outpacing infrastructure, water scarcity, traffic gridlock",                  formerName:"Bangalore",   aliases:["Bangalore"] },
@@ -32,12 +32,12 @@ const cities = [
       wards_verified: 21,
       seats_total: 192,
       timeline: [
-        { date: "2026-04-06", label: "Nomination opens", icon: "ðŸ“" },
-        { date: "2026-04-11", label: "Nomination closes", icon: "ðŸ”’", urgent: true },
-        { date: "2026-04-13", label: "Scrutiny", icon: "âœ“" },
-        { date: "2026-04-15", label: "Candidates finalized", icon: "ðŸ“‹" },
-        { date: "2026-04-26", label: "Election day", icon: "ðŸ—³ï¸" },
-        { date: "2026-04-28", label: "Results announced", icon: "ðŸ“Š" }
+        { date: "2026-04-06", label: "Nomination opens", icon: "\uD83D\uDCDD" },
+        { date: "2026-04-11", label: "Nomination closes", icon: "\uD83D\uDD12", urgent: true },
+        { date: "2026-04-13", label: "Scrutiny", icon: "\u2713" },
+        { date: "2026-04-15", label: "Candidates finalized", icon: "\uD83D\uDCCB" },
+        { date: "2026-04-26", label: "Election day", icon: "\uD83D\uDDF3\uFE0F" },
+        { date: "2026-04-28", label: "Results announced", icon: "\uD83D\uDCCA" }
       ],
       verified_wards: [
         { number: 1, name: "Gota" },
@@ -132,7 +132,7 @@ const cities = [
   { rank:48, city:"Dhanbad",                  state:"Jharkhand",       population:1196000,  area:70,    density:17086, tier:"Large City",  density_descriptor:"Very Dense",       urban_typology:"Blueprint City",         one_liner:"India's coal capital.",                                                                                            stress:"High",     stress_reason:"Mining subsidence, high density, coal dust, water contamination",                  formerName:null,          aliases:["Coal Capital"] },
   { rank:49, city:"Chandigarh",               state:"Chandigarh",      population:1158000,  area:114,   density:10158, tier:"Large City",  density_descriptor:"Moderately Dense", urban_typology:"Blueprint City",         one_liner:"Le Corbusier's gift to a newly independent India.",                                                               stress:"Stable",   stress_reason:"Planned city, strong green cover, good services; satellite town pressure growing",  formerName:null,          aliases:["City Beautiful"] },
   { rank:50, city:"Gwalior",                  state:"Madhya Pradesh",  population:1153000,  area:289,   density:3990,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Ancient Pulse",          one_liner:"A fort city that controlled the heart of the subcontinent for centuries.",                                          stress:"Moderate", stress_reason:"Low density, moderate services; water scarcity and air quality concerns",          formerName:null,          aliases:[] },
-  { rank:51, city:"Mira Bhayandar",           state:"Maharashtra",     population:907000,   area:79.4,  density:11425, tier:"Large City",  density_descriptor:"Moderately Dense", urban_typology:"Overnight City",         one_liner:"Mumbai's northern edge â€” where affordable housing met the sea.",                                                    stress:"High",     stress_reason:"Explosive growth without matching infrastructure, water supply dependence, connectivity gaps", formerName:null, aliases:["Mira Road","Bhayandar"] },
+  { rank:51, city:"Mira Bhayandar",           state:"Maharashtra",     population:907000,   area:79.4,  density:11425, tier:"Large City",  density_descriptor:"Moderately Dense", urban_typology:"Overnight City",         one_liner:"Mumbai's northern edge \u2014 where affordable housing met the sea.",                                                    stress:"High",     stress_reason:"Explosive growth without matching infrastructure, water supply dependence, connectivity gaps", formerName:null, aliases:["Mira Road","Bhayandar"] },
 ];
 
 const DATASET_SCOPE = {
@@ -150,31 +150,31 @@ const DATASET_SCOPE = {
 // â”€â”€â”€ Curated conversation starters â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const PULSE_THREADS = [
   {
-    tag: "ðŸ’§ Water",
+    tag: "\uD83D\uDCA7 Water",
     tagColor: "#0096c7",
     headline: "7 cities are approaching Day Zero. Is yours next?",
     body: "Bengaluru nearly ran out of groundwater in 2023. Chennai has seen it before. Jaipur, Agra, and Varanasi are watching the same warning signs.",
     cities: ["Bengaluru", "Chennai", "Jaipur", "Agra", "Varanasi"],
   },
   {
-    tag: "ðŸ† Governance",
+    tag: "\uD83C\uDFC6 Governance",
     tagColor: "#2dc653",
     headline: "How Indore stayed India's cleanest city for 7 years straight.",
-    body: "It wasn't luck. Indore's Swachh Survekshan story is a masterclass in municipal consistency â€” and what every other city refuses to copy.",
+    body: "It wasn't luck. Indore's Swachh Survekshan story is a masterclass in municipal consistency \u2014 and what every other city refuses to copy.",
     cities: ["Indore"],
   },
   {
-    tag: "ðŸš¦ Traffic",
+    tag: "\uD83D\uDEA6 Traffic",
     tagColor: "#f4a261",
     headline: "Bengaluru's traffic isn't a problem. It's a policy choice.",
     body: "Bengaluru added 1,000 new vehicles per day in 2023. The city's road network has grown 10x slower. Someone decided this was acceptable.",
     cities: ["Bengaluru", "Delhi", "Mumbai"],
   },
   {
-    tag: "âš¡ Density",
+    tag: "\u26A1 Density",
     tagColor: "#e63946",
     headline: "48,000 people per square kilometre. Life inside Secunderabad.",
-    body: "Kolkata, Howrah, Secunderabad â€” India's most compressed cities aren't collapsing. But they're holding on by a thread.",
+    body: "Kolkata, Howrah, Secunderabad \u2014 India's most compressed cities aren't collapsing. But they're holding on by a thread.",
     cities: ["Secunderabad", "Kolkata", "Howrah"],
   },
 ];
@@ -540,7 +540,7 @@ function Hero({ onCitySelect }) {
               background: "#E8660D", borderRadius: 28, padding: "8px 16px",
               color: "#fff", fontSize: 13, fontWeight: 700,
             }}>
-              Explore â†’
+              {"Explore \u2192"}
             </div>
           </div>
 
@@ -596,7 +596,7 @@ function Hero({ onCitySelect }) {
 
       {/* Scroll cue */}
       <div style={{ position: "absolute", bottom: 32, left: "50%", transform: "translateX(-50%)", color: "rgba(255,255,255,0.25)", fontSize: 12, letterSpacing: "0.12em" }}>
-        SCROLL TO EXPLORE â†“
+        {"SCROLL TO EXPLORE \u2193"}
       </div>
     </section>
   );
@@ -747,7 +747,7 @@ function CityCard({ city, onSelect, onCompare, inCompare }) {
       {/* Top-right: stress badge */}
       <div style={{ position: "absolute", top: 12, right: 12 }}>
         <span
-          title={`${city.stress} Stress â€” ${STRESS[city.stress]?.tagline}`}
+          title={`${city.stress} Stress \u2014 ${STRESS[city.stress]?.tagline}`}
           style={{
             fontSize: 10, fontWeight: 700, color: sc.color,
             background: "rgba(0,0,0,0.6)", backdropFilter: "blur(6px)",
@@ -765,7 +765,7 @@ function CityCard({ city, onSelect, onCompare, inCompare }) {
           {city.city}
         </div>
         <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 2, marginBottom: 8 }}>
-          {city.state} Â· {fmt(city.population)} people
+          {city.state} {"\u00B7"} {fmt(city.population)} people
         </div>
         <p style={{
           fontSize: 12, color: "rgba(255,255,255,0.82)", fontFamily: "Georgia, serif",
@@ -783,7 +783,7 @@ function CityCard({ city, onSelect, onCompare, inCompare }) {
           onClick={e => { e.stopPropagation(); onCompare(city); }}
           title={inCompare ? "Remove from comparison" : "Add to comparison"}
         >
-          {inCompare ? "âœ“ Comparing" : "+ Compare"}
+          {inCompare ? "\u2713 Comparing" : "+ Compare"}
         </button>
       )}
     </div>
@@ -838,7 +838,7 @@ function CityGrid({ onCitySelect, onCompare, compareList }) {
               borderRadius: 20, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6,
             }}
           >
-            {legendOpen ? "â–²" : "â–¼"} What do these tags mean?
+            {legendOpen ? "\u25B2" : "\u25BC"} What do these tags mean?
           </button>
           {legendOpen && (
             <div style={{
@@ -983,7 +983,7 @@ function JoinCTA() {
 
         {done ? (
           <div style={{ color: "#2dc653", fontSize: 16, fontFamily: "Georgia, serif", fontStyle: "italic" }}>
-            âœ“ You're in. We'll be in touch.
+            {"\u2713 You're in. We'll be in touch."}
           </div>
         ) : (
           <div style={{ display: "flex", gap: 8, maxWidth: 440, margin: "0 auto", flexWrap: "wrap" }}>
@@ -1004,7 +1004,7 @@ function JoinCTA() {
                 cursor: "pointer", letterSpacing: "0.04em", whiteSpace: "nowrap",
               }}
             >
-              Join â†’
+              {"Join \u2192"}
             </button>
           </div>
         )}
@@ -1023,8 +1023,8 @@ function Footer() {
   return (
     <footer style={{ background: "#080b0f", padding: "28px 32px", textAlign: "center" }}>
       <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 12, letterSpacing: "0.06em" }}>
-        Â© {year} MyCityPulse Â· <span style={{ color: "rgba(255,255,255,0.15)" }}>mycitypulse.in</span>
-        <span style={{ color: "rgba(255,255,255,0.1)", margin: "0 8px" }}>Â·</span>
+        {"\u00A9"} {year} MyCityPulse {"\u00B7"} <span style={{ color: "rgba(255,255,255,0.15)" }}>mycitypulse.in</span>
+        <span style={{ color: "rgba(255,255,255,0.1)", margin: "0 8px" }}>{"\u00B7"}</span>
         Built from public sources, Wikimedia, and MyCityPulse editorial analysis. Coverage depth varies by city.
       </div>
     </footer>

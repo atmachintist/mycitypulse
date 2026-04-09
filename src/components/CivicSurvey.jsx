@@ -249,16 +249,16 @@ const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
     return (
       <div className="survey-container">
         <div className="survey-welcome">
-          <div className="welcome-icon">📋</div>
+          <div className="welcome-icon">{"\uD83D\uDCCB"}</div>
           <h2>Help Shape {city}'s Future</h2>
           <p>
             Your voice matters! This quick survey takes about 5 minutes and helps us understand what matters most to you
             in your community.
           </p>
           <div className="survey-benefits">
-            <div className="benefit-item">✓ Completely anonymous</div>
-            <div className="benefit-item">✓ 21 questions</div>
-            <div className="benefit-item">✓ Your feedback drives change</div>
+            <div className="benefit-item">{"\u2713 Completely anonymous"}</div>
+            <div className="benefit-item">{"\u2713 21 questions"}</div>
+            <div className="benefit-item">{"\u2713 Your feedback drives change"}</div>
           </div>
 
           <form onSubmit={handleEmailSubmit} className="email-form">
@@ -287,7 +287,7 @@ const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
     return (
       <div className="survey-container">
         <div className="survey-thank-you">
-          <div className="thank-you-icon">🙏</div>
+          <div className="thank-you-icon">{"\uD83D\uDE4F"}</div>
           <h2>Thank You!</h2>
           <p>Your feedback has been recorded and will help improve civic services in {city}.</p>
           <p className="follow-up">
@@ -367,7 +367,7 @@ const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
                   }}
                 >
                   {option}
-                  {(responses[currentQ.id] || []).includes(option) && <span className="checkmark">✓</span>}
+                  {(responses[currentQ.id] || []).includes(option) && <span className="checkmark">{"\u2713"}</span>}
                 </button>
               ))}
               <p className="multiselect-hint">
@@ -425,7 +425,7 @@ const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
             onClick={handlePrevious}
             disabled={currentQuestion === 0}
           >
-            ← Previous
+            {"\u2190 Previous"}
           </button>
 
           <button className="skip-btn" onClick={handleSkip}>
@@ -437,7 +437,7 @@ const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
             onClick={() => handleAnswer(responses[currentQ.id])}
             disabled={!responses[currentQ.id]}
           >
-            {currentQuestion === visibleQuestions.length - 1 ? 'Submit' : 'Next →'}
+            {currentQuestion === visibleQuestions.length - 1 ? 'Submit' : 'Next \u2192'}
           </button>
         </div>
       </div>
@@ -446,3 +446,4 @@ const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
 };
 
 export default CivicSurvey;
+
