@@ -125,6 +125,15 @@ const cities = [
   { rank:51, city:"Mira Bhayandar",           state:"Maharashtra",     population:907000,   area:79.4,  density:11425, tier:"Large City",  density_descriptor:"Moderately Dense", urban_typology:"Overnight City",         one_liner:"Mumbai's northern edge — where affordable housing met the sea.",                                                    stress:"High",     stress_reason:"Explosive growth without matching infrastructure, water supply dependence, connectivity gaps", formerName:null, aliases:["Mira Road","Bhayandar"] },
 ];
 
+const DATASET_SCOPE = {
+  cityCount: cities.length,
+  stateCount: new Set(cities.map((city) => city.state)).size,
+  issueProfileCount: Object.keys(CITY_ISSUES).length,
+  orgDirectoryCount: Object.keys(CIVIC_ORGS).length,
+  wardPanelCount: Object.keys(WARD_CORPORATORS).length,
+  electionTrackerCount: cities.filter((city) => city.elections).length,
+};
+
 const STRESS = {
   "Critical": { color:"#e63946", bg:"#fff0f0", bar:5, tagline:"Immediate civic attention needed" },
   "High":     { color:"#f4a261", bg:"#fff7ee", bar:4, tagline:"Significant stress across services" },
@@ -680,7 +689,7 @@ function Hero({ onCitySelect }) {
           fontSize: 18, color: "rgba(255,255,255,0.55)", lineHeight: 1.7,
           maxWidth: 580, margin: "0 auto 40px", fontFamily: "Georgia, serif",
         }}>
-          MyCityPulse tracks how India's 50 largest cities work — their stress, their stories, and the conversations they're starting.
+          MyCityPulse is an editorial guide to {DATASET_SCOPE.cityCount} large Indian city profiles in the current dataset, combining public data, reported civic issues, and citizen entry points without pretending every page is complete.
         </p>
 
         {/* Search */}
@@ -772,15 +781,15 @@ function Hero({ onCitySelect }) {
 function StatsBanner() {
   const criticalCount = cities.filter(c => c.stress === "Critical").length;
   const stats = [
-    { value: "50", label: "Cities Tracked" },
-    { value: "25+", label: "States Covered" },
-    { value: `${criticalCount}`, label: "In Critical Stress" },
-    { value: "8", label: "Civic Issue Lenses" },
+    { value: `${DATASET_SCOPE.cityCount}`, label: "City Profiles" },
+    { value: `${DATASET_SCOPE.stateCount}`, label: "States / UTs in Dataset" },
+    { value: `${criticalCount}`, label: "Critical Stress Cities" },
+    { value: `${DATASET_SCOPE.issueProfileCount}`, label: "Issue Profiles Published" },
   ];
   return (
     <div style={{ background: "#1a1a1a", padding: "28px 32px" }}>
       <div style={{ maxWidth: 960, margin: "0 auto" }}>
-        <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 24, textAlign: "center" }}>
+        <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 24, textAlign: "center" }}>
           {stats.map(s => (
             <div key={s.label}>
               <div style={{ fontSize: 32, fontWeight: 900, color: "#E8660D", fontFamily: "Georgia, serif", letterSpacing: "-0.03em" }}>{s.value}</div>
@@ -788,12 +797,64 @@ function StatsBanner() {
             </div>
           ))}
         </div>
+        <p style={{ marginTop: 20, color: "rgba(255,255,255,0.55)", fontSize: 13, lineHeight: 1.7, textAlign: "center" }}>
+          Current scope: {DATASET_SCOPE.issueProfileCount} city issue briefs, {DATASET_SCOPE.orgDirectoryCount} civic ecosystem directories,
+          {` ${DATASET_SCOPE.wardPanelCount}`} ward panels, and {DATASET_SCOPE.electionTrackerCount} live election tracker.
+          Public facts and editorial judgments are intentionally separated elsewhere on the site.
+        </p>
       </div>
     </div>
   );
 }
 
 // ─── City Card ────────────────────────────────────────────────────────────────
+function TrustSection() {
+  const cards = [
+    {
+      title: "Is this official?",
+      body: "No. MyCityPulse is a citizen-facing guide, not a government portal. Where possible, we use public or official source material for basics like population, wards, and elections, then layer editorial interpretation on top.",
+    },
+    {
+      title: "Is this complete?",
+      body: `Not yet. This release covers ${DATASET_SCOPE.cityCount} city profiles across ${DATASET_SCOPE.stateCount} states / UTs, but only ${DATASET_SCOPE.issueProfileCount} cities currently have issue briefs and ${DATASET_SCOPE.wardPanelCount} have ward panels. Missing depth is shown openly instead of hidden behind vague claims.`,
+    },
+    {
+      title: "What should citizens use it for?",
+      body: "Use it to orient yourself quickly: understand what kind of city you are in, what pressure points matter, who is working on them, and where to dig deeper next. Treat it as a starting point, not the final word.",
+    },
+  ];
+
+  return (
+    <section style={{ padding: "56px 32px", background: "#fff7f0", borderTop: "1px solid #f0e3d7", borderBottom: "1px solid #f0e3d7" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        <div style={{ maxWidth: 720, marginBottom: 28 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#E8660D", letterSpacing: "0.1em", marginBottom: 10 }}>READ THIS LIKE A CITIZEN</div>
+          <h2 style={{ fontSize: 34, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 12 }}>
+            Ambitious does not have to mean overstated.
+          </h2>
+          <p style={{ fontSize: 16, color: "#666", lineHeight: 1.7 }}>
+            The product should feel bold because it helps people see their city clearly, not because it implies certainty it has not earned.
+            We show scope, judgment, and incompleteness directly so users know what to trust and what still needs work.
+          </p>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 18 }}>
+          {cards.map((card) => (
+            <div key={card.title} style={{ background: "#fff", borderRadius: 16, padding: 24, boxShadow: "0 1px 6px rgba(0,0,0,0.06)", borderTop: "3px solid #E8660D" }}>
+              <h3 style={{ fontSize: 18, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 10 }}>{card.title}</h3>
+              <p style={{ fontSize: 14, color: "#666", lineHeight: 1.7, margin: 0 }}>{card.body}</p>
+            </div>
+          ))}
+        </div>
+
+        <p style={{ marginTop: 20, fontSize: 13, color: "#7a6a5c", lineHeight: 1.7 }}>
+          If something looks stale, thin, or incorrect, that should be visible in the interface. The right next step is not to sound bigger; it is to show what is sourced, what is editorial, and what is still being built.
+        </p>
+      </div>
+    </section>
+  );
+}
+
 function CityCard({ city, onSelect, onCompare, inCompare }) {
   const sc = STRESS[city.stress];
   const imgUrl = CITY_IMAGES[city.city];
@@ -931,11 +992,19 @@ function CityGrid({ onCitySelect, onCompare, compareList }) {
         <div style={{ marginBottom: 40 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: "#E8660D", letterSpacing: "0.1em", marginBottom: 10 }}>EXPLORE</div>
           <h2 style={{ fontSize: 36, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 12 }}>
-            50 cities. One pulse.
+            {DATASET_SCOPE.cityCount} city profiles in this release.
           </h2>
           <p style={{ fontSize: 16, color: "#666", maxWidth: 500, lineHeight: 1.6 }}>
-            Every major Indian city, mapped by civic stress, urban typology, and the story it's telling right now.
+            A working dataset of large Indian cities, mapped through public facts and MyCityPulse editorial lenses. Some cities are deep, some are still being built, and the interface should make that obvious.
           </p>
+          <div style={{ marginTop: 16, background: "#fff", borderRadius: 14, border: "1px solid #e8e5e0", padding: "16px 18px", maxWidth: 760 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#9a6b3d", letterSpacing: "0.08em", marginBottom: 8 }}>CURRENT SCOPE</div>
+            <p style={{ margin: 0, fontSize: 14, color: "#666", lineHeight: 1.7 }}>
+              This release covers {DATASET_SCOPE.cityCount} city profiles across {DATASET_SCOPE.stateCount} states / UTs.
+              Issue briefs are currently published for {DATASET_SCOPE.issueProfileCount} cities, civic ecosystem directories for {DATASET_SCOPE.orgDirectoryCount},
+              {` `}ward panels for {DATASET_SCOPE.wardPanelCount}, and election tracking for {DATASET_SCOPE.electionTrackerCount}.
+            </p>
+          </div>
           <button
             onClick={() => setLegendOpen(o => !o)}
             style={{
@@ -1031,7 +1100,7 @@ function NationalPulse({ onCitySelect }) {
             What India's cities are talking about.
           </h2>
           <p style={{ fontSize: 16, color: "#666", maxWidth: 520, lineHeight: 1.6 }}>
-            These are the civic conversations that cut across city lines — the issues that matter everywhere, even if they look different from Bengaluru to Patna.
+            These are editorial civic threads that cut across city lines, not a real-time trend feed. They help citizens see recurring patterns across places without pretending to be live national data.
           </p>
         </div>
 
@@ -1125,12 +1194,13 @@ function JoinCTA() {
 
 // ─── Footer ───────────────────────────────────────────────────────────────────
 function Footer() {
+  const year = new Date().getFullYear();
   return (
     <footer style={{ background: "#080b0f", padding: "28px 32px", textAlign: "center" }}>
       <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 12, letterSpacing: "0.06em" }}>
-        © 2025 MyCityPulse · <span style={{ color: "rgba(255,255,255,0.15)" }}>mycitypulse.in</span>
+        © {year} MyCityPulse · <span style={{ color: "rgba(255,255,255,0.15)" }}>mycitypulse.in</span>
         <span style={{ color: "rgba(255,255,255,0.1)", margin: "0 8px" }}>·</span>
-        City data: public domain sources, Wikimedia, Census of India
+        Built from public sources, Wikimedia, and MyCityPulse editorial analysis. Coverage depth varies by city.
       </div>
     </footer>
   );
@@ -1271,7 +1341,7 @@ function CityPage({ city, onBack }) {
 
   const panels = [
     { id: "health",    label: "🏙 City Health" },
-    { id: "issues",    label: "⚡ Live Issues" },
+    { id: "issues",    label: "⚡ Civic Issues" },
     { id: "ecosystem", label: "🤝 Civic Ecosystem" },
     ...(city.elections ? [{ id: "elections", label: "🗳️ Elections" }] : []),
     ...(wardData ? [{ id: "wards", label: "🗳 Wards & Corporators" }] : []),
@@ -1362,8 +1432,22 @@ function CityPage({ city, onBack }) {
 
           {/* Data freshness note */}
           <p style={{ fontSize: 11, color: "#bbb", marginBottom: 24, lineHeight: 1.6 }}>
-            Population & area: Census of India projections · Stress & typology: MyCityPulse editorial, last reviewed 2024 · Issues & organisations: last updated 2024.
+            Population and area come from public datasets. Stress, typology, and city narratives are MyCityPulse editorial judgments. Issue, organisation, ward, and election coverage varies by city and should be read as a guided starting point, not an official civic record.
           </p>
+
+          <div style={{ background: "#fff", borderRadius: 14, padding: "18px 20px", marginBottom: 32, boxShadow: "0 1px 4px rgba(0,0,0,0.05)", borderLeft: "3px solid #E8660D" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "#E8660D", letterSpacing: "0.1em", marginBottom: 10 }}>HOW TO READ THIS PAGE</div>
+            <p style={{ fontSize: 14, color: "#666", lineHeight: 1.7, margin: "0 0 14px" }}>
+              This page mixes public facts with editorial analysis. Use it to orient yourself quickly, understand what pressure points matter, and decide where to dig deeper next.
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {["Public data where available", "Editorial analysis", "Coverage varies by city"].map((label) => (
+                <span key={label} style={{ fontSize: 11, fontWeight: 700, color: "#666", background: "#f5f3ee", padding: "5px 10px", borderRadius: 999 }}>
+                  {label}
+                </span>
+              ))}
+            </div>
+          </div>
 
           {/* Stress + Typology */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 64 }}>
@@ -1385,16 +1469,16 @@ function CityPage({ city, onBack }) {
       </div>
       )} {/* end health panel */}
 
-      {/* ── Panel 2: Live Issues ── */}
+      {/* ── Panel 2: Civic Issues ── */}
       {activePanel === "issues" && (
       <div style={{ background: "#fff", padding: "52px 32px" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 12 }}>PANEL 2 — LIVE ISSUES</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 12 }}>PANEL 2 — CIVIC ISSUES</div>
           <h2 style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
             What's happening in {city.city}.
           </h2>
           <p style={{ fontSize: 15, color: "#888", marginBottom: 40, lineHeight: 1.6 }}>
-            The issues that shape daily life in this city — explained plainly, without jargon.
+            The issues that shape daily life in this city, explained plainly and editorially. This is not a live complaints feed or official incident dashboard.
           </p>
 
           {!hasData ? (
@@ -1464,7 +1548,7 @@ function CityPage({ city, onBack }) {
             Who's fighting for {city.city}.
           </h2>
           <p style={{ fontSize: 15, color: "#888", marginBottom: 40, lineHeight: 1.6 }}>
-            Organizations, collectives, and initiatives doing real civic work in this city. They were here before you found them.
+            Selected organizations, collectives, and initiatives doing real civic work in this city. This is a curated directory, not a complete registry.
           </p>
 
           {orgs.length === 0 ? (
@@ -1856,6 +1940,7 @@ function HomePage({ onCitySelect, onCompare, compareList }) {
     <>
       <Hero onCitySelect={onCitySelect} />
       <StatsBanner />
+      <TrustSection />
       <NationalPulse onCitySelect={onCitySelect} />
       <CityGrid onCitySelect={onCitySelect} onCompare={onCompare} compareList={compareList} />
       <JoinCTA />
