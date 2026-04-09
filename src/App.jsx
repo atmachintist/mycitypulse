@@ -458,6 +458,7 @@ const GlobalStyles = () => (
 function Nav({ onLogoClick, onSearch }) {
   const [q, setQ] = useState("");
   const [results, setResults] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const ref = useRef(null);
 
   useEffect(() => {
@@ -465,10 +466,53 @@ function Nav({ onLogoClick, onSearch }) {
   }, [q]);
 
   useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setResults([]); };
+    setActiveIndex(results.length > 0 ? 0 : -1);
+  }, [results]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setResults([]);
+        setActiveIndex(-1);
+      }
+    };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  const selectCity = (city) => {
+    onSearch(city);
+    setQ("");
+    setResults([]);
+    setActiveIndex(-1);
+  };
+
+  const handleKeyDown = (e) => {
+    if (!results.length) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIndex((index) => (index + 1) % results.length);
+      return;
+    }
+
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((index) => (index <= 0 ? results.length - 1 : index - 1));
+      return;
+    }
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+      selectCity(results[activeIndex] || results[0]);
+      return;
+    }
+
+    if (e.key === "Escape") {
+      setResults([]);
+      setActiveIndex(-1);
+    }
+  };
 
   return (
     <nav style={{
@@ -491,7 +535,7 @@ function Nav({ onLogoClick, onSearch }) {
         <input
           value={q}
           onChange={e => setQ(e.target.value)}
-          onKeyDown={e => { if (e.key === "Enter" && results[0]) { onSearch(results[0]); setQ(""); setResults([]); } }}
+          onKeyDown={handleKeyDown}
 	  aria-label="Search cities from navigation"
           placeholder="Search any city..."
           style={{
@@ -506,15 +550,14 @@ function Nav({ onLogoClick, onSearch }) {
             background: "#1a1e26", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
             border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden", zIndex: 300,
           }}>
-            {results.map(c => (
-              <button key={c.city} onClick={() => { onSearch(c); setQ(""); setResults([]); }} style={{
+            {results.map((c, index) => (
+              <button key={c.city} onClick={() => selectCity(c)} style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between",
-                width: "100%", padding: "10px 16px", background: "none", border: "none",
+                width: "100%", padding: "10px 16px", background: activeIndex === index ? "rgba(255,255,255,0.08)" : "none", border: "none",
                 color: "#fff", fontSize: 13, textAlign: "left", cursor: "pointer",
                 borderBottom: "1px solid rgba(255,255,255,0.06)",
               }}
-              onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
-              onMouseLeave={e => e.currentTarget.style.background = "none"}
+              onMouseEnter={() => setActiveIndex(index)}
               >
                 <span>{c.city} <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 11 }}>{c.state}</span></span>
                 <span style={{ fontSize: 10, background: STRESS[c.stress].color + "33", color: STRESS[c.stress].color, padding: "2px 8px", borderRadius: 10, fontWeight: 700 }}>{c.stress}</span>
@@ -540,6 +583,7 @@ function Nav({ onLogoClick, onSearch }) {
 function Hero({ onCitySelect }) {
   const [q, setQ] = useState("");
   const [results, setResults] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const ref = useRef(null);
 
   useEffect(() => {
@@ -547,12 +591,54 @@ function Hero({ onCitySelect }) {
   }, [q]);
 
   useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setResults([]); };
+    setActiveIndex(results.length > 0 ? 0 : -1);
+  }, [results]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setResults([]);
+        setActiveIndex(-1);
+      }
+    };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
   const quickCities = ["Delhi", "Mumbai", "Bengaluru", "Hyderabad", "Pune", "Chennai"];
+  const selectCity = (city) => {
+    onCitySelect(city);
+    setQ("");
+    setResults([]);
+    setActiveIndex(-1);
+  };
+
+  const handleKeyDown = (e) => {
+    if (!results.length) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIndex((index) => (index + 1) % results.length);
+      return;
+    }
+
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((index) => (index <= 0 ? results.length - 1 : index - 1));
+      return;
+    }
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+      selectCity(results[activeIndex] || results[0]);
+      return;
+    }
+
+    if (e.key === "Escape") {
+      setResults([]);
+      setActiveIndex(-1);
+    }
+  };
 
   return (
     <section style={{
@@ -603,7 +689,7 @@ function Hero({ onCitySelect }) {
             <input
               value={q}
               onChange={e => setQ(e.target.value)}
-              onKeyDown={e => { if (e.key === "Enter" && results[0]) { onCitySelect(results[0]); } }}
+              onKeyDown={handleKeyDown}
 	      aria-label="Search cities"
               placeholder="Search your city..."
               style={{
@@ -631,15 +717,14 @@ function Hero({ onCitySelect }) {
               background: "#1a1e26", borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
               border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden", zIndex: 300, textAlign: "left",
             }}>
-              {results.map(c => (
-                <button key={c.city} onClick={() => { onCitySelect(c); setQ(""); setResults([]); }} style={{
+              {results.map((c, index) => (
+                <button key={c.city} onClick={() => selectCity(c)} style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between",
-                  width: "100%", padding: "12px 20px", background: "none", border: "none",
+                  width: "100%", padding: "12px 20px", background: activeIndex === index ? "rgba(255,255,255,0.06)" : "none", border: "none",
                   color: "#fff", fontSize: 14, cursor: "pointer",
                   borderBottom: "1px solid rgba(255,255,255,0.05)",
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
-                onMouseLeave={e => e.currentTarget.style.background = "none"}
+                onMouseEnter={() => setActiveIndex(index)}
                 >
                   <div>
                     <span style={{ fontWeight: 600 }}>{c.city}</span>
@@ -1553,6 +1638,7 @@ function CityCompareCard({ city, onRemove, onCitySelect }) {
 function CompareView({ cities, onBack, onCitySelect, onRemove, onAdd }) {
   const [addQ, setAddQ] = useState("");
   const [addResults, setAddResults] = useState([]);
+  const [activeAddIndex, setActiveAddIndex] = useState(-1);
 
   useEffect(() => {
     const results = addQ.length >= 2
@@ -1561,7 +1647,45 @@ function CompareView({ cities, onBack, onCitySelect, onRemove, onAdd }) {
     setAddResults(results);
   }, [addQ, cities]);
 
+  useEffect(() => {
+    setActiveAddIndex(addResults.length > 0 ? 0 : -1);
+  }, [addResults]);
+
   useEffect(() => { window.scrollTo(0, 0); }, []);
+
+  const selectAddCity = (city) => {
+    onAdd(city);
+    setAddQ("");
+    setAddResults([]);
+    setActiveAddIndex(-1);
+  };
+
+  const handleAddKeyDown = (e) => {
+    if (!addResults.length) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveAddIndex((index) => (index + 1) % addResults.length);
+      return;
+    }
+
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveAddIndex((index) => (index <= 0 ? addResults.length - 1 : index - 1));
+      return;
+    }
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+      selectAddCity(addResults[activeAddIndex] || addResults[0]);
+      return;
+    }
+
+    if (e.key === "Escape") {
+      setAddResults([]);
+      setActiveAddIndex(-1);
+    }
+  };
 
   const metrics = [
     { label: "National Rank",    val: c => `#${c.rank}`,                          cval: c => c.rank,         best: "lower"   },
@@ -1619,6 +1743,7 @@ function CompareView({ cities, onBack, onCitySelect, onRemove, onAdd }) {
                 <div style={{ fontSize: 22, color: "#ccc" }}>+</div>
                 <input
                   value={addQ} onChange={e => setAddQ(e.target.value)}
+                  onKeyDown={handleAddKeyDown}
                   placeholder="Add city..."
                   style={{
                     width: "100%", padding: "7px 12px", border: "1.5px solid #e0ddd8",
@@ -1632,15 +1757,14 @@ function CompareView({ cities, onBack, onCitySelect, onRemove, onAdd }) {
                   background: "#fff", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
                   border: "1px solid #e8e5e0", overflow: "hidden",
                 }}>
-                  {addResults.map(c => (
-                    <button key={c.city} onClick={() => { onAdd(c); setAddQ(""); setAddResults([]); }}
+                  {addResults.map((c, index) => (
+                    <button key={c.city} onClick={() => selectAddCity(c)}
                       style={{
                         display: "block", width: "100%", padding: "9px 14px",
-                        background: "none", border: "none", textAlign: "left",
+                        background: activeAddIndex === index ? "#faf8f4" : "none", border: "none", textAlign: "left",
                         fontSize: 13, cursor: "pointer", borderBottom: "1px solid #f0ede8",
                       }}
-                      onMouseEnter={e => e.currentTarget.style.background = "#faf8f4"}
-                      onMouseLeave={e => e.currentTarget.style.background = "none"}
+                      onMouseEnter={() => setActiveAddIndex(index)}
                     >
                       <span style={{ fontWeight: 600, color: "#1a1a1a" }}>{c.city}</span>
                       <span style={{ color: "#aaa", marginLeft: 8, fontSize: 11 }}>{c.state}</span>
