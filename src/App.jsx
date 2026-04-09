@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { CITY_ISSUES, CIVIC_ORGS, CITIES_WITH_DATA, WARD_CORPORATORS } from "./cityData.js";
+import ElectionsCard from "./components/ElectionsCard";
 
 // ─── City Data ────────────────────────────────────────────────────────────────
 const cities = [
@@ -9,7 +10,51 @@ const cities = [
   { rank:4,  city:"Bengaluru",                state:"Karnataka",       population:14678000, area:741,   density:19808, tier:"Mega Metro",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"A cantonment town that became a global tech capital in one generation.",                                              stress:"High",     stress_reason:"Rapid growth outpacing infrastructure, water scarcity, traffic gridlock",                  formerName:"Bangalore",   aliases:["Bangalore"] },
   { rank:5,  city:"Chennai",                  state:"Tamil Nadu",      population:11503000, area:426,   density:27002, tier:"Mega Metro",  density_descriptor:"Extremely Dense",  urban_typology:"Gravity City",           one_liner:"South India's gateway to the world.",                                                                              stress:"High",     stress_reason:"High density, flood vulnerability, water stress cycles",                                   formerName:"Madras",      aliases:["Madras"] },
   { rank:6,  city:"Hyderabad",                state:"Telangana",       population:10534000, area:650,   density:16206, tier:"Mega Metro",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"A city of Nizams and now of tech unicorns.",                                                                       stress:"High",     stress_reason:"Rapid tech-led growth, peri-urban sprawl, lake encroachment",                              formerName:null,          aliases:["Cyberabad","Hyd"] },
-  { rank:7,  city:"Ahmedabad",                state:"Gujarat",         population:8450000,  area:505,   density:16733, tier:"Major City",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"India's first UNESCO World Heritage City.",                                                                        stress:"High",     stress_reason:"Dense old city core, industrial pollution, heat island effect",                            formerName:null,          aliases:["Amdavad","AMD"] },
+  {
+    rank:7,  city:"Ahmedabad",                state:"Gujarat",         population:8450000,  area:505,   density:16733, tier:"Major City",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"India's first UNESCO World Heritage City.",                                                                        stress:"High",     stress_reason:"Dense old city core, industrial pollution, heat island effect",                            formerName:null,          aliases:["Amdavad","AMD"],
+    elections: {
+      year: 2026,
+      status: "nomination",
+      election_date: "2026-04-26",
+      result_date: "2026-04-28",
+      nomination_close: "2026-04-11",
+      wards_total: 48,
+      wards_verified: 21,
+      seats_total: 192,
+      timeline: [
+        { date: "2026-04-06", label: "Nomination opens", icon: "📝" },
+        { date: "2026-04-11", label: "Nomination closes", icon: "🔒", urgent: true },
+        { date: "2026-04-13", label: "Scrutiny", icon: "✓" },
+        { date: "2026-04-15", label: "Candidates finalized", icon: "📋" },
+        { date: "2026-04-26", label: "Election day", icon: "🗳️" },
+        { date: "2026-04-28", label: "Results announced", icon: "📊" }
+      ],
+      wards: [
+        { number: 1, name: "Gota" },
+        { number: 2, name: "Chandlodia" },
+        { number: 3, name: "Ranip" },
+        { number: 4, name: "Sabarmati" },
+        { number: 5, name: "Nava Wadaj" },
+        { number: 6, name: "Juna Wadaj" },
+        { number: 7, name: "Ghatlodia" },
+        { number: 8, name: "Thaltej" },
+        { number: 9, name: "Naranpura" },
+        { number: 10, name: "Stadium" },
+        { number: 11, name: "Sardarnagar" },
+        { number: 12, name: "Naroda" },
+        { number: 14, name: "Kubernagar" },
+        { number: 19, name: "Bodakdev" },
+        { number: 20, name: "Jodhpur" },
+        { number: 22, name: "Stadium West" },
+        { number: 23, name: "Thakkarbapanagar" },
+        { number: 25, name: "Viratnagar" },
+        { number: 26, name: "Ambawadi" },
+        { number: 27, name: "Navrangpura" },
+        { number: 40, name: "Paldi" },
+        { number: 41, name: "Vasna" }
+      ]
+    }
+  },
   { rank:8,  city:"Surat",                    state:"Gujarat",         population:7784000,  area:326.5, density:23841, tier:"Major City",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"Survived a plague and rebuilt into one of India's best-managed municipalities.",                                     stress:"Elevated", stress_reason:"High density but strong municipal track record; migration pressure rising",              formerName:null,          aliases:[] },
   { rank:9,  city:"Pune",                     state:"Maharashtra",     population:7764000,  area:331.3, density:23435, tier:"Major City",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"Mumbai's younger, more breathable neighbour.",                                                                     stress:"Elevated", stress_reason:"Fast growth, water stress, periurban planning gaps",                                      formerName:"Poona",       aliases:["Poona"] },
   { rank:10, city:"Jaipur",                   state:"Rajasthan",       population:4161000,  area:467,   density:8910,  tier:"Major City",  density_descriptor:"Moderately Dense", urban_typology:"Ancient Pulse",          one_liner:"The Pink City, built in a perfect grid in 1727.",                                                                  stress:"Elevated", stress_reason:"Heritage-growth tension, water scarcity, tourism pressure",                              formerName:null,          aliases:["Pink City"] },
@@ -201,8 +246,8 @@ function searchCities(q) {
 }
 
 function fmt(n) {
-  if (n >= 10000000) return (n / 10000000).toFixed(1) + " Cr";
-  if (n >= 100000) return (n / 100000).toFixed(1) + " L";
+  if (n >= 10000000) return (n / 10000000).toFixed(1) + " crore";
+  if (n >= 100000) return (n / 100000).toFixed(1) + " lakh";
   return n.toLocaleString();
 }
 
@@ -332,6 +377,41 @@ const GlobalStyles = () => (
       letter-spacing: 0.04em; color: #fff;
     }
 
+    /* ── Compare button on city cards ── */
+    .compare-btn {
+      position: absolute;
+      bottom: 12px; right: 12px;
+      background: rgba(232,102,13,0.92);
+      color: #fff; border: none;
+      padding: 5px 13px; border-radius: 16px;
+      font-size: 11px; font-weight: 700;
+      cursor: pointer; opacity: 0;
+      transition: opacity 0.18s;
+      backdrop-filter: blur(4px);
+      z-index: 10; letter-spacing: 0.02em;
+    }
+    .city-card:hover .compare-btn { opacity: 1; }
+    .compare-btn.selected {
+      opacity: 1 !important;
+      background: rgba(255,255,255,0.92);
+      color: #E8660D;
+    }
+
+    /* ── Compare tray (sticky bottom) ── */
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+    .compare-tray {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 500;
+      background: #0D1117;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding: 12px 32px;
+      display: flex; align-items: center; gap: 16;
+      box-shadow: 0 -4px 24px rgba(0,0,0,0.5);
+      animation: slideUp 0.22s ease;
+    }
+
     @media (max-width: 768px) {
       .city-grid { grid-template-columns: 1fr 1fr !important; }
       .hero-headline { font-size: 36px !important; }
@@ -341,6 +421,7 @@ const GlobalStyles = () => (
       .thread-grid { grid-template-columns: 1fr !important; }
       .panel-nav-inner { padding: 0 16px; }
       .ward-table td, .ward-table th { padding: 9px 10px; }
+      .compare-tray { padding: 10px 16px; flex-wrap: wrap; gap: 10px; }
     }
     @media (max-width: 480px) {
       .city-grid { grid-template-columns: 1fr !important; }
@@ -604,7 +685,7 @@ function StatsBanner() {
 }
 
 // ─── City Card ────────────────────────────────────────────────────────────────
-function CityCard({ city, onSelect }) {
+function CityCard({ city, onSelect, onCompare, inCompare }) {
   const sc = STRESS[city.stress];
   const imgUrl = CITY_IMAGES[city.city];
   const [imgErr, setImgErr] = useState(false);
@@ -657,23 +738,27 @@ function CityCard({ city, onSelect }) {
           background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: 10,
           fontWeight: 800, padding: "3px 8px", borderRadius: 8, backdropFilter: "blur(6px)",
         }}>#{city.rank}</div>
-        <span style={{
-          fontSize: 10, fontWeight: 700,
-          color: TYPO_C[city.urban_typology],
-          background: "rgba(0,0,0,0.55)",
-          backdropFilter: "blur(6px)",
-          padding: "3px 8px", borderRadius: 8,
-        }}>{city.urban_typology}</span>
+        <span
+          title={TYPO_DESC[city.urban_typology]}
+          style={{
+            fontSize: 10, fontWeight: 700,
+            color: TYPO_C[city.urban_typology],
+            background: "rgba(0,0,0,0.55)",
+            backdropFilter: "blur(6px)",
+            padding: "3px 8px", borderRadius: 8, cursor: "help",
+          }}>{city.urban_typology}</span>
       </div>
 
       {/* Top-right: stress badge */}
       <div style={{ position: "absolute", top: 12, right: 12 }}>
-        <span style={{
-          fontSize: 10, fontWeight: 700, color: sc.color,
-          background: "rgba(0,0,0,0.6)", backdropFilter: "blur(6px)",
-          border: `1px solid ${sc.color}66`,
-          padding: "3px 9px", borderRadius: 10,
-        }}>{city.stress}</span>
+        <span
+          title={`${city.stress} Stress — ${STRESS[city.stress]?.tagline}`}
+          style={{
+            fontSize: 10, fontWeight: 700, color: sc.color,
+            background: "rgba(0,0,0,0.6)", backdropFilter: "blur(6px)",
+            border: `1px solid ${sc.color}66`,
+            padding: "3px 9px", borderRadius: 10, cursor: "help",
+          }}>{city.stress}</span>
       </div>
 
       {/* Bottom: city name, state, one-liner */}
@@ -695,15 +780,27 @@ function CityCard({ city, onSelect }) {
           "{city.one_liner}"
         </p>
       </div>
+
+      {/* Compare toggle */}
+      {onCompare && (
+        <button
+          className={`compare-btn${inCompare ? " selected" : ""}`}
+          onClick={e => { e.stopPropagation(); onCompare(city); }}
+          title={inCompare ? "Remove from comparison" : "Add to comparison"}
+        >
+          {inCompare ? "✓ Comparing" : "+ Compare"}
+        </button>
+      )}
     </div>
   );
 }
 
 // ─── City Grid ────────────────────────────────────────────────────────────────
-function CityGrid({ onCitySelect }) {
+function CityGrid({ onCitySelect, onCompare, compareList }) {
   const [tierFilter, setTierFilter] = useState("All");
   const [stressFilter, setStressFilter] = useState("All");
   const [q, setQ] = useState("");
+  const [legendOpen, setLegendOpen] = useState(false);
 
   const tiers = ["All", "Mega Metro", "Major City", "Large City"];
   const stresses = ["All", "Critical", "High", "Elevated", "Moderate", "Stable"];
@@ -730,6 +827,44 @@ function CityGrid({ onCitySelect }) {
           <p style={{ fontSize: 16, color: "#666", maxWidth: 500, lineHeight: 1.6 }}>
             Every major Indian city, mapped by civic stress, urban typology, and the story it's telling right now.
           </p>
+          <button
+            onClick={() => setLegendOpen(o => !o)}
+            style={{
+              marginTop: 14, background: "none", border: "1.5px solid #e0ddd8",
+              color: "#888", fontSize: 12, fontWeight: 600, padding: "6px 16px",
+              borderRadius: 20, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6,
+            }}
+          >
+            {legendOpen ? "▲" : "▼"} What do these tags mean?
+          </button>
+          {legendOpen && (
+            <div style={{
+              marginTop: 16, background: "#fff", borderRadius: 14,
+              padding: "24px 28px", border: "1px solid #e8e5e0",
+              display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28,
+            }}>
+              {/* Stress levels */}
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#E8660D", letterSpacing: "0.1em", marginBottom: 14 }}>CIVIC STRESS LEVELS</div>
+                {Object.entries(STRESS).map(([level, s]) => (
+                  <div key={level} style={{ display: "flex", gap: 10, marginBottom: 10, alignItems: "flex-start" }}>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: s.color, background: s.bg, padding: "2px 8px", borderRadius: 8, flexShrink: 0, marginTop: 2 }}>{level}</span>
+                    <span style={{ fontSize: 12, color: "#666", lineHeight: 1.5 }}>{s.tagline}</span>
+                  </div>
+                ))}
+              </div>
+              {/* Urban typologies */}
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#E8660D", letterSpacing: "0.1em", marginBottom: 14 }}>URBAN TYPOLOGIES</div>
+                {Object.entries(TYPO_DESC).map(([type, desc]) => (
+                  <div key={type} style={{ display: "flex", gap: 10, marginBottom: 10, alignItems: "flex-start" }}>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: TYPO_C[type], background: TYPO_C[type] + "18", padding: "2px 8px", borderRadius: 8, flexShrink: 0, marginTop: 2, whiteSpace: "nowrap" }}>{type}</span>
+                    <span style={{ fontSize: 12, color: "#666", lineHeight: 1.5 }}>{desc}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Filters */}
@@ -763,7 +898,13 @@ function CityGrid({ onCitySelect }) {
 
         {/* Grid */}
         <div className="city-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
-          {filtered.map(c => <CityCard key={c.city} city={c} onSelect={onCitySelect} />)}
+          {filtered.map(c => (
+            <CityCard
+              key={c.city} city={c} onSelect={onCitySelect}
+              onCompare={onCompare}
+              inCompare={compareList?.some(x => x.city === c.city)}
+            />
+          ))}
         </div>
       </div>
     </section>
@@ -1023,6 +1164,7 @@ function CityPage({ city, onBack }) {
     { id: "health",    label: "🏙 City Health" },
     { id: "issues",    label: "⚡ Live Issues" },
     { id: "ecosystem", label: "🤝 Civic Ecosystem" },
+    ...(city.elections ? [{ id: "elections", label: "🗳️ Elections" }] : []),
     ...(wardData ? [{ id: "wards", label: "🗳 Wards & Corporators" }] : []),
   ];
 
@@ -1055,8 +1197,8 @@ function CityPage({ city, onBack }) {
         }}>← All Cities</button>
         <div style={{ position: "absolute", bottom: 32, left: 32, right: 32 }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: sc.color, background: "rgba(0,0,0,0.55)", padding: "4px 12px", borderRadius: 12, backdropFilter: "blur(4px)" }}>{city.stress} Stress</span>
-            <span style={{ fontSize: 11, fontWeight: 700, color: typoColor, background: "rgba(0,0,0,0.55)", padding: "4px 12px", borderRadius: 12, backdropFilter: "blur(4px)" }}>{city.urban_typology}</span>
+            <span title={`${city.stress} Stress — ${STRESS[city.stress]?.tagline}`} style={{ fontSize: 11, fontWeight: 700, color: sc.color, background: "rgba(0,0,0,0.55)", padding: "4px 12px", borderRadius: 12, backdropFilter: "blur(4px)", cursor: "help" }}>{city.stress} Stress</span>
+            <span title={TYPO_DESC[city.urban_typology]} style={{ fontSize: 11, fontWeight: 700, color: typoColor, background: "rgba(0,0,0,0.55)", padding: "4px 12px", borderRadius: 12, backdropFilter: "blur(4px)", cursor: "help" }}>{city.urban_typology}</span>
             <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", background: "rgba(0,0,0,0.55)", padding: "4px 12px", borderRadius: 12, backdropFilter: "blur(4px)" }}>{city.tier}</span>
           </div>
           <h1 style={{ fontSize: 48, fontFamily: "Georgia, serif", fontWeight: 800, color: "#fff", lineHeight: 1.1, letterSpacing: "-0.02em", marginBottom: 8 }}>
@@ -1108,6 +1250,11 @@ function CityPage({ city, onBack }) {
               </div>
             ))}
           </div>
+
+          {/* Data freshness note */}
+          <p style={{ fontSize: 11, color: "#bbb", marginBottom: 24, lineHeight: 1.6 }}>
+            Population & area: Census of India projections · Stress & typology: MyCityPulse editorial, last reviewed 2024 · Issues & organisations: last updated 2024.
+          </p>
 
           {/* Stress + Typology */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 64 }}>
@@ -1260,7 +1407,20 @@ function CityPage({ city, onBack }) {
       </div>
       )} {/* end ecosystem panel */}
 
-      {/* ── Panel 4: Wards & Corporators ── */}
+      {/* ── Panel 4: Elections ── */}
+      {activePanel === "elections" && city.elections && (
+      <div style={{ background: "#fff", padding: "52px 32px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#667eea", letterSpacing: "0.12em", marginBottom: 12 }}>PANEL 3 — ELECTIONS</div>
+          <h2 style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 40 }}>
+            Municipal Elections
+          </h2>
+          <ElectionsCard election={city.elections} cityName={city.city} />
+        </div>
+      </div>
+      )} {/* end elections panel */}
+
+      {/* ── Panel 5: Wards & Corporators ── */}
       {activePanel === "wards" && <WardsPanel city={city} />}
 
       {/* ── Closing CTA (shown on all panels) ── */}
@@ -1285,14 +1445,271 @@ function CityPage({ city, onBack }) {
   );
 }
 
+// ─── Compare Tray ─────────────────────────────────────────────────────────────
+function CompareTray({ cities, onCompare, onRemove, onClear }) {
+  if (cities.length === 0) return null;
+  return (
+    <div className="compare-tray">
+      <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.35)", letterSpacing: "0.1em", flexShrink: 0 }}>
+        COMPARING
+      </span>
+      <div style={{ display: "flex", gap: 8, flex: 1, flexWrap: "wrap", alignItems: "center" }}>
+        {cities.map(c => (
+          <div key={c.city} style={{
+            display: "flex", alignItems: "center", gap: 7,
+            background: "rgba(255,255,255,0.08)", borderRadius: 20,
+            padding: "5px 12px", fontSize: 13, color: "#fff",
+          }}>
+            <span style={{ fontWeight: 600 }}>{c.city}</span>
+            <button onClick={() => onRemove(c.city)} style={{
+              background: "none", border: "none", color: "rgba(255,255,255,0.4)",
+              cursor: "pointer", fontSize: 15, lineHeight: 1, padding: 0,
+            }}>×</button>
+          </div>
+        ))}
+        {cities.length < 3 && (
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", fontStyle: "italic" }}>
+            + pick up to {3 - cities.length} more
+          </span>
+        )}
+      </div>
+      <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+        <button onClick={onClear} style={{
+          background: "none", border: "1px solid rgba(255,255,255,0.15)",
+          color: "rgba(255,255,255,0.45)", padding: "7px 14px",
+          borderRadius: 20, fontSize: 12, cursor: "pointer",
+        }}>Clear</button>
+        {cities.length >= 2 && (
+          <button onClick={onCompare} style={{
+            background: "#E8660D", border: "none", color: "#fff",
+            padding: "7px 20px", borderRadius: 20, fontSize: 13,
+            fontWeight: 700, cursor: "pointer",
+          }}>Compare {cities.length} cities →</button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── City Compare Card (header in CompareView) ────────────────────────────────
+function CityCompareCard({ city, onRemove, onCitySelect }) {
+  const imgUrl = CITY_IMAGES[city.city];
+  const [imgErr, setImgErr] = useState(false);
+  return (
+    <div style={{ background: "#fff", borderRadius: 14, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.08)" }}>
+      <div style={{ height: 90, position: "relative", background: "#0D1117" }}>
+        {imgUrl && !imgErr && (
+          <img src={imgUrl} alt={city.city} onError={() => setImgErr(true)}
+            style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }} />
+        )}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.75))" }} />
+        <div style={{ position: "absolute", bottom: 8, left: 12 }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", lineHeight: 1.2 }}>{city.city}</div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)" }}>{city.state}</div>
+        </div>
+        <button onClick={() => onRemove(city.city)} style={{
+          position: "absolute", top: 6, right: 6,
+          background: "rgba(0,0,0,0.55)", border: "none", color: "#fff",
+          width: 20, height: 20, borderRadius: "50%", cursor: "pointer",
+          fontSize: 12, lineHeight: "20px", textAlign: "center",
+        }}>×</button>
+      </div>
+      <div style={{ padding: "10px 12px" }}>
+        <button onClick={() => onCitySelect(city)} style={{
+          background: "none", border: "1.5px solid #E8660D", color: "#E8660D",
+          fontSize: 11, fontWeight: 700, padding: "4px 0",
+          borderRadius: 14, cursor: "pointer", width: "100%",
+        }}>Full profile →</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Compare View ─────────────────────────────────────────────────────────────
+function CompareView({ cities, onBack, onCitySelect, onRemove, onAdd }) {
+  const [addQ, setAddQ] = useState("");
+  const [addResults, setAddResults] = useState([]);
+
+  useEffect(() => {
+    const results = addQ.length >= 2
+      ? searchCities(addQ).filter(c => !cities.find(x => x.city === c.city)).slice(0, 5)
+      : [];
+    setAddResults(results);
+  }, [addQ, cities]);
+
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
+  const metrics = [
+    { label: "National Rank",    val: c => `#${c.rank}`,                          cval: c => c.rank,         best: "lower"   },
+    { label: "Population",       val: c => fmt(c.population),                      cval: c => c.population,   best: "neutral" },
+    { label: "Area",             val: c => `${c.area.toLocaleString()} km²`,       cval: c => c.area,         best: "neutral" },
+    { label: "Density / km²",    val: c => c.density.toLocaleString(),             cval: c => c.density,      best: "neutral" },
+    { label: "Civic Stress",     val: c => c.stress,                               cval: c => STRESS[c.stress].bar, best: "lower", isStress: true },
+    { label: "Urban Typology",   val: c => c.urban_typology,                       best: "neutral" },
+    { label: "City Tier",        val: c => c.tier,                                 best: "neutral" },
+    { label: "State",            val: c => c.state,                                best: "neutral" },
+    { label: "Former Name",      val: c => c.formerName || "—",                    best: "neutral" },
+  ];
+
+  const cols = cities.length;
+
+  return (
+    <div style={{ background: "#FAF8F4", minHeight: "100vh", padding: "40px 32px 80px" }}>
+      <div style={{ maxWidth: 980, margin: "0 auto" }}>
+
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 32, flexWrap: "wrap", gap: 16 }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 8 }}>COMPARE CITIES</div>
+            <h1 style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 6 }}>
+              Side by side.
+            </h1>
+            <p style={{ fontSize: 14, color: "#999", lineHeight: 1.5 }}>
+              Select up to 3 cities. Highlighted values indicate the stronger result where comparable.
+            </p>
+          </div>
+          <button onClick={onBack} style={{
+            background: "#fff", border: "1.5px solid #e0ddd8", color: "#555",
+            padding: "9px 22px", borderRadius: 20, fontSize: 13, fontWeight: 600, cursor: "pointer",
+          }}>← Back to cities</button>
+        </div>
+
+        {/* City header cards */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: `repeat(${cols}, 1fr)${cols < 3 ? " 180px" : ""}`,
+          gap: 14, marginBottom: 24,
+        }}>
+          {cities.map(c => (
+            <CityCompareCard key={c.city} city={c} onRemove={onRemove} onCitySelect={onCitySelect} />
+          ))}
+
+          {/* Add city slot */}
+          {cols < 3 && (
+            <div style={{ position: "relative" }}>
+              <div style={{
+                border: "2px dashed #ddd", borderRadius: 14, minHeight: 130,
+                display: "flex", flexDirection: "column", alignItems: "center",
+                justifyContent: "center", gap: 10, padding: 16,
+              }}>
+                <div style={{ fontSize: 22, color: "#ccc" }}>+</div>
+                <input
+                  value={addQ} onChange={e => setAddQ(e.target.value)}
+                  placeholder="Add city..."
+                  style={{
+                    width: "100%", padding: "7px 12px", border: "1.5px solid #e0ddd8",
+                    borderRadius: 20, fontSize: 12, outline: "none", background: "#fff", textAlign: "center",
+                  }}
+                />
+              </div>
+              {addResults.length > 0 && (
+                <div style={{
+                  position: "absolute", top: "100%", left: 0, right: 0, zIndex: 50, marginTop: 4,
+                  background: "#fff", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                  border: "1px solid #e8e5e0", overflow: "hidden",
+                }}>
+                  {addResults.map(c => (
+                    <button key={c.city} onClick={() => { onAdd(c); setAddQ(""); setAddResults([]); }}
+                      style={{
+                        display: "block", width: "100%", padding: "9px 14px",
+                        background: "none", border: "none", textAlign: "left",
+                        fontSize: 13, cursor: "pointer", borderBottom: "1px solid #f0ede8",
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = "#faf8f4"}
+                      onMouseLeave={e => e.currentTarget.style.background = "none"}
+                    >
+                      <span style={{ fontWeight: 600, color: "#1a1a1a" }}>{c.city}</span>
+                      <span style={{ color: "#aaa", marginLeft: 8, fontSize: 11 }}>{c.state}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Metrics comparison table */}
+        <div style={{ background: "#fff", borderRadius: 14, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.06)" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <colgroup>
+              <col style={{ width: "22%" }} />
+              {cities.map(c => <col key={c.city} style={{ width: `${78 / cols}%` }} />)}
+            </colgroup>
+            <thead>
+              <tr style={{ background: "#FAF8F4", borderBottom: "2px solid #f0ede8" }}>
+                <th style={{ padding: "12px 20px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "#bbb", letterSpacing: "0.08em" }}>METRIC</th>
+                {cities.map(c => (
+                  <th key={c.city} style={{ padding: "12px 20px", textAlign: "left", fontSize: 13, fontWeight: 800, color: "#1a1a1a", borderLeft: "1px solid #f0ede8" }}>
+                    {c.city}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {metrics.map(m => {
+                let bestCity = null;
+                if (m.cval && m.best !== "neutral" && cities.length > 1) {
+                  const vals = cities.map(c => ({ city: c.city, v: m.cval(c) }));
+                  bestCity = m.best === "lower"
+                    ? vals.reduce((a, b) => a.v <= b.v ? a : b).city
+                    : vals.reduce((a, b) => a.v >= b.v ? a : b).city;
+                }
+                return (
+                  <tr key={m.label} style={{ borderBottom: "1px solid #f5f3ef" }}>
+                    <td style={{
+                      padding: "13px 20px", fontSize: 11, fontWeight: 700,
+                      color: "#bbb", textTransform: "uppercase", letterSpacing: "0.06em",
+                      background: "#FAFAF8",
+                    }}>{m.label}</td>
+                    {cities.map(c => {
+                      const sc = STRESS[c.stress];
+                      const isBest = bestCity === c.city;
+                      return (
+                        <td key={c.city} style={{
+                          padding: "13px 20px", fontSize: 14,
+                          background: isBest ? "#fff9f6" : "#fff",
+                          borderLeft: "1px solid #f5f3ef",
+                        }}>
+                          {m.isStress ? (
+                            <span style={{
+                              fontSize: 12, fontWeight: 800, color: sc.color,
+                              background: sc.bg, padding: "3px 10px", borderRadius: 8,
+                              display: "inline-block",
+                            }}>{c.stress}</span>
+                          ) : (
+                            <span style={{ fontWeight: isBest ? 800 : 400, color: isBest ? "#E8660D" : "#444" }}>
+                              {m.val(c)}
+                            </span>
+                          )}
+                          {isBest && !m.isStress && (
+                            <span style={{ fontSize: 9, color: "#E8660D", marginLeft: 6, fontWeight: 700, verticalAlign: "middle" }}>▲</span>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <p style={{ fontSize: 11, color: "#ccc", marginTop: 14, lineHeight: 1.6 }}>
+          ▲ marks the stronger value where comparison is meaningful (lower rank number = higher rank; lower stress = healthier city). Population, area and density are shown without judgment.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ─── Home Page ────────────────────────────────────────────────────────────────
-function HomePage({ onCitySelect }) {
+function HomePage({ onCitySelect, onCompare, compareList }) {
   return (
     <>
       <Hero onCitySelect={onCitySelect} />
       <StatsBanner />
       <NationalPulse onCitySelect={onCitySelect} />
-      <CityGrid onCitySelect={onCitySelect} />
+      <CityGrid onCitySelect={onCitySelect} onCompare={onCompare} compareList={compareList} />
       <JoinCTA />
       <Footer />
     </>
@@ -1302,20 +1719,73 @@ function HomePage({ onCitySelect }) {
 // ─── App ──────────────────────────────────────────────────────────────────────
 export default function App() {
   const [selectedCity, setSelectedCity] = useState(null);
+  const [compareList, setCompareList]   = useState([]);
+  const [compareMode, setCompareMode]   = useState(false);
 
-  const handleCitySelect = (city) => { setSelectedCity(city); };
+  const handleCitySelect = (city) => {
+    setSelectedCity(city);
+    setCompareMode(false);
+    window.scrollTo(0, 0);
+  };
   const handleBack = () => { setSelectedCity(null); };
+
+  const handleCompareToggle = (city) => {
+    setCompareList(prev =>
+      prev.find(c => c.city === city.city)
+        ? prev.filter(c => c.city !== city.city)
+        : prev.length < 3 ? [...prev, city] : prev
+    );
+  };
+
+  const handleOpenCompare = () => {
+    setCompareMode(true);
+    setSelectedCity(null);
+    window.scrollTo(0, 0);
+  };
+
+  const handleCloseCompare = () => { setCompareMode(false); };
+
+  const handleRemoveFromCompare = (cityName) => {
+    setCompareList(prev => prev.filter(c => c.city !== cityName));
+  };
+
+  const handleAddToCompare = (city) => {
+    setCompareList(prev => prev.length < 3 ? [...prev, city] : prev);
+  };
 
   return (
     <>
       <GlobalStyles />
-      <Nav onLogoClick={handleBack} onSearch={handleCitySelect} />
+      <Nav
+        onLogoClick={() => { handleBack(); setCompareMode(false); }}
+        onSearch={handleCitySelect}
+      />
       <div style={{ paddingTop: 58 }}>
-        {selectedCity
-          ? <CityPage city={selectedCity} onBack={handleBack} />
-          : <HomePage onCitySelect={handleCitySelect} />
+        {compareMode
+          ? <CompareView
+              cities={compareList}
+              onBack={handleCloseCompare}
+              onCitySelect={handleCitySelect}
+              onRemove={handleRemoveFromCompare}
+              onAdd={handleAddToCompare}
+            />
+          : selectedCity
+            ? <CityPage city={selectedCity} onBack={handleBack} />
+            : <HomePage
+                onCitySelect={handleCitySelect}
+                onCompare={handleCompareToggle}
+                compareList={compareList}
+              />
         }
       </div>
+      {!compareMode && !selectedCity && (
+        <CompareTray
+          cities={compareList}
+          onCompare={handleOpenCompare}
+          onRemove={handleRemoveFromCompare}
+          onClear={() => setCompareList([])}
+        />
+      )}
     </>
   );
 }
