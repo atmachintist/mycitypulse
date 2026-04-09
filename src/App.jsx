@@ -1,10 +1,20 @@
-import { useState, useEffect, useRef } from "react";
-import { CITY_ISSUES, CIVIC_ORGS, CITIES_WITH_DATA, WARD_CORPORATORS } from "./cityData.js";
-import ElectionsCard from "./components/ElectionsCard";
+﻿import { useState, useEffect, useRef } from "react";
+import { CITY_ISSUES, CIVIC_ORGS, WARD_CORPORATORS } from "./cityData.js";
+import {
+  CITY_IMAGES,
+  STRESS,
+  TYPO_C,
+  TYPO_LABEL,
+  TYPO_PUBLIC_DESC,
+  fmt,
+} from "./domain/cities/presentation.js";
+import CityPage from "./features/city/CityPage.jsx";
+import CompareView, { CompareTray } from "./features/compare/CompareView.jsx";
+import useCitySearch from "./shared/hooks/useCitySearch.js";
 
-// ─── City Data ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ City Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const cities = [
-  { rank:1,  city:"Delhi",                    state:"Delhi",           population:33807000, area:1484,  density:22781, tier:"Mega Metro",  density_descriptor:"Very Dense",       urban_typology:"Gravity City",           one_liner:"The republic's beating heart — every road, policy, and ambition seems to lead here.",                              stress:"Critical", stress_reason:"Extreme density, severe waste processing gap, governance fragmentation",                  formerName:null,          aliases:["New Delhi","NCT"] },
+  { rank:1,  city:"Delhi",                    state:"Delhi",           population:33807000, area:1484,  density:22781, tier:"Mega Metro",  density_descriptor:"Very Dense",       urban_typology:"Gravity City",           one_liner:"The republic's beating heart â€” every road, policy, and ambition seems to lead here.",                              stress:"Critical", stress_reason:"Extreme density, severe waste processing gap, governance fragmentation",                  formerName:null,          aliases:["New Delhi","NCT"] },
   { rank:2,  city:"Mumbai",                   state:"Maharashtra",     population:21297000, area:603.4, density:35295, tier:"Mega Metro",  density_descriptor:"Extremely Dense",  urban_typology:"Gravity City",           one_liner:"An island city that ran out of land but never stopped growing.",                                                    stress:"Critical", stress_reason:"Extreme density, legacy dumpsites, coastal vulnerability",                                 formerName:"Bombay",      aliases:["Bombay"] },
   { rank:3,  city:"Kolkata",                  state:"West Bengal",     population:15134000, area:205,   density:73824, tier:"Mega Metro",  density_descriptor:"Extremely Dense",  urban_typology:"Gravity City",           one_liner:"Once the capital of British India, carrying the weight of empire, partition, and reinvention.",                       stress:"Critical", stress_reason:"World's highest density major city, ageing infrastructure, drainage stress",             formerName:"Calcutta",    aliases:["Calcutta"] },
   { rank:4,  city:"Bengaluru",                state:"Karnataka",       population:14678000, area:741,   density:19808, tier:"Mega Metro",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"A cantonment town that became a global tech capital in one generation.",                                              stress:"High",     stress_reason:"Rapid growth outpacing infrastructure, water scarcity, traffic gridlock",                  formerName:"Bangalore",   aliases:["Bangalore"] },
@@ -22,12 +32,12 @@ const cities = [
       wards_verified: 21,
       seats_total: 192,
       timeline: [
-        { date: "2026-04-06", label: "Nomination opens", icon: "📝" },
-        { date: "2026-04-11", label: "Nomination closes", icon: "🔒", urgent: true },
-        { date: "2026-04-13", label: "Scrutiny", icon: "✓" },
-        { date: "2026-04-15", label: "Candidates finalized", icon: "📋" },
-        { date: "2026-04-26", label: "Election day", icon: "🗳️" },
-        { date: "2026-04-28", label: "Results announced", icon: "📊" }
+        { date: "2026-04-06", label: "Nomination opens", icon: "ðŸ“" },
+        { date: "2026-04-11", label: "Nomination closes", icon: "ðŸ”’", urgent: true },
+        { date: "2026-04-13", label: "Scrutiny", icon: "âœ“" },
+        { date: "2026-04-15", label: "Candidates finalized", icon: "ðŸ“‹" },
+        { date: "2026-04-26", label: "Election day", icon: "ðŸ—³ï¸" },
+        { date: "2026-04-28", label: "Results announced", icon: "ðŸ“Š" }
       ],
       verified_wards: [
         { number: 1, name: "Gota" },
@@ -122,7 +132,7 @@ const cities = [
   { rank:48, city:"Dhanbad",                  state:"Jharkhand",       population:1196000,  area:70,    density:17086, tier:"Large City",  density_descriptor:"Very Dense",       urban_typology:"Blueprint City",         one_liner:"India's coal capital.",                                                                                            stress:"High",     stress_reason:"Mining subsidence, high density, coal dust, water contamination",                  formerName:null,          aliases:["Coal Capital"] },
   { rank:49, city:"Chandigarh",               state:"Chandigarh",      population:1158000,  area:114,   density:10158, tier:"Large City",  density_descriptor:"Moderately Dense", urban_typology:"Blueprint City",         one_liner:"Le Corbusier's gift to a newly independent India.",                                                               stress:"Stable",   stress_reason:"Planned city, strong green cover, good services; satellite town pressure growing",  formerName:null,          aliases:["City Beautiful"] },
   { rank:50, city:"Gwalior",                  state:"Madhya Pradesh",  population:1153000,  area:289,   density:3990,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Ancient Pulse",          one_liner:"A fort city that controlled the heart of the subcontinent for centuries.",                                          stress:"Moderate", stress_reason:"Low density, moderate services; water scarcity and air quality concerns",          formerName:null,          aliases:[] },
-  { rank:51, city:"Mira Bhayandar",           state:"Maharashtra",     population:907000,   area:79.4,  density:11425, tier:"Large City",  density_descriptor:"Moderately Dense", urban_typology:"Overnight City",         one_liner:"Mumbai's northern edge — where affordable housing met the sea.",                                                    stress:"High",     stress_reason:"Explosive growth without matching infrastructure, water supply dependence, connectivity gaps", formerName:null, aliases:["Mira Road","Bhayandar"] },
+  { rank:51, city:"Mira Bhayandar",           state:"Maharashtra",     population:907000,   area:79.4,  density:11425, tier:"Large City",  density_descriptor:"Moderately Dense", urban_typology:"Overnight City",         one_liner:"Mumbai's northern edge â€” where affordable housing met the sea.",                                                    stress:"High",     stress_reason:"Explosive growth without matching infrastructure, water supply dependence, connectivity gaps", formerName:null, aliases:["Mira Road","Bhayandar"] },
 ];
 
 const DATASET_SCOPE = {
@@ -134,179 +144,42 @@ const DATASET_SCOPE = {
   electionTrackerCount: cities.filter((city) => city.elections).length,
 };
 
-const STRESS = {
-  "Critical": { color:"#e63946", bg:"#fff0f0", bar:5, tagline:"Immediate civic attention needed" },
-  "High":     { color:"#f4a261", bg:"#fff7ee", bar:4, tagline:"Significant stress across services" },
-  "Elevated": { color:"#e9c46a", bg:"#fffbee", bar:3, tagline:"Notable pressure, watch closely" },
-  "Moderate": { color:"#2dc653", bg:"#f0fff4", bar:2, tagline:"Manageable with sustained effort" },
-  "Stable":   { color:"#0096c7", bg:"#f0f8ff", bar:1, tagline:"Relatively well-functioning" },
-};
 
-const TYPO_C = {
-  "Gravity City":"#e63946","Overnight City":"#f4a261","Ancient Pulse":"#9b5de5",
-  "Blueprint City":"#0096c7","Sleeping Giant":"#2dc653","Border Effect City":"#00b4d8",
-  "Managed Growth City":"#d4ac0d","Compact Agglomeration":"#ff6b6b",
-};
+// Special:FilePath lets Wikimedia resolve the correct hash automatically â€” far more reliable than hardcoding thumb paths.
 
-const TYPO_LABEL = {
-  "Gravity City": "Anchor City",
-  "Overnight City": "Rapid-Growth City",
-  "Ancient Pulse": "Historic City",
-  "Blueprint City": "Planned City",
-  "Sleeping Giant": "Underinvested City",
-  "Border Effect City": "Border City",
-  "Managed Growth City": "Managed-Growth City",
-  "Compact Agglomeration": "Dense Satellite City",
-};
-
-const TYPO_DESC = {
-  "Gravity City":          "Pulls everything toward it — people, capital, decisions. The dominant force in its region.",
-  "Overnight City":        "Transformed beyond recognition in a generation, usually on the back of a tech or industrial boom. Infrastructure is forever catching up.",
-  "Ancient Pulse":         "Older than most nations. Its civic DNA is shaped by thousands of years of habitation. History isn't just past here — it's infrastructure.",
-  "Blueprint City":        "Conceived by a planner before it was inhabited. Order is built in, but organic life has to be earned.",
-  "Sleeping Giant":        "Has every ingredient for prominence — size, history, location — but has been overlooked or underinvested. Watching its next chapter.",
-  "Border Effect City":    "Shaped by what lies across the border — whether a state, a nation, or a military line. Geopolitics lives in its economy.",
-  "Managed Growth City":   "Found a way to grow without collapsing under its own weight. Often cited as a model, which brings its own pressure.",
-  "Compact Agglomeration": "An extremely dense urban pocket, often absorbed into a larger metro. Extraordinary density in a small footprint.",
-};
-
-// Special:FilePath lets Wikimedia resolve the correct hash automatically — far more reliable than hardcoding thumb paths.
-const TYPO_PUBLIC_DESC = {
-  "Gravity City": "A city that pulls jobs, capital, institutions, and migration from a wide surrounding region.",
-  "Overnight City": "Expanded quickly in one or two generations, often on the back of industry, real estate, or tech. Infrastructure is still catching up.",
-  "Ancient Pulse": "A long-settled urban center where older street patterns, institutions, and heritage continue to shape daily life.",
-  "Blueprint City": "Large parts of the city were laid out deliberately by planners, public agencies, or industrial builders before full growth arrived.",
-  "Sleeping Giant": "A large city with strategic importance, but weaker investment, governance, or economic pull than its size suggests.",
-  "Border Effect City": "Its economy and governance are shaped by a state border, national border, cantonment, or similar frontier condition.",
-  "Managed Growth City": "Growing quickly, but has so far absorbed expansion more effectively than many peer cities.",
-  "Compact Agglomeration": "A very dense city tied closely to a larger metro, often carrying spillover population and infrastructure pressure.",
-};
-
-const W = (f) => `https://commons.wikimedia.org/wiki/Special:FilePath/${f}`;
-const CITY_IMAGES = {
-  "Delhi":                    W("India_Gate-Delhi_India11.JPG"),
-  "Mumbai":                   W("Mumbai_03-2016_30_Gateway_of_India.jpg"),
-  "Kolkata":                  W("Howrah_bridge_at_night.jpg"),
-  "Bengaluru":                W("Vidhana_Soudha_Bangalore.jpg"),
-  "Chennai":                  W("Marina_Beach,_Chennai_101.JPG"),
-  "Hyderabad":                W("Charminar_Hyderabad.jpg"),
-  "Ahmedabad":                W("Adalaj_step_well.jpg"),
-  "Surat":                    W("Surat_Castle.jpg"),
-  "Pune":                     W("Shaniwarwada_gate.JPG"),
-  "Jaipur":                   W("Hawa_Mahal,_Jaipur,_Rajasthan.JPG"),
-  "Lucknow":                  W("Bara_Imambara.jpg"),
-  "Indore":                   W("Rajwada_Indore.jpg"),
-  "Kanpur":                   W("IIT_Kanpur_Main_Building.jpg"),
-  "Nagpur":                   W("Deekshabhoomi,_Nagpur.jpg"),
-  "Patna":                    W("Golghar_Patna.jpg"),
-  "Thane":                    W("Upvan_Lake_Thane.jpg"),
-  "Bhopal":                   W("Upper_Lake,_Bhopal.jpg"),
-  "Ghaziabad":                W("Hindon_River_Ghaziabad.jpg"),
-  "Visakhapatnam":            W("Rushikonda_beach.jpg"),
-  "Vadodara":                 W("Laxmi_Vilas_Palace_(Maratha_Palace),_Vadodara.JPG"),
-  "Pimpri-Chinchwad":         W("Pimpri-Chinchwad.jpg"),
-  "Nashik":                   W("Trimbakeshwar_temple.jpg"),
-  "Faridabad":                W("Suraj_Kund_Festival.JPG"),
-  "Ludhiana":                 W("Ludhiana_city.jpg"),
-  "Agra":                     W("Taj_Mahal_(Edited).jpeg"),
-  "Rajkot":                   W("Rajkot_night_view.jpg"),
-  "Varanasi":                 W("Varanasi_ghats.jpg"),
-  "Kalyan-Dombivli":          W("Kalyan_fort.jpg"),
-  "Coimbatore":               W("Marudhamalai_temple.jpg"),
-  "Meerut":                   W("Meerut.jpg"),
-  "Vasai-Virar":              W("Entrance_arched_door_to_Bassein_Fort.JPG"),
-  "Madurai":                  W("Meenakshi_Amman_Temple,_Madurai.JPG"),
-  "Prayagraj":                W("Triveni_Sangam.JPG"),
-  "Gurugram":                 W("DLF_CyberCity_Gurgaon.jpg"),
-  "Navi Mumbai":              W("Vashi_Navi_Mumbai.jpg"),
-  "Chhatrapati Sambhajinagar":W("Bibi_ka_Maqbara.jpg"),
-  "Howrah":                   W("Howrah_Bridge.jpg"),
-  "Vijayawada":               W("Kanka_Durga_Temple.JPG"),
-  "Srinagar":                 W("Dal_Lake,_Srinagar.jpg"),
-  "Jamshedpur":               W("Jubilee_Park_Jamshedpur.jpg"),
-  "Ranchi":                   W("Hundru_Falls,_Ranchi.jpg"),
-  "Amritsar":                 W("Golden_Temple-Amritsar.JPG"),
-  "Guwahati":                 W("Kamakhya_Temple.jpg"),
-  "Jabalpur":                 W("Dhuandhar_falls.jpg"),
-  "Raipur":                   W("Purkhouti_Muktangan.jpg"),
-  "Asansol":                  W("Maithon_Dam.jpg"),
-  "Secunderabad":             W("Secunderabad_railway_station.jpg"),
-  "Dhanbad":                  W("Topchanchi_lake.jpg"),
-  "Chandigarh":               W("Rock_Garden_of_Chandigarh.jpg"),
-  "Gwalior":                  W("Gwalior_Fort.jpg"),
-  "Mira Bhayandar":           W("Mira_Road_skyline.jpg"),
-};
-
-// ─── Curated conversation starters ───────────────────────────────────────────
+// â”€â”€â”€ Curated conversation starters â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const PULSE_THREADS = [
   {
-    tag: "💧 Water",
+    tag: "ðŸ’§ Water",
     tagColor: "#0096c7",
     headline: "7 cities are approaching Day Zero. Is yours next?",
     body: "Bengaluru nearly ran out of groundwater in 2023. Chennai has seen it before. Jaipur, Agra, and Varanasi are watching the same warning signs.",
     cities: ["Bengaluru", "Chennai", "Jaipur", "Agra", "Varanasi"],
   },
   {
-    tag: "🏆 Governance",
+    tag: "ðŸ† Governance",
     tagColor: "#2dc653",
     headline: "How Indore stayed India's cleanest city for 7 years straight.",
-    body: "It wasn't luck. Indore's Swachh Survekshan story is a masterclass in municipal consistency — and what every other city refuses to copy.",
+    body: "It wasn't luck. Indore's Swachh Survekshan story is a masterclass in municipal consistency â€” and what every other city refuses to copy.",
     cities: ["Indore"],
   },
   {
-    tag: "🚦 Traffic",
+    tag: "ðŸš¦ Traffic",
     tagColor: "#f4a261",
     headline: "Bengaluru's traffic isn't a problem. It's a policy choice.",
     body: "Bengaluru added 1,000 new vehicles per day in 2023. The city's road network has grown 10x slower. Someone decided this was acceptable.",
     cities: ["Bengaluru", "Delhi", "Mumbai"],
   },
   {
-    tag: "⚡ Density",
+    tag: "âš¡ Density",
     tagColor: "#e63946",
     headline: "48,000 people per square kilometre. Life inside Secunderabad.",
-    body: "Kolkata, Howrah, Secunderabad — India's most compressed cities aren't collapsing. But they're holding on by a thread.",
+    body: "Kolkata, Howrah, Secunderabad â€” India's most compressed cities aren't collapsing. But they're holding on by a thread.",
     cities: ["Secunderabad", "Kolkata", "Howrah"],
   },
 ];
 
-// ─── Utilities ────────────────────────────────────────────────────────────────
-function levenshtein(a, b) {
-  const m = a.length, n = b.length;
-  const dp = Array.from({ length: m + 1 }, (_, i) => Array.from({ length: n + 1 }, (_, j) => i === 0 ? j : j === 0 ? i : 0));
-  for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++)
-    dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
-  return dp[m][n];
-}
-
-function scoreMatch(c, q) {
-  if (!q) return Infinity;
-  const ql = q.toLowerCase().trim();
-  const targets = [c.city.toLowerCase(), c.state.toLowerCase(), c.formerName?.toLowerCase(), ...c.aliases.map(a => a.toLowerCase())].filter(Boolean);
-  if (targets.some(t => t.includes(ql))) return 0;
-  if (ql.length < 4) return Infinity;
-  let best = Infinity;
-  for (const t of targets) {
-    const d = levenshtein(ql, t.slice(0, ql.length + 2));
-    if (d <= 2) best = Math.min(best, d);
-    for (const word of t.split(/[\s-]/)) {
-      if (word.length >= 4) { const wd = levenshtein(ql, word.slice(0, ql.length + 2)); if (wd <= 2) best = Math.min(best, wd); }
-    }
-  }
-  return best;
-}
-
-function searchCities(q) {
-  if (!q || q.trim().length < 1) return [];
-  return cities.map(c => ({ city: c, score: scoreMatch(c, q) })).filter(x => x.score < Infinity).sort((a, b) => a.score - b.score).map(x => x.city).slice(0, 6);
-}
-
-function fmt(n) {
-  if (n >= 10000000) return (n / 10000000).toFixed(1) + " crore";
-  if (n >= 100000) return (n / 100000).toFixed(1) + " lakh";
-  return n.toLocaleString();
-}
-
-// ─── Global Styles ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Global Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const GlobalStyles = () => (
   <style>{`
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -372,7 +245,7 @@ const GlobalStyles = () => (
       box-shadow: 0 6px 20px rgba(0,0,0,0.1);
     }
 
-    /* ── Panel navigation tabs (CityPage) ── */
+    /* â”€â”€ Panel navigation tabs (CityPage) â”€â”€ */
     .panel-nav {
       position: sticky;
       top: 58px;
@@ -408,7 +281,7 @@ const GlobalStyles = () => (
     .panel-tab:hover { color: #333; }
     .panel-tab.active { color: #E8660D; border-bottom-color: #E8660D; }
 
-    /* ── Ward table ── */
+    /* â”€â”€ Ward table â”€â”€ */
     .ward-table { width: 100%; border-collapse: collapse; }
     .ward-table th {
       text-align: left; padding: 10px 14px;
@@ -432,7 +305,7 @@ const GlobalStyles = () => (
       letter-spacing: 0.04em; color: #fff;
     }
 
-    /* ── Compare button on city cards ── */
+    /* â”€â”€ Compare button on city cards â”€â”€ */
     .compare-btn {
       position: absolute;
       bottom: 12px; right: 12px;
@@ -452,7 +325,7 @@ const GlobalStyles = () => (
       color: #E8660D;
     }
 
-    /* ── Compare tray (sticky bottom) ── */
+    /* â”€â”€ Compare tray (sticky bottom) â”€â”€ */
     @keyframes slideUp {
       from { transform: translateY(100%); }
       to   { transform: translateY(0); }
@@ -485,64 +358,29 @@ const GlobalStyles = () => (
   `}</style>
 );
 
-// ─── Nav ──────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Nav â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function Nav({ onLogoClick, onSearch }) {
   const [q, setQ] = useState("");
-  const [results, setResults] = useState([]);
-  const [activeIndex, setActiveIndex] = useState(-1);
   const ref = useRef(null);
-
-  useEffect(() => {
-    setResults(q.length >= 2 ? searchCities(q) : []);
-  }, [q]);
-
-  useEffect(() => {
-    setActiveIndex(results.length > 0 ? 0 : -1);
-  }, [results]);
+  const { activeIndex, handleKeyDown, resetSearch, results, setActiveIndex } = useCitySearch({
+    cities,
+    query: q,
+  });
 
   useEffect(() => {
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) {
-        setResults([]);
-        setActiveIndex(-1);
+        resetSearch();
       }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  }, [resetSearch]);
 
   const selectCity = (city) => {
     onSearch(city);
     setQ("");
-    setResults([]);
-    setActiveIndex(-1);
-  };
-
-  const handleKeyDown = (e) => {
-    if (!results.length) return;
-
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setActiveIndex((index) => (index + 1) % results.length);
-      return;
-    }
-
-    if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setActiveIndex((index) => (index <= 0 ? results.length - 1 : index - 1));
-      return;
-    }
-
-    if (e.key === "Enter") {
-      e.preventDefault();
-      selectCity(results[activeIndex] || results[0]);
-      return;
-    }
-
-    if (e.key === "Escape") {
-      setResults([]);
-      setActiveIndex(-1);
-    }
+    resetSearch();
   };
 
   return (
@@ -566,7 +404,7 @@ function Nav({ onLogoClick, onSearch }) {
         <input
           value={q}
           onChange={e => setQ(e.target.value)}
-          onKeyDown={handleKeyDown}
+          onKeyDown={(e) => handleKeyDown(e, selectCity)}
 	  aria-label="Search cities from navigation"
           placeholder="Search any city..."
           style={{
@@ -610,65 +448,30 @@ function Nav({ onLogoClick, onSearch }) {
   );
 }
 
-// ─── Hero ─────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Hero â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function Hero({ onCitySelect }) {
   const [q, setQ] = useState("");
-  const [results, setResults] = useState([]);
-  const [activeIndex, setActiveIndex] = useState(-1);
   const ref = useRef(null);
-
-  useEffect(() => {
-    setResults(q.length >= 2 ? searchCities(q) : []);
-  }, [q]);
-
-  useEffect(() => {
-    setActiveIndex(results.length > 0 ? 0 : -1);
-  }, [results]);
+  const { activeIndex, handleKeyDown, resetSearch, results, setActiveIndex } = useCitySearch({
+    cities,
+    query: q,
+  });
 
   useEffect(() => {
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) {
-        setResults([]);
-        setActiveIndex(-1);
+        resetSearch();
       }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  }, [resetSearch]);
 
   const quickCities = ["Delhi", "Mumbai", "Bengaluru", "Hyderabad", "Pune", "Chennai"];
   const selectCity = (city) => {
     onCitySelect(city);
     setQ("");
-    setResults([]);
-    setActiveIndex(-1);
-  };
-
-  const handleKeyDown = (e) => {
-    if (!results.length) return;
-
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setActiveIndex((index) => (index + 1) % results.length);
-      return;
-    }
-
-    if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setActiveIndex((index) => (index <= 0 ? results.length - 1 : index - 1));
-      return;
-    }
-
-    if (e.key === "Enter") {
-      e.preventDefault();
-      selectCity(results[activeIndex] || results[0]);
-      return;
-    }
-
-    if (e.key === "Escape") {
-      setResults([]);
-      setActiveIndex(-1);
-    }
+    resetSearch();
   };
 
   return (
@@ -720,7 +523,7 @@ function Hero({ onCitySelect }) {
             <input
               value={q}
               onChange={e => setQ(e.target.value)}
-              onKeyDown={handleKeyDown}
+              onKeyDown={(e) => handleKeyDown(e, selectCity)}
 	      aria-label="Search cities"
               placeholder="Search your city..."
               style={{
@@ -737,7 +540,7 @@ function Hero({ onCitySelect }) {
               background: "#E8660D", borderRadius: 28, padding: "8px 16px",
               color: "#fff", fontSize: 13, fontWeight: 700,
             }}>
-              Explore →
+              Explore â†’
             </div>
           </div>
 
@@ -793,13 +596,13 @@ function Hero({ onCitySelect }) {
 
       {/* Scroll cue */}
       <div style={{ position: "absolute", bottom: 32, left: "50%", transform: "translateX(-50%)", color: "rgba(255,255,255,0.25)", fontSize: 12, letterSpacing: "0.12em" }}>
-        SCROLL TO EXPLORE ↓
+        SCROLL TO EXPLORE â†“
       </div>
     </section>
   );
 }
 
-// ─── Stats Banner ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Stats Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function StatsBanner() {
   const criticalCount = cities.filter(c => c.stress === "Critical").length;
   const stats = [
@@ -829,7 +632,7 @@ function StatsBanner() {
   );
 }
 
-// ─── City Card ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ City Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function TrustSection() {
   const cards = [
     {
@@ -915,7 +718,7 @@ function CityCard({ city, onSelect, onCompare, inCompare }) {
         }} />
       )}
 
-      {/* Dark gradient overlay — bottom-heavy for legibility */}
+      {/* Dark gradient overlay â€” bottom-heavy for legibility */}
       <div style={{
         position: "absolute", inset: 0,
         background: "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.45) 50%, rgba(0,0,0,0.18) 100%)",
@@ -944,7 +747,7 @@ function CityCard({ city, onSelect, onCompare, inCompare }) {
       {/* Top-right: stress badge */}
       <div style={{ position: "absolute", top: 12, right: 12 }}>
         <span
-          title={`${city.stress} Stress — ${STRESS[city.stress]?.tagline}`}
+          title={`${city.stress} Stress â€” ${STRESS[city.stress]?.tagline}`}
           style={{
             fontSize: 10, fontWeight: 700, color: sc.color,
             background: "rgba(0,0,0,0.6)", backdropFilter: "blur(6px)",
@@ -962,7 +765,7 @@ function CityCard({ city, onSelect, onCompare, inCompare }) {
           {city.city}
         </div>
         <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 2, marginBottom: 8 }}>
-          {city.state} · {fmt(city.population)} people
+          {city.state} Â· {fmt(city.population)} people
         </div>
         <p style={{
           fontSize: 12, color: "rgba(255,255,255,0.82)", fontFamily: "Georgia, serif",
@@ -980,14 +783,14 @@ function CityCard({ city, onSelect, onCompare, inCompare }) {
           onClick={e => { e.stopPropagation(); onCompare(city); }}
           title={inCompare ? "Remove from comparison" : "Add to comparison"}
         >
-          {inCompare ? "✓ Comparing" : "+ Compare"}
+          {inCompare ? "âœ“ Comparing" : "+ Compare"}
         </button>
       )}
     </div>
   );
 }
 
-// ─── City Grid ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ City Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function CityGrid({ onCitySelect, onCompare, compareList }) {
   const [tierFilter, setTierFilter] = useState("All");
   const [stressFilter, setStressFilter] = useState("All");
@@ -1035,7 +838,7 @@ function CityGrid({ onCitySelect, onCompare, compareList }) {
               borderRadius: 20, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6,
             }}
           >
-            {legendOpen ? "▲" : "▼"} What do these tags mean?
+            {legendOpen ? "â–²" : "â–¼"} What do these tags mean?
           </button>
           {legendOpen && (
             <div style={{
@@ -1111,7 +914,7 @@ function CityGrid({ onCitySelect, onCompare, compareList }) {
   );
 }
 
-// ─── National Pulse ───────────────────────────────────────────────────────────
+// â”€â”€â”€ National Pulse â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function NationalPulse({ onCitySelect }) {
   return (
     <section id="pulse" style={{ padding: "72px 32px", background: "#fff" }}>
@@ -1162,7 +965,7 @@ function NationalPulse({ onCitySelect }) {
   );
 }
 
-// ─── Join CTA ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Join CTA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function JoinCTA() {
   const [email, setEmail] = useState("");
   const [done, setDone] = useState(false);
@@ -1180,7 +983,7 @@ function JoinCTA() {
 
         {done ? (
           <div style={{ color: "#2dc653", fontSize: 16, fontFamily: "Georgia, serif", fontStyle: "italic" }}>
-            ✓ You're in. We'll be in touch.
+            âœ“ You're in. We'll be in touch.
           </div>
         ) : (
           <div style={{ display: "flex", gap: 8, maxWidth: 440, margin: "0 auto", flexWrap: "wrap" }}>
@@ -1201,7 +1004,7 @@ function JoinCTA() {
                 cursor: "pointer", letterSpacing: "0.04em", whiteSpace: "nowrap",
               }}
             >
-              Join →
+              Join â†’
             </button>
           </div>
         )}
@@ -1214,749 +1017,21 @@ function JoinCTA() {
   );
 }
 
-// ─── Footer ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function Footer() {
   const year = new Date().getFullYear();
   return (
     <footer style={{ background: "#080b0f", padding: "28px 32px", textAlign: "center" }}>
       <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 12, letterSpacing: "0.06em" }}>
-        © {year} MyCityPulse · <span style={{ color: "rgba(255,255,255,0.15)" }}>mycitypulse.in</span>
-        <span style={{ color: "rgba(255,255,255,0.1)", margin: "0 8px" }}>·</span>
+        Â© {year} MyCityPulse Â· <span style={{ color: "rgba(255,255,255,0.15)" }}>mycitypulse.in</span>
+        <span style={{ color: "rgba(255,255,255,0.1)", margin: "0 8px" }}>Â·</span>
         Built from public sources, Wikimedia, and MyCityPulse editorial analysis. Coverage depth varies by city.
       </div>
     </footer>
   );
 }
 
-// ─── Wards Panel ─────────────────────────────────────────────────────────────
-function WardsPanel({ city }) {
-  const data = WARD_CORPORATORS[city.city];
-  const [q, setQ] = useState("");
-  const [zoneFilter, setZoneFilter] = useState("All");
-
-  if (!data) return null;
-
-  const filtered = data.wards.filter(ward => {
-    const matchZone = zoneFilter === "All" || ward.zone === zoneFilter;
-    const ql = q.toLowerCase().trim();
-    const matchQ = !ql || ward.name.toLowerCase().includes(ql) || ward.corporator.toLowerCase().includes(ql) || ward.party.toLowerCase().includes(ql);
-    return matchZone && matchQ;
-  });
-
-  return (
-    <div style={{ background: "#FAF8F4", padding: "52px 32px" }}>
-      <div style={{ maxWidth: 900, margin: "0 auto" }}>
-
-        {/* Header */}
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 12 }}>PANEL 4 — WARD REPRESENTATIVES</div>
-        <h2 style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
-          Who represents your ward.
-        </h2>
-        <p style={{ fontSize: 15, color: "#888", lineHeight: 1.6, marginBottom: 32 }}>
-          Elected corporators for {city.city} — {data.body} · {data.lastElection} elections · Term ends {data.termEnds}.
-        </p>
-
-        {/* Party tally */}
-        <div style={{ background: "#fff", borderRadius: 14, padding: 24, marginBottom: 28, boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: "#aaa", letterSpacing: "0.1em", marginBottom: 16 }}>PARTY COMPOSITION · {data.totalWards} TOTAL WARDS</div>
-          <div style={{ display: "flex", gap: 0, height: 10, borderRadius: 6, overflow: "hidden", marginBottom: 16 }}>
-            {data.partyTally.map(p => (
-              <div key={p.party} style={{ flex: p.seats, background: p.color, opacity: 0.85 }} />
-            ))}
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
-            {data.partyTally.map(p => (
-              <div key={p.party} style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                <div style={{ width: 10, height: 10, borderRadius: 3, background: p.color, flexShrink: 0 }} />
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#1a1a1a" }}>{p.party}</span>
-                <span style={{ fontSize: 13, color: "#aaa" }}>{p.seats} seats</span>
-              </div>
-            ))}
-          </div>
-          {data.partyTally.length === 1 && data.partyTally[0].party === "BJP" && (
-            <p style={{ fontSize: 12, color: "#bbb", marginTop: 14, fontStyle: "italic", borderTop: "1px solid #f0ede8", paddingTop: 12 }}>
-              Opposition nominations were withdrawn/rejected in the February 2021 elections. BJP won all {data.totalWards} seats uncontested.
-            </p>
-          )}
-        </div>
-
-        {/* Filters */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 20, alignItems: "center" }}>
-          <input
-            value={q} onChange={e => setQ(e.target.value)}
-            placeholder="Search ward or corporator..."
-            style={{
-              padding: "8px 16px", border: "1.5px solid #e0ddd8", borderRadius: 24,
-              fontSize: 13, outline: "none", background: "#fff", minWidth: 200, flex: 1, maxWidth: 300,
-            }}
-          />
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {["All", ...data.zones].map(z => (
-              <button key={z} onClick={() => setZoneFilter(z)}
-                className={`pill-btn${zoneFilter === z ? " active" : ""}`}>
-                {z}
-              </button>
-            ))}
-          </div>
-          <span style={{ fontSize: 12, color: "#aaa", marginLeft: "auto" }}>{filtered.length} wards</span>
-        </div>
-
-        {/* Ward table */}
-        <div style={{ background: "#fff", borderRadius: 14, overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
-          <div style={{ overflowX: "auto" }}>
-            <table className="ward-table">
-              <thead>
-                <tr>
-                  <th style={{ width: 50 }}>#</th>
-                  <th>Ward</th>
-                  <th>Zone</th>
-                  <th>Corporator</th>
-                  <th>Party</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} style={{ textAlign: "center", padding: "32px 16px", color: "#bbb", fontSize: 14 }}>
-                      No wards match your search.
-                    </td>
-                  </tr>
-                ) : filtered.map(ward => (
-                  <tr key={ward.ward}>
-                    <td><span className="ward-num">{ward.ward}</span></td>
-                    <td><span className="ward-name">{ward.name}</span></td>
-                    <td style={{ color: "#888", fontSize: 12 }}>{ward.zone}</td>
-                    <td><span className="ward-corp">{ward.corporator}</span></td>
-                    <td>
-                      <span className="party-badge" style={{ background: ward.partyColor }}>
-                        {ward.party}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Data note */}
-        <p style={{ fontSize: 12, color: "#bbb", marginTop: 16, lineHeight: 1.6 }}>
-          {data.wardNote} · Source: {data.electionCommission} · Elections held {data.lastElection}.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// ─── City Page ────────────────────────────────────────────────────────────────
-function CityPage({ city, onBack }) {
-  const sc = STRESS[city.stress];
-  const typoColor = TYPO_C[city.urban_typology];
-  const imgUrl = CITY_IMAGES[city.city];
-  const [imgErr, setImgErr] = useState(false);
-  const hasData = CITIES_WITH_DATA.has(city.city);
-  const issues = CITY_ISSUES[city.city] || [];
-  const orgs = CIVIC_ORGS[city.city] || [];
-  const wardData = WARD_CORPORATORS[city.city] || null;
-
-  const [activePanel, setActivePanel] = useState("health");
-
-  const panels = [
-    { id: "health",    label: "🏙 City Health" },
-    { id: "issues",    label: "⚡ Civic Issues" },
-    { id: "ecosystem", label: "🤝 Civic Ecosystem" },
-    ...(city.elections ? [{ id: "elections", label: "🗳️ Elections" }] : []),
-    ...(wardData ? [{ id: "wards", label: "🗳 Wards & Corporators" }] : []),
-  ];
-
-  useEffect(() => { window.scrollTo(0, 0); setActivePanel("health"); }, [city]);
-
-  const stats = [
-    { label: "Population", value: fmt(city.population) },
-    { label: "Area", value: `${city.area.toLocaleString()} km²` },
-    { label: "Density", value: `${city.density.toLocaleString()}/km²` },
-    { label: "Rank in India", value: `#${city.rank}` },
-  ];
-
-  return (
-    <div style={{ background: "#FAF8F4", minHeight: "100vh" }}>
-
-      {/* ── Hero Banner ── */}
-      <div style={{ height: 380, position: "relative", overflow: "hidden", background: "#0D1117" }}>
-        {imgUrl && !imgErr ? (
-          <img src={imgUrl} alt={city.city} onError={() => setImgErr(true)}
-            style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.55 }} />
-        ) : (
-          <div style={{ height: "100%", background: `linear-gradient(135deg, ${sc.color}44, ${typoColor}33)` }} />
-        )}
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(13,17,23,0.2) 0%, rgba(13,17,23,0.85) 100%)" }} />
-        <button onClick={onBack} style={{
-          position: "absolute", top: 76, left: 32,
-          background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.2)",
-          color: "#fff", padding: "8px 18px", borderRadius: 20, fontSize: 13,
-          cursor: "pointer", backdropFilter: "blur(8px)",
-        }}>← All Cities</button>
-        <div style={{ position: "absolute", bottom: 32, left: 32, right: 32 }}>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-            <span title={`${city.stress} Stress — ${STRESS[city.stress]?.tagline}`} style={{ fontSize: 11, fontWeight: 700, color: sc.color, background: "rgba(0,0,0,0.55)", padding: "4px 12px", borderRadius: 12, backdropFilter: "blur(4px)", cursor: "help" }}>{city.stress} Stress</span>
-            <span title={TYPO_PUBLIC_DESC[city.urban_typology]} style={{ fontSize: 11, fontWeight: 700, color: typoColor, background: "rgba(0,0,0,0.55)", padding: "4px 12px", borderRadius: 12, backdropFilter: "blur(4px)", cursor: "help" }}>{TYPO_LABEL[city.urban_typology]}</span>
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", background: "rgba(0,0,0,0.55)", padding: "4px 12px", borderRadius: 12, backdropFilter: "blur(4px)" }}>{city.tier}</span>
-          </div>
-          <h1 style={{ fontSize: 48, fontFamily: "Georgia, serif", fontWeight: 800, color: "#fff", lineHeight: 1.1, letterSpacing: "-0.02em", marginBottom: 8 }}>
-            {city.city}
-          </h1>
-          <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 15 }}>
-            {city.state}{city.formerName ? ` · formerly ${city.formerName}` : ""}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Sticky Panel Navigation ── */}
-      <nav className="panel-nav" aria-label="City page sections">
-        <div className="panel-nav-inner">
-          {panels.map(p => (
-            <button
-              key={p.id}
-              className={`panel-tab${activePanel === p.id ? " active" : ""}`}
-              onClick={() => { setActivePanel(p.id); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-              aria-current={activePanel === p.id ? "page" : undefined}
-            >
-              {p.label}
-            </button>
-          ))}
-        </div>
-      </nav>
-
-      {/* ── Panel 1: City Health ── */}
-      {activePanel === "health" && (
-      <div style={{ background: "#FAF8F4", padding: "52px 32px 0" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
-
-          {/* Section label */}
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 20 }}>PANEL 1 — CITY HEALTH</div>
-
-          {/* One-liner */}
-          <blockquote style={{
-            fontSize: 22, fontFamily: "Georgia, serif", fontStyle: "italic",
-            color: "#2a2a2a", lineHeight: 1.6, borderLeft: `4px solid ${sc.color}`,
-            paddingLeft: 24, marginBottom: 40,
-          }}>"{city.one_liner}"</blockquote>
-
-          {/* Stats */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 28 }}>
-            {stats.map(s => (
-              <div key={s.label} style={{ background: "#fff", borderRadius: 12, padding: "20px 16px", textAlign: "center", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
-                <div style={{ fontSize: 22, fontWeight: 900, color: "#1a1a1a", fontFamily: "Georgia, serif" }}>{s.value}</div>
-                <div style={{ fontSize: 10, color: "#aaa", marginTop: 5, textTransform: "uppercase", letterSpacing: "0.08em" }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Data freshness note */}
-          <p style={{ fontSize: 11, color: "#bbb", marginBottom: 24, lineHeight: 1.6 }}>
-            Population and area come from public datasets. Stress, city category, and city narratives are MyCityPulse editorial judgments. Issue, organisation, ward, and election coverage varies by city and should be read as a guided starting point, not an official civic record.
-          </p>
-
-          <div style={{ background: "#fff", borderRadius: 14, padding: "18px 20px", marginBottom: 32, boxShadow: "0 1px 4px rgba(0,0,0,0.05)", borderLeft: "3px solid #E8660D" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#E8660D", letterSpacing: "0.1em", marginBottom: 10 }}>HOW TO READ THIS PAGE</div>
-            <p style={{ fontSize: 14, color: "#666", lineHeight: 1.7, margin: "0 0 14px" }}>
-              This page mixes public facts with editorial analysis. Use it to orient yourself quickly, understand what pressure points matter, and decide where to dig deeper next.
-            </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {["Public data where available", "Editorial analysis", "Coverage varies by city"].map((label) => (
-                <span key={label} style={{ fontSize: 11, fontWeight: 700, color: "#666", background: "#f5f3ee", padding: "5px 10px", borderRadius: 999 }}>
-                  {label}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Stress + Typology */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 64 }}>
-            <div style={{ background: "#fff", borderRadius: 14, padding: 28, borderTop: `3px solid ${sc.color}`, boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: sc.color, letterSpacing: "0.12em", marginBottom: 10 }}>CIVIC STRESS</div>
-              <div style={{ fontSize: 24, fontWeight: 800, color: sc.color, fontFamily: "Georgia, serif", marginBottom: 6 }}>{city.stress}</div>
-              <div style={{ height: 6, background: "#f0ede8", borderRadius: 4, overflow: "hidden", marginBottom: 14 }}>
-                <div style={{ width: `${(sc.bar / 5) * 100}%`, height: "100%", background: sc.color, borderRadius: 4 }} />
-              </div>
-              <p style={{ fontSize: 13, color: "#666", lineHeight: 1.7 }}>{city.stress_reason}</p>
-            </div>
-            <div style={{ background: "#fff", borderRadius: 14, padding: 28, borderTop: `3px solid ${typoColor}`, boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: typoColor, letterSpacing: "0.12em", marginBottom: 10 }}>CITY CATEGORY</div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: typoColor, fontFamily: "Georgia, serif", marginBottom: 12 }}>{TYPO_LABEL[city.urban_typology]}</div>
-              <p style={{ fontSize: 13, color: "#666", lineHeight: 1.7 }}>{TYPO_PUBLIC_DESC[city.urban_typology]}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      )} {/* end health panel */}
-
-      {/* ── Panel 2: Civic Issues ── */}
-      {activePanel === "issues" && (
-      <div style={{ background: "#fff", padding: "52px 32px" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 12 }}>PANEL 2 — CIVIC ISSUES</div>
-          <h2 style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
-            What's happening in {city.city}.
-          </h2>
-          <p style={{ fontSize: 15, color: "#888", marginBottom: 40, lineHeight: 1.6 }}>
-            The issues that shape daily life in this city, explained plainly and editorially. This is not a live complaints feed or official incident dashboard.
-          </p>
-
-          {!hasData ? (
-            <div style={{ background: "#FAF8F4", borderRadius: 14, padding: "40px 32px", textAlign: "center", border: "2px dashed #e0ddd8" }}>
-              <div style={{ fontSize: 28, marginBottom: 12 }}>🗂️</div>
-              <div style={{ fontSize: 16, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
-                We're building {city.city}'s issue profile.
-              </div>
-              <p style={{ fontSize: 14, color: "#888", maxWidth: 400, margin: "0 auto 20px", lineHeight: 1.6 }}>
-                Know the civic issues shaping {city.city}? Know organizations working on them? Help us build this.
-              </p>
-              <a href="#join" style={{ background: "#E8660D", color: "#fff", padding: "10px 24px", borderRadius: 24, fontSize: 13, fontWeight: 700, display: "inline-block" }}>
-                Become a Cocreator →
-              </a>
-            </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-              {issues.map((issue, i) => (
-                <div key={i} style={{
-                  background: "#FAF8F4", borderRadius: 14, padding: "28px 28px 28px 0",
-                  display: "flex", gap: 0, overflow: "hidden",
-                  boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-                }}>
-                  {/* Color strip */}
-                  <div style={{ width: 5, flexShrink: 0, background: issue.categoryColor, borderRadius: "14px 0 0 14px", marginRight: 28 }} />
-                  <div style={{ flex: 1 }}>
-                    {/* Tag + severity */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: issue.categoryColor, background: issue.categoryColor + "18", padding: "3px 10px", borderRadius: 8 }}>
-                        {issue.tag}
-                      </span>
-                      <span style={{
-                        fontSize: 10, fontWeight: 700, letterSpacing: "0.06em",
-                        color: STRESS[issue.severity]?.color || "#888",
-                        background: (STRESS[issue.severity]?.color || "#888") + "15",
-                        padding: "3px 8px", borderRadius: 6,
-                      }}>{issue.severity}</span>
-                    </div>
-                    {/* Title */}
-                    <h3 style={{ fontSize: 18, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", lineHeight: 1.4, marginBottom: 12 }}>
-                      {issue.title}
-                    </h3>
-                    {/* Body */}
-                    <p style={{ fontSize: 14, color: "#555", lineHeight: 1.75, marginBottom: 16 }}>
-                      {issue.body}
-                    </p>
-                    {/* What's being done */}
-                    <div style={{ background: "#fff", borderRadius: 8, padding: "12px 16px", borderLeft: "3px solid #e0ddd8" }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: "#aaa", letterSpacing: "0.08em", display: "block", marginBottom: 4 }}>WHAT'S BEING DONE</span>
-                      <p style={{ fontSize: 13, color: "#777", lineHeight: 1.6, margin: 0 }}>{issue.whatsBeing}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-      )} {/* end issues panel */}
-
-      {/* ── Panel 3: Civic Ecosystem ── */}
-      {activePanel === "ecosystem" && (
-      <div style={{ background: "#FAF8F4", padding: "52px 32px" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 12 }}>PANEL 3 — CIVIC ECOSYSTEM</div>
-          <h2 style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
-            Who's fighting for {city.city}.
-          </h2>
-          <p style={{ fontSize: 15, color: "#888", marginBottom: 40, lineHeight: 1.6 }}>
-            Selected organizations, collectives, and initiatives doing real civic work in this city. This is a curated directory, not a complete registry.
-          </p>
-
-          {orgs.length === 0 ? (
-            <div style={{ background: "#fff", borderRadius: 14, padding: "40px 32px", textAlign: "center", border: "2px dashed #e0ddd8" }}>
-              <div style={{ fontSize: 28, marginBottom: 12 }}>🤝</div>
-              <div style={{ fontSize: 16, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
-                Know who's working on {city.city}?
-              </div>
-              <p style={{ fontSize: 14, color: "#888", maxWidth: 400, margin: "0 auto 20px", lineHeight: 1.6 }}>
-                Help us map the civic ecosystem — NGOs, RWAs, collectives, journalists doing good work here.
-              </p>
-              <a href="#join" style={{ background: "#E8660D", color: "#fff", padding: "10px 24px", borderRadius: 24, fontSize: 13, fontWeight: 700, display: "inline-block" }}>
-                Nominate an Organization →
-              </a>
-            </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {orgs.map((org, i) => (
-                <div key={i} style={{ background: "#fff", borderRadius: 14, padding: 28, boxShadow: "0 1px 4px rgba(0,0,0,0.05)", borderTop: `3px solid ${org.focusColor}` }}>
-                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
-                    <div>
-                      <div style={{ fontSize: 17, fontWeight: 800, color: "#1a1a1a", marginBottom: 4 }}>{org.name}</div>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: org.focusColor, background: org.focusColor + "18", padding: "3px 10px", borderRadius: 8 }}>
-                        {org.focus}
-                      </span>
-                    </div>
-                    <a href={org.link} target="_blank" rel="noreferrer" style={{
-                      fontSize: 12, fontWeight: 700, color: "#E8660D",
-                      border: "1.5px solid #E8660D", padding: "6px 16px",
-                      borderRadius: 20, whiteSpace: "nowrap", flexShrink: 0,
-                    }}>Visit →</a>
-                  </div>
-                  <p style={{ fontSize: 14, color: "#555", lineHeight: 1.75, marginBottom: 14 }}>{org.what}</p>
-                  <div style={{ background: "#FAF8F4", borderRadius: 8, padding: "12px 16px", borderLeft: `3px solid ${org.focusColor}` }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "#aaa", letterSpacing: "0.08em", display: "block", marginBottom: 4 }}>HOW TO GET INVOLVED</span>
-                    <p style={{ fontSize: 13, color: "#666", lineHeight: 1.6, margin: 0 }}>{org.how}</p>
-                  </div>
-                </div>
-              ))}
-
-              {/* Nominate more */}
-              <div style={{ borderRadius: 14, padding: "24px 28px", border: "2px dashed #e0ddd8", textAlign: "center" }}>
-                <p style={{ fontSize: 14, color: "#aaa", margin: "0 0 12px" }}>Know an organization doing good work in {city.city} that should be here?</p>
-                <a href="#join" style={{ fontSize: 13, fontWeight: 700, color: "#E8660D" }}>Nominate them →</a>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-      )} {/* end ecosystem panel */}
-
-      {/* ── Panel 4: Elections ── */}
-      {activePanel === "elections" && city.elections && (
-      <div style={{ background: "#fff", padding: "52px 32px" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#667eea", letterSpacing: "0.12em", marginBottom: 12 }}>PANEL 4 — ELECTIONS</div>
-          <h2 style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 40 }}>
-            Municipal Elections
-          </h2>
-          <ElectionsCard election={city.elections} cityName={city.city} />
-        </div>
-      </div>
-      )} {/* end elections panel */}
-
-      {/* ── Panel 5: Wards & Corporators ── */}
-      {activePanel === "wards" && <WardsPanel city={city} />}
-
-      {/* ── Closing CTA (shown on all panels) ── */}
-      <div style={{ background: "#0D1117", padding: "60px 32px" }}>
-        <div style={{ maxWidth: 680, margin: "0 auto", textAlign: "center" }}>
-          <div style={{ fontSize: 26, fontFamily: "Georgia, serif", fontWeight: 700, color: "#fff", marginBottom: 12 }}>
-            {city.city} is your city too.
-          </div>
-          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.45)", lineHeight: 1.7, maxWidth: 440, margin: "0 auto 28px", fontFamily: "Georgia, serif" }}>
-            MyCityPulse exists to make the civic layer of your city legible — and to connect you with the people already working to fix it. Join the conversation.
-          </p>
-          <a href="mailto:hello@mycitypulse.in" style={{
-            background: "#E8660D", color: "#fff", padding: "13px 32px",
-            borderRadius: 30, fontSize: 14, fontWeight: 700, display: "inline-block", letterSpacing: "0.02em",
-          }}>
-            Become a Cocreator →
-          </a>
-        </div>
-      </div>
-
-    </div>
-  );
-}
-
-// ─── Compare Tray ─────────────────────────────────────────────────────────────
-function CompareTray({ cities, onCompare, onRemove, onClear }) {
-  if (cities.length === 0) return null;
-  return (
-    <div className="compare-tray">
-      <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.35)", letterSpacing: "0.1em", flexShrink: 0 }}>
-        COMPARING
-      </span>
-      <div style={{ display: "flex", gap: 8, flex: 1, flexWrap: "wrap", alignItems: "center" }}>
-        {cities.map(c => (
-          <div key={c.city} style={{
-            display: "flex", alignItems: "center", gap: 7,
-            background: "rgba(255,255,255,0.08)", borderRadius: 20,
-            padding: "5px 12px", fontSize: 13, color: "#fff",
-          }}>
-            <span style={{ fontWeight: 600 }}>{c.city}</span>
-            <button onClick={() => onRemove(c.city)} style={{
-              background: "none", border: "none", color: "rgba(255,255,255,0.4)",
-              cursor: "pointer", fontSize: 15, lineHeight: 1, padding: 0,
-            }}>×</button>
-          </div>
-        ))}
-        {cities.length < 3 && (
-          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", fontStyle: "italic" }}>
-            + pick up to {3 - cities.length} more
-          </span>
-        )}
-      </div>
-      <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-        <button onClick={onClear} style={{
-          background: "none", border: "1px solid rgba(255,255,255,0.15)",
-          color: "rgba(255,255,255,0.45)", padding: "7px 14px",
-          borderRadius: 20, fontSize: 12, cursor: "pointer",
-        }}>Clear</button>
-        {cities.length >= 2 && (
-          <button onClick={onCompare} style={{
-            background: "#E8660D", border: "none", color: "#fff",
-            padding: "7px 20px", borderRadius: 20, fontSize: 13,
-            fontWeight: 700, cursor: "pointer",
-          }}>Compare {cities.length} cities →</button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── City Compare Card (header in CompareView) ────────────────────────────────
-function CityCompareCard({ city, onRemove, onCitySelect }) {
-  const imgUrl = CITY_IMAGES[city.city];
-  const [imgErr, setImgErr] = useState(false);
-  return (
-    <div style={{ background: "#fff", borderRadius: 14, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.08)" }}>
-      <div style={{ height: 90, position: "relative", background: "#0D1117" }}>
-        {imgUrl && !imgErr && (
-          <img src={imgUrl} alt={city.city} onError={() => setImgErr(true)}
-            style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }} />
-        )}
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.75))" }} />
-        <div style={{ position: "absolute", bottom: 8, left: 12 }}>
-          <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", lineHeight: 1.2 }}>{city.city}</div>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)" }}>{city.state}</div>
-        </div>
-        <button onClick={() => onRemove(city.city)} style={{
-          position: "absolute", top: 6, right: 6,
-          background: "rgba(0,0,0,0.55)", border: "none", color: "#fff",
-          width: 20, height: 20, borderRadius: "50%", cursor: "pointer",
-          fontSize: 12, lineHeight: "20px", textAlign: "center",
-        }}>×</button>
-      </div>
-      <div style={{ padding: "10px 12px" }}>
-        <button onClick={() => onCitySelect(city)} style={{
-          background: "none", border: "1.5px solid #E8660D", color: "#E8660D",
-          fontSize: 11, fontWeight: 700, padding: "4px 0",
-          borderRadius: 14, cursor: "pointer", width: "100%",
-        }}>Full profile →</button>
-      </div>
-    </div>
-  );
-}
-
-// ─── Compare View ─────────────────────────────────────────────────────────────
-function CompareView({ cities, onBack, onCitySelect, onRemove, onAdd }) {
-  const [addQ, setAddQ] = useState("");
-  const [addResults, setAddResults] = useState([]);
-  const [activeAddIndex, setActiveAddIndex] = useState(-1);
-
-  useEffect(() => {
-    const results = addQ.length >= 2
-      ? searchCities(addQ).filter(c => !cities.find(x => x.city === c.city)).slice(0, 5)
-      : [];
-    setAddResults(results);
-  }, [addQ, cities]);
-
-  useEffect(() => {
-    setActiveAddIndex(addResults.length > 0 ? 0 : -1);
-  }, [addResults]);
-
-  useEffect(() => { window.scrollTo(0, 0); }, []);
-
-  const selectAddCity = (city) => {
-    onAdd(city);
-    setAddQ("");
-    setAddResults([]);
-    setActiveAddIndex(-1);
-  };
-
-  const handleAddKeyDown = (e) => {
-    if (!addResults.length) return;
-
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setActiveAddIndex((index) => (index + 1) % addResults.length);
-      return;
-    }
-
-    if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setActiveAddIndex((index) => (index <= 0 ? addResults.length - 1 : index - 1));
-      return;
-    }
-
-    if (e.key === "Enter") {
-      e.preventDefault();
-      selectAddCity(addResults[activeAddIndex] || addResults[0]);
-      return;
-    }
-
-    if (e.key === "Escape") {
-      setAddResults([]);
-      setActiveAddIndex(-1);
-    }
-  };
-
-  const metrics = [
-    { label: "National Rank",    val: c => `#${c.rank}`,                          cval: c => c.rank,         best: "lower"   },
-    { label: "Population",       val: c => fmt(c.population),                      cval: c => c.population,   best: "neutral" },
-    { label: "Area",             val: c => `${c.area.toLocaleString()} km²`,       cval: c => c.area,         best: "neutral" },
-    { label: "Density / km²",    val: c => c.density.toLocaleString(),             cval: c => c.density,      best: "neutral" },
-    { label: "Civic Stress",     val: c => c.stress,                               cval: c => STRESS[c.stress].bar, best: "lower", isStress: true },
-    { label: "City Category",    val: c => TYPO_LABEL[c.urban_typology],           best: "neutral" },
-    { label: "City Tier",        val: c => c.tier,                                 best: "neutral" },
-    { label: "State",            val: c => c.state,                                best: "neutral" },
-    { label: "Former Name",      val: c => c.formerName || "—",                    best: "neutral" },
-  ];
-
-  const cols = cities.length;
-
-  return (
-    <div style={{ background: "#FAF8F4", minHeight: "100vh", padding: "40px 32px 80px" }}>
-      <div style={{ maxWidth: 980, margin: "0 auto" }}>
-
-        {/* Header */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 32, flexWrap: "wrap", gap: 16 }}>
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 8 }}>COMPARE CITIES</div>
-            <h1 style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 6 }}>
-              Side by side.
-            </h1>
-            <p style={{ fontSize: 14, color: "#999", lineHeight: 1.5 }}>
-              Select up to 3 cities. Highlighted values indicate the stronger result where comparable.
-            </p>
-          </div>
-          <button onClick={onBack} style={{
-            background: "#fff", border: "1.5px solid #e0ddd8", color: "#555",
-            padding: "9px 22px", borderRadius: 20, fontSize: 13, fontWeight: 600, cursor: "pointer",
-          }}>← Back to cities</button>
-        </div>
-
-        {/* City header cards */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: `repeat(${cols}, 1fr)${cols < 3 ? " 180px" : ""}`,
-          gap: 14, marginBottom: 24,
-        }}>
-          {cities.map(c => (
-            <CityCompareCard key={c.city} city={c} onRemove={onRemove} onCitySelect={onCitySelect} />
-          ))}
-
-          {/* Add city slot */}
-          {cols < 3 && (
-            <div style={{ position: "relative" }}>
-              <div style={{
-                border: "2px dashed #ddd", borderRadius: 14, minHeight: 130,
-                display: "flex", flexDirection: "column", alignItems: "center",
-                justifyContent: "center", gap: 10, padding: 16,
-              }}>
-                <div style={{ fontSize: 22, color: "#ccc" }}>+</div>
-                <input
-                  value={addQ} onChange={e => setAddQ(e.target.value)}
-                  onKeyDown={handleAddKeyDown}
-                  placeholder="Add city..."
-                  style={{
-                    width: "100%", padding: "7px 12px", border: "1.5px solid #e0ddd8",
-                    borderRadius: 20, fontSize: 12, outline: "none", background: "#fff", textAlign: "center",
-                  }}
-                />
-              </div>
-              {addResults.length > 0 && (
-                <div style={{
-                  position: "absolute", top: "100%", left: 0, right: 0, zIndex: 50, marginTop: 4,
-                  background: "#fff", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                  border: "1px solid #e8e5e0", overflow: "hidden",
-                }}>
-                  {addResults.map((c, index) => (
-                    <button key={c.city} onClick={() => selectAddCity(c)}
-                      style={{
-                        display: "block", width: "100%", padding: "9px 14px",
-                        background: activeAddIndex === index ? "#faf8f4" : "none", border: "none", textAlign: "left",
-                        fontSize: 13, cursor: "pointer", borderBottom: "1px solid #f0ede8",
-                      }}
-                      onMouseEnter={() => setActiveAddIndex(index)}
-                    >
-                      <span style={{ fontWeight: 600, color: "#1a1a1a" }}>{c.city}</span>
-                      <span style={{ color: "#aaa", marginLeft: 8, fontSize: 11 }}>{c.state}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Metrics comparison table */}
-        <div style={{ background: "#fff", borderRadius: 14, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.06)" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <colgroup>
-              <col style={{ width: "22%" }} />
-              {cities.map(c => <col key={c.city} style={{ width: `${78 / cols}%` }} />)}
-            </colgroup>
-            <thead>
-              <tr style={{ background: "#FAF8F4", borderBottom: "2px solid #f0ede8" }}>
-                <th style={{ padding: "12px 20px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "#bbb", letterSpacing: "0.08em" }}>METRIC</th>
-                {cities.map(c => (
-                  <th key={c.city} style={{ padding: "12px 20px", textAlign: "left", fontSize: 13, fontWeight: 800, color: "#1a1a1a", borderLeft: "1px solid #f0ede8" }}>
-                    {c.city}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {metrics.map(m => {
-                let bestCity = null;
-                if (m.cval && m.best !== "neutral" && cities.length > 1) {
-                  const vals = cities.map(c => ({ city: c.city, v: m.cval(c) }));
-                  bestCity = m.best === "lower"
-                    ? vals.reduce((a, b) => a.v <= b.v ? a : b).city
-                    : vals.reduce((a, b) => a.v >= b.v ? a : b).city;
-                }
-                return (
-                  <tr key={m.label} style={{ borderBottom: "1px solid #f5f3ef" }}>
-                    <td style={{
-                      padding: "13px 20px", fontSize: 11, fontWeight: 700,
-                      color: "#bbb", textTransform: "uppercase", letterSpacing: "0.06em",
-                      background: "#FAFAF8",
-                    }}>{m.label}</td>
-                    {cities.map(c => {
-                      const sc = STRESS[c.stress];
-                      const isBest = bestCity === c.city;
-                      return (
-                        <td key={c.city} style={{
-                          padding: "13px 20px", fontSize: 14,
-                          background: isBest ? "#fff9f6" : "#fff",
-                          borderLeft: "1px solid #f5f3ef",
-                        }}>
-                          {m.isStress ? (
-                            <span style={{
-                              fontSize: 12, fontWeight: 800, color: sc.color,
-                              background: sc.bg, padding: "3px 10px", borderRadius: 8,
-                              display: "inline-block",
-                            }}>{c.stress}</span>
-                          ) : (
-                            <span style={{ fontWeight: isBest ? 800 : 400, color: isBest ? "#E8660D" : "#444" }}>
-                              {m.val(c)}
-                            </span>
-                          )}
-                          {isBest && !m.isStress && (
-                            <span style={{ fontSize: 9, color: "#E8660D", marginLeft: 6, fontWeight: 700, verticalAlign: "middle" }}>▲</span>
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        <p style={{ fontSize: 11, color: "#ccc", marginTop: 14, lineHeight: 1.6 }}>
-          ▲ marks the stronger value where comparison is meaningful (lower rank number = higher rank; lower stress = healthier city). Population, area and density are shown without judgment.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// ─── Home Page ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Wards Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function HomePage({ onCitySelect, onCompare, compareList }) {
   return (
     <>
@@ -1971,7 +1046,7 @@ function HomePage({ onCitySelect, onCompare, compareList }) {
   );
 }
 
-// ─── App ──────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ App â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function App() {
   const [selectedCity, setSelectedCity] = useState(null);
   const [compareList, setCompareList]   = useState([]);
@@ -2018,6 +1093,7 @@ export default function App() {
       <div style={{ paddingTop: 58 }}>
         {compareMode
           ? <CompareView
+              allCities={cities}
               cities={compareList}
               onBack={handleCloseCompare}
               onCitySelect={handleCitySelect}
@@ -2044,3 +1120,5 @@ export default function App() {
     </>
   );
 }
+
+
