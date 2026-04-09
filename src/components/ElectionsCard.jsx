@@ -5,7 +5,7 @@ import './ElectionsCard.css';
 export default function ElectionsCard({ election, cityName }) {
   const [showTimeline, setShowTimeline] = useState(false);
   const [searchWard, setSearchWard] = useState('');
-  const [pledgeCount, setPledgeCount] = useState(localStorage.getItem(`${cityName}_pledge_count`) ? parseInt(localStorage.getItem(`${cityName}_pledge_count`)) : 0);
+  const [pledgeCount, setPledgeCount] = useState(localStorage.getItem(`${cityName}_pledge_count`) ? parseInt(localStorage.getItem(`${cityName}_pledge_count`, 10)) : 0);
   const [hasVoted, setHasVoted] = useState(localStorage.getItem(`${cityName}_voted`) === 'true');
   const [countdown, setCountdown] = useState('');
   const [showPledgeShare, setShowPledgeShare] = useState(false);
@@ -32,9 +32,10 @@ export default function ElectionsCard({ election, cityName }) {
   }, [election.election_date]);
 
   const daysUntil = Math.ceil((new Date(election.election_date) - new Date()) / (1000 * 60 * 60 * 24));
+  const verifiedWardNumbers = new Set((election.verified_wards || []).map((ward) => ward.number));
 
   const foundWard = election.wards.find(w =>
-    w.number.toString() === searchWard || w.name.toLowerCase().includes(searchWard.toLowerCase())
+    w.number.toString() === searchWard.trim() || w.name.toLowerCase().includes(searchWard.toLowerCase().trim())
   );
 
   const handlePledgeVote = () => {
@@ -85,7 +86,7 @@ export default function ElectionsCard({ election, cityName }) {
           <p className="countdown">
             {daysUntil > 0 ? (<><strong>{daysUntil} days</strong> until election</>) : daysUntil === 0 ? (<>🗳️ <strong>Voting today!</strong></>) : (<>Results announced</>)}
           </p>
-          <p className="timer-display">⏱️ <strong>{countdown}</strong> minutes to elections</p>
+          <p className="timer-display">⏱️ <strong>{countdown}</strong> until polls open</p>
           <p className="date-info">
             📅 {new Date(election.election_date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })} | {election.wards_verified}/{election.wards_total} wards
           </p>
@@ -133,7 +134,7 @@ export default function ElectionsCard({ election, cityName }) {
             {foundWard ? (
               <div className="ward-found">
                 <p><strong>Ward {foundWard.number}:</strong> {foundWard.name}</p>
-                <p style={{ fontSize: '0.9em', color: '#666' }}>{election.wards_verified >= foundWard.number ? '✓ Verified' : '⏳ Data coming soon'}</p>
+                <p style={{ fontSize: '0.9em', color: '#666' }}>{verifiedWardNumbers.has(foundWard.number) ? '✓ Verified' : '⏳ Data coming soon'}</p>
               </div>
             ) : searchWard.length > 0 ? (
               <p className="no-result">Ward not found. Try searching by number (e.g., "9" for Naranpura)</p>
@@ -143,7 +144,7 @@ export default function ElectionsCard({ election, cityName }) {
       </div>
 
       <div className="cocreator-section">
-        <p>Help us understand your city. Take our 3-minute civic survey.</p>
+        <p>Help us understand your city. Take our 5-minute civic survey.</p>
         <button className="cocreator-btn" onClick={() => setShowSurvey(true)}>Take Survey →</button>
       </div>
 
@@ -151,7 +152,7 @@ export default function ElectionsCard({ election, cityName }) {
         <div className="survey-modal-overlay" onClick={() => setShowSurvey(false)}>
           <div className="survey-modal-wrapper" onClick={e => e.stopPropagation()}>
             <button className="survey-modal-close" onClick={() => setShowSurvey(false)}>✕</button>
-            <CivicSurvey onComplete={() => setShowSurvey(false)} />
+            <CivicSurvey city={cityName} onComplete={() => setShowSurvey(false)} />
           </div>
         </div>
       )}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './CivicSurvey.css';
 
 const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
@@ -214,9 +214,6 @@ const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
     localStorage.setItem(key, JSON.stringify(surveyData));
 
     setShowThankYou(true);
-    if (onComplete) {
-      onComplete(surveyData);
-    }
   };
 
   const handlePrevious = () => {
@@ -240,11 +237,7 @@ const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
 
   const handleEmailSubmit = (e) => {
     e.preventDefault();
-    if (!email) {
-      setEmailError('Email is required');
-      return;
-    }
-    if (!validateEmail(email)) {
+    if (email && !validateEmail(email)) {
       setEmailError('Please enter a valid email');
       return;
     }
@@ -259,7 +252,7 @@ const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
           <div className="welcome-icon">📋</div>
           <h2>Help Shape {city}'s Future</h2>
           <p>
-            Your voice matters! This quick survey takes about 5-7 minutes and helps us understand what matters most to you
+            Your voice matters! This quick survey takes about 5 minutes and helps us understand what matters most to you
             in your community.
           </p>
           <div className="survey-benefits">
@@ -303,12 +296,16 @@ const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
           <div className="next-steps">
             <h3>What happens next?</h3>
             <ul>
-              <li>Your responses are securely stored</li>
-              <li>We analyze feedback from all respondents</li>
-              <li>Insights are shared with local authorities</li>
-              <li>Actionable improvements are implemented</li>
+              <li>Your responses are saved for the MyCityPulse team to review</li>
+              <li>We look for patterns across local priorities and service gaps</li>
+              <li>Those insights help shape future civic coverage and outreach</li>
             </ul>
           </div>
+          {onComplete && (
+            <button type="button" className="start-btn survey-close-btn" onClick={onComplete}>
+              Close Survey
+            </button>
+          )}
         </div>
       </div>
     );

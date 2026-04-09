@@ -29,6 +29,30 @@ const cities = [
         { date: "2026-04-26", label: "Election day", icon: "🗳️" },
         { date: "2026-04-28", label: "Results announced", icon: "📊" }
       ],
+      verified_wards: [
+        { number: 1, name: "Gota" },
+        { number: 2, name: "Chandlodia" },
+        { number: 3, name: "Ranip" },
+        { number: 4, name: "Sabarmati" },
+        { number: 5, name: "Nava Wadaj" },
+        { number: 6, name: "Juna Wadaj" },
+        { number: 7, name: "Ghatlodia" },
+        { number: 8, name: "Thaltej" },
+        { number: 9, name: "Naranpura" },
+        { number: 10, name: "Stadium" },
+        { number: 11, name: "Sardarnagar" },
+        { number: 12, name: "Naroda" },
+        { number: 14, name: "Kubernagar" },
+        { number: 19, name: "Bodakdev" },
+        { number: 20, name: "Jodhpur" },
+        { number: 22, name: "Stadium West" },
+        { number: 23, name: "Thakkarbapanagar" },
+        { number: 25, name: "Viratnagar" },
+        { number: 26, name: "Ambawadi" },
+        { number: 27, name: "Navrangpura" },
+        { number: 40, name: "Paldi" },
+        { number: 41, name: "Vasna" }
+      ],
       wards: [
         { number: 1, name: "Gota" },
         { number: 2, name: "Chandlodia" },
@@ -1411,7 +1435,7 @@ function CityPage({ city, onBack }) {
       {activePanel === "elections" && city.elections && (
       <div style={{ background: "#fff", padding: "52px 32px" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#667eea", letterSpacing: "0.12em", marginBottom: 12 }}>PANEL 3 — ELECTIONS</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#667eea", letterSpacing: "0.12em", marginBottom: 12 }}>PANEL 4 — ELECTIONS</div>
           <h2 style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 40 }}>
             Municipal Elections
           </h2>
