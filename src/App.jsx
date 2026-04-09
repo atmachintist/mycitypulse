@@ -148,6 +148,17 @@ const TYPO_C = {
   "Managed Growth City":"#d4ac0d","Compact Agglomeration":"#ff6b6b",
 };
 
+const TYPO_LABEL = {
+  "Gravity City": "Anchor City",
+  "Overnight City": "Rapid-Growth City",
+  "Ancient Pulse": "Historic City",
+  "Blueprint City": "Planned City",
+  "Sleeping Giant": "Underinvested City",
+  "Border Effect City": "Border City",
+  "Managed Growth City": "Managed-Growth City",
+  "Compact Agglomeration": "Dense Satellite City",
+};
+
 const TYPO_DESC = {
   "Gravity City":          "Pulls everything toward it — people, capital, decisions. The dominant force in its region.",
   "Overnight City":        "Transformed beyond recognition in a generation, usually on the back of a tech or industrial boom. Infrastructure is forever catching up.",
@@ -160,6 +171,17 @@ const TYPO_DESC = {
 };
 
 // Special:FilePath lets Wikimedia resolve the correct hash automatically — far more reliable than hardcoding thumb paths.
+const TYPO_PUBLIC_DESC = {
+  "Gravity City": "A city that pulls jobs, capital, institutions, and migration from a wide surrounding region.",
+  "Overnight City": "Expanded quickly in one or two generations, often on the back of industry, real estate, or tech. Infrastructure is still catching up.",
+  "Ancient Pulse": "A long-settled urban center where older street patterns, institutions, and heritage continue to shape daily life.",
+  "Blueprint City": "Large parts of the city were laid out deliberately by planners, public agencies, or industrial builders before full growth arrived.",
+  "Sleeping Giant": "A large city with strategic importance, but weaker investment, governance, or economic pull than its size suggests.",
+  "Border Effect City": "Its economy and governance are shaped by a state border, national border, cantonment, or similar frontier condition.",
+  "Managed Growth City": "Growing quickly, but has so far absorbed expansion more effectively than many peer cities.",
+  "Compact Agglomeration": "A very dense city tied closely to a larger metro, often carrying spillover population and infrastructure pressure.",
+};
+
 const W = (f) => `https://commons.wikimedia.org/wiki/Special:FilePath/${f}`;
 const CITY_IMAGES = {
   "Delhi":                    W("India_Gate-Delhi_India11.JPG"),
@@ -909,14 +931,14 @@ function CityCard({ city, onSelect, onCompare, inCompare }) {
           fontWeight: 800, padding: "3px 8px", borderRadius: 8, backdropFilter: "blur(6px)",
         }}>#{city.rank}</div>
         <span
-          title={TYPO_DESC[city.urban_typology]}
+          title={TYPO_PUBLIC_DESC[city.urban_typology]}
           style={{
             fontSize: 10, fontWeight: 700,
             color: TYPO_C[city.urban_typology],
             background: "rgba(0,0,0,0.55)",
             backdropFilter: "blur(6px)",
             padding: "3px 8px", borderRadius: 8, cursor: "help",
-          }}>{city.urban_typology}</span>
+          }}>{TYPO_LABEL[city.urban_typology]}</span>
       </div>
 
       {/* Top-right: stress badge */}
@@ -1033,10 +1055,10 @@ function CityGrid({ onCitySelect, onCompare, compareList }) {
               </div>
               {/* Urban typologies */}
               <div>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#E8660D", letterSpacing: "0.1em", marginBottom: 14 }}>URBAN TYPOLOGIES</div>
-                {Object.entries(TYPO_DESC).map(([type, desc]) => (
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#E8660D", letterSpacing: "0.1em", marginBottom: 14 }}>CITY CATEGORIES</div>
+                {Object.entries(TYPO_PUBLIC_DESC).map(([type, desc]) => (
                   <div key={type} style={{ display: "flex", gap: 10, marginBottom: 10, alignItems: "flex-start" }}>
-                    <span style={{ fontSize: 10, fontWeight: 800, color: TYPO_C[type], background: TYPO_C[type] + "18", padding: "2px 8px", borderRadius: 8, flexShrink: 0, marginTop: 2, whiteSpace: "nowrap" }}>{type}</span>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: TYPO_C[type], background: TYPO_C[type] + "18", padding: "2px 8px", borderRadius: 8, flexShrink: 0, marginTop: 2, whiteSpace: "nowrap" }}>{TYPO_LABEL[type]}</span>
                     <span style={{ fontSize: 12, color: "#666", lineHeight: 1.5 }}>{desc}</span>
                   </div>
                 ))}
@@ -1377,7 +1399,7 @@ function CityPage({ city, onBack }) {
         <div style={{ position: "absolute", bottom: 32, left: 32, right: 32 }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
             <span title={`${city.stress} Stress — ${STRESS[city.stress]?.tagline}`} style={{ fontSize: 11, fontWeight: 700, color: sc.color, background: "rgba(0,0,0,0.55)", padding: "4px 12px", borderRadius: 12, backdropFilter: "blur(4px)", cursor: "help" }}>{city.stress} Stress</span>
-            <span title={TYPO_DESC[city.urban_typology]} style={{ fontSize: 11, fontWeight: 700, color: typoColor, background: "rgba(0,0,0,0.55)", padding: "4px 12px", borderRadius: 12, backdropFilter: "blur(4px)", cursor: "help" }}>{city.urban_typology}</span>
+            <span title={TYPO_PUBLIC_DESC[city.urban_typology]} style={{ fontSize: 11, fontWeight: 700, color: typoColor, background: "rgba(0,0,0,0.55)", padding: "4px 12px", borderRadius: 12, backdropFilter: "blur(4px)", cursor: "help" }}>{TYPO_LABEL[city.urban_typology]}</span>
             <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", background: "rgba(0,0,0,0.55)", padding: "4px 12px", borderRadius: 12, backdropFilter: "blur(4px)" }}>{city.tier}</span>
           </div>
           <h1 style={{ fontSize: 48, fontFamily: "Georgia, serif", fontWeight: 800, color: "#fff", lineHeight: 1.1, letterSpacing: "-0.02em", marginBottom: 8 }}>
@@ -1432,7 +1454,7 @@ function CityPage({ city, onBack }) {
 
           {/* Data freshness note */}
           <p style={{ fontSize: 11, color: "#bbb", marginBottom: 24, lineHeight: 1.6 }}>
-            Population and area come from public datasets. Stress, typology, and city narratives are MyCityPulse editorial judgments. Issue, organisation, ward, and election coverage varies by city and should be read as a guided starting point, not an official civic record.
+            Population and area come from public datasets. Stress, city category, and city narratives are MyCityPulse editorial judgments. Issue, organisation, ward, and election coverage varies by city and should be read as a guided starting point, not an official civic record.
           </p>
 
           <div style={{ background: "#fff", borderRadius: 14, padding: "18px 20px", marginBottom: 32, boxShadow: "0 1px 4px rgba(0,0,0,0.05)", borderLeft: "3px solid #E8660D" }}>
@@ -1460,9 +1482,9 @@ function CityPage({ city, onBack }) {
               <p style={{ fontSize: 13, color: "#666", lineHeight: 1.7 }}>{city.stress_reason}</p>
             </div>
             <div style={{ background: "#fff", borderRadius: 14, padding: 28, borderTop: `3px solid ${typoColor}`, boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: typoColor, letterSpacing: "0.12em", marginBottom: 10 }}>URBAN TYPOLOGY</div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: typoColor, fontFamily: "Georgia, serif", marginBottom: 12 }}>{city.urban_typology}</div>
-              <p style={{ fontSize: 13, color: "#666", lineHeight: 1.7 }}>{TYPO_DESC[city.urban_typology]}</p>
+              <div style={{ fontSize: 10, fontWeight: 700, color: typoColor, letterSpacing: "0.12em", marginBottom: 10 }}>CITY CATEGORY</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: typoColor, fontFamily: "Georgia, serif", marginBottom: 12 }}>{TYPO_LABEL[city.urban_typology]}</div>
+              <p style={{ fontSize: 13, color: "#666", lineHeight: 1.7 }}>{TYPO_PUBLIC_DESC[city.urban_typology]}</p>
             </div>
           </div>
         </div>
@@ -1777,7 +1799,7 @@ function CompareView({ cities, onBack, onCitySelect, onRemove, onAdd }) {
     { label: "Area",             val: c => `${c.area.toLocaleString()} km²`,       cval: c => c.area,         best: "neutral" },
     { label: "Density / km²",    val: c => c.density.toLocaleString(),             cval: c => c.density,      best: "neutral" },
     { label: "Civic Stress",     val: c => c.stress,                               cval: c => STRESS[c.stress].bar, best: "lower", isStress: true },
-    { label: "Urban Typology",   val: c => c.urban_typology,                       best: "neutral" },
+    { label: "City Category",    val: c => TYPO_LABEL[c.urban_typology],           best: "neutral" },
     { label: "City Tier",        val: c => c.tier,                                 best: "neutral" },
     { label: "State",            val: c => c.state,                                best: "neutral" },
     { label: "Former Name",      val: c => c.formerName || "—",                    best: "neutral" },
