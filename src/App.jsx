@@ -904,7 +904,59 @@ function NationalPulse({ onCitySelect }) {
 // â”€â”€â”€ Join CTA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function JoinCTA() {
   const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [city, setCity] = useState("");
   const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
+  const [permissions, setPermissions] = useState({
+    updates: true,
+    surveys: true,
+    pilotGroup: false,
+  });
+  const [contributions, setContributions] = useState({
+    cityResearch: true,
+    issueVerification: false,
+    wardUpdates: false,
+    productFeedback: true,
+  });
+
+  const togglePermission = (key) => {
+    setPermissions((current) => ({ ...current, [key]: !current[key] }));
+  };
+
+  const toggleContribution = (key) => {
+    setContributions((current) => ({ ...current, [key]: !current[key] }));
+  };
+
+  const handleJoin = () => {
+    const validEmail = email.includes("@") && email.includes(".");
+    const selectedContributions = Object.entries(contributions)
+      .filter(([, selected]) => selected)
+      .map(([key]) => key);
+
+    if (!validEmail) {
+      setError("Enter a valid email so we know where to reach you.");
+      return;
+    }
+
+    if (selectedContributions.length === 0) {
+      setError("Pick at least one way you’d like to cocreate with us.");
+      return;
+    }
+
+    const payload = {
+      email,
+      fullName: fullName.trim(),
+      city: city.trim(),
+      permissions,
+      contributions: selectedContributions,
+      capturedAt: new Date().toISOString(),
+    };
+
+    localStorage.setItem("mycitypulse_cocreator_interest", JSON.stringify(payload));
+    setError("");
+    setDone(true);
+  };
 
   return (
     <section id="join" style={{ background: "#0D1117", padding: "80px 32px" }}>
@@ -918,35 +970,147 @@ function JoinCTA() {
         </p>
 
         {done ? (
-          <div style={{ color: "#2dc653", fontSize: 16, fontFamily: "Georgia, serif", fontStyle: "italic" }}>
-            {"\u2713 You're in. We'll be in touch."}
+          <div style={{
+            background: "rgba(45,198,83,0.08)",
+            border: "1px solid rgba(45,198,83,0.25)",
+            borderRadius: 20,
+            padding: "24px 22px",
+            maxWidth: 560,
+            margin: "0 auto",
+          }}>
+            <div style={{ color: "#2dc653", fontSize: 16, fontFamily: "Georgia, serif", fontStyle: "italic", marginBottom: 10 }}>
+              {"\u2713 You're in. We’ve saved your cocreator intent on this device."}
+            </div>
+            <p style={{ color: "rgba(255,255,255,0.58)", fontSize: 14, lineHeight: 1.7, margin: 0 }}>
+              This is a lightweight first step: email plus permissions. Once we wire a real backend inbox, this can become a live cocreator pipeline without forcing account creation.
+            </p>
           </div>
         ) : (
-          <div style={{ display: "flex", gap: 8, maxWidth: 440, margin: "0 auto", flexWrap: "wrap" }}>
+          <div style={{
+            maxWidth: 620,
+            margin: "0 auto",
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: 24,
+            padding: "24px 20px",
+            textAlign: "left",
+          }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+              <input
+                type="text"
+                value={fullName}
+                onChange={e => setFullName(e.target.value)}
+                placeholder="Your name"
+                style={{
+                  width: "100%", padding: "13px 18px",
+                  background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(255,255,255,0.12)",
+                  borderRadius: 16, color: "#fff", fontSize: 14, outline: "none",
+                }}
+              />
+              <input
+                type="text"
+                value={city}
+                onChange={e => setCity(e.target.value)}
+                placeholder="Your city"
+                style={{
+                  width: "100%", padding: "13px 18px",
+                  background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(255,255,255,0.12)",
+                  borderRadius: 16, color: "#fff", fontSize: 14, outline: "none",
+                }}
+              />
+            </div>
+
             <input
-              type="email" value={email} onChange={e => setEmail(e.target.value)}
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
               placeholder="your@email.com"
               style={{
-                flex: 1, minWidth: 200, padding: "13px 20px",
+                width: "100%", padding: "13px 18px", marginBottom: 18,
                 background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(255,255,255,0.12)",
-                borderRadius: 30, color: "#fff", fontSize: 14, outline: "none",
+                borderRadius: 16, color: "#fff", fontSize: 14, outline: "none",
               }}
             />
-            <button
-              onClick={() => { if (email.includes("@")) setDone(true); }}
-              style={{
-                background: "#E8660D", color: "#fff", border: "none",
-                padding: "13px 28px", borderRadius: 30, fontSize: 14, fontWeight: 700,
-                cursor: "pointer", letterSpacing: "0.04em", whiteSpace: "nowrap",
-              }}
-            >
-              {"Join \u2192"}
-            </button>
+
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.08em", marginBottom: 10 }}>
+                HOW YOU’D LIKE TO HELP
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {[
+                  ["cityResearch", "City research"],
+                  ["issueVerification", "Issue verification"],
+                  ["wardUpdates", "Ward and election updates"],
+                  ["productFeedback", "Product feedback"],
+                ].map(([key, label]) => (
+                  <button
+                    key={key}
+                    onClick={() => toggleContribution(key)}
+                    style={{
+                      border: contributions[key] ? "1.5px solid #E8660D" : "1.5px solid rgba(255,255,255,0.12)",
+                      background: contributions[key] ? "rgba(232,102,13,0.14)" : "rgba(255,255,255,0.04)",
+                      color: contributions[key] ? "#fff" : "rgba(255,255,255,0.7)",
+                      padding: "9px 14px",
+                      borderRadius: 999,
+                      fontSize: 13,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {contributions[key] ? "\u2713 " : ""}{label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.08em", marginBottom: 10 }}>
+                WHAT WE MAY CONTACT YOU ABOUT
+              </div>
+              <div style={{ display: "grid", gap: 10 }}>
+                {[
+                  ["updates", "Occasional product and city updates"],
+                  ["surveys", "Requests for civic surveys, feedback, and verification"],
+                  ["pilotGroup", "Early pilot access to new MyCityPulse features"],
+                ].map(([key, label]) => (
+                  <label key={key} style={{ display: "flex", alignItems: "center", gap: 10, color: "rgba(255,255,255,0.72)", fontSize: 14, cursor: "pointer" }}>
+                    <input
+                      type="checkbox"
+                      checked={permissions[key]}
+                      onChange={() => togglePermission(key)}
+                      style={{ accentColor: "#E8660D", width: 16, height: 16 }}
+                    />
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {error && (
+              <p style={{ color: "#ffb366", fontSize: 13, lineHeight: 1.6, margin: "0 0 14px" }}>
+                {error}
+              </p>
+            )}
+
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+              <button
+                onClick={handleJoin}
+                style={{
+                  background: "#E8660D", color: "#fff", border: "none",
+                  padding: "13px 24px", borderRadius: 30, fontSize: 14, fontWeight: 700,
+                  cursor: "pointer", letterSpacing: "0.04em", whiteSpace: "nowrap",
+                }}
+              >
+                {"Join as Cocreator \u2192"}
+              </button>
+              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>
+                No account creation. Just email plus clear permissions.
+              </span>
+            </div>
           </div>
         )}
 
         <p style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", marginTop: 16 }}>
-          No spam. Just city stories and occasional asks for your opinion.
+          No spam. Just city stories, targeted asks for help, and the permissions you checked above.
         </p>
       </div>
     </section>
