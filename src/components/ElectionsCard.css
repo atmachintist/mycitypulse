@@ -627,6 +627,17 @@
   line-height: 1.6;
 }
 
+.candidate-tracker-help {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f7f1e8;
+  border: 1px solid #ead9c8;
+  color: #5b564d;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
 .candidate-metrics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

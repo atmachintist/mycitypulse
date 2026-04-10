@@ -48,9 +48,9 @@ function getCandidateTone(status) {
 }
 
 function getCandidateLabel(status) {
-  if (status === "official_final") return "Official final list";
-  if (status === "party_announced") return "Party-announced";
-  return "Awaiting verification";
+  if (status === "official_final") return "Official final candidate list";
+  if (status === "party_announced") return "Party-announced candidate";
+  return "Candidate names not verified yet";
 }
 
 function getDigipinErrorMessage(error) {
@@ -424,7 +424,7 @@ export default function ElectionsCard({ election, cityName }) {
             onClick={() => document.getElementById("ward-search")?.focus()}
             aria-label="Search the ward directory"
           >
-            {"\uD83D\uDD0E Ward Directory"}
+            {"\uD83D\uDD0E Find My Ward"}
           </button>
           <button className="action-btn" onClick={handleShare} aria-label="Share election information">
             {"\u2197 Share"}
@@ -546,13 +546,13 @@ export default function ElectionsCard({ election, cityName }) {
         </section>
       )}
 
-      <div className="ward-search">
-        <div className="section-heading compact">
-          <div>
+        <div className="ward-search">
+          <div className="section-heading compact">
+            <div>
               <h4>Official {cityLabel} ward directory</h4>
-              <p>Search by ward number, ward name, or zone. Candidate labels show what is verified versus still partial.</p>
+              <p>Search by ward number, ward name, or zone to find the right ward first. Candidate labels below tell you whether MyCityPulse has verified names, only seen party announcements, or is still checking.</p>
+            </div>
           </div>
-        </div>
 
         <input
           id="ward-search"
@@ -600,13 +600,13 @@ export default function ElectionsCard({ election, cityName }) {
                   Use this ward in my profile
                 </button>
               </div>
-            ) : (
-              <p className="no-result">
-                Ward not found. Try a ward number, ward name, or zone from {cityLabel}.
-              </p>
-            )}
-          </div>
-        )}
+              ) : (
+                <p className="no-result">
+                No ward match yet. Try a ward number, part of the ward name, or the zone shown in this city's official ward directory.
+                </p>
+              )}
+            </div>
+          )}
       </div>
 
       {candidateTracker && (
@@ -619,19 +619,22 @@ export default function ElectionsCard({ election, cityName }) {
               </p>
             </div>
           </div>
+          <p className="candidate-tracker-help">
+            "Official final" means MyCityPulse has seen a formal finalized list. "Party-announced" means a party has named someone, but final scrutiny or withdrawal status may still change. "Not verified yet" means we are not naming a candidate on the site yet.
+          </p>
           <p className="candidate-tracker-note">{candidateTracker.statusNote}</p>
           <div className="candidate-metrics">
             <div className="candidate-metric">
               <strong>{candidateTracker.namedEntries}</strong>
-              <span>named entries</span>
+              <span>named candidates shown</span>
             </div>
             <div className="candidate-metric">
               <strong>{candidateTracker.partyAnnouncedWards}</strong>
-              <span>party-announced wards</span>
+              <span>wards with party-announced names</span>
             </div>
             <div className="candidate-metric">
               <strong>{candidateTracker.officialFinalWards}</strong>
-              <span>official final wards</span>
+              <span>wards with final verified lists</span>
             </div>
           </div>
           <div className="candidate-legend">
