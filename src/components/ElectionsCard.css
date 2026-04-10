@@ -467,6 +467,83 @@
   line-height: 1.6;
 }
 
+.candidate-chip-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.candidate-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.candidate-chip.verified {
+  background: #dff6e9;
+  color: #1b7a4b;
+}
+
+.candidate-chip.partial {
+  background: #fff1d8;
+  color: #a05a00;
+}
+
+.candidate-chip.pending {
+  background: #efefef;
+  color: #6c6c6c;
+}
+
+.candidate-summary {
+  margin: 10px 0 0;
+  color: #666;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.candidate-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.candidate-list.compact {
+  gap: 8px;
+}
+
+.candidate-card {
+  background: #fff;
+  border: 1px solid #ece6da;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.candidate-card strong {
+  display: block;
+  color: #1f1f1f;
+  font-size: 13px;
+  margin-bottom: 3px;
+}
+
+.candidate-card span {
+  display: inline-block;
+  color: #8a5931;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.candidate-card p {
+  margin: 6px 0 0;
+  color: #777;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .ward-results {
   margin-top: 10px;
   padding: 14px;
@@ -514,6 +591,54 @@
 .source-list {
   display: grid;
   gap: 10px;
+}
+
+.candidate-tracker {
+  margin-bottom: 20px;
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid #eee6d6;
+  background: #fcfaf5;
+}
+
+.candidate-tracker-note {
+  margin: 0 0 14px;
+  color: #666;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.candidate-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.candidate-metric {
+  background: #fff;
+  border: 1px solid #ece6da;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.candidate-metric strong {
+  display: block;
+  color: #1f1f1f;
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.candidate-metric span {
+  color: #777;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.candidate-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .source-item {
@@ -773,5 +898,9 @@
 
   .section-heading {
     flex-direction: column;
+  }
+
+  .candidate-metrics {
+    grid-template-columns: 1fr;
   }
 }

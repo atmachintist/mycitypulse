@@ -41,6 +41,18 @@ function formatDate(date, options = {}) {
   });
 }
 
+function getCandidateTone(status) {
+  if (status === "official_final") return "verified";
+  if (status === "party_announced") return "partial";
+  return "pending";
+}
+
+function getCandidateLabel(status) {
+  if (status === "official_final") return "Official final list";
+  if (status === "party_announced") return "Party-announced";
+  return "Awaiting verification";
+}
+
 export default function ElectionsCard({ election, cityName }) {
   const wards = election.wards || [];
   const pledgeCountKey = `${cityName}_pledge_count`;
@@ -106,6 +118,7 @@ export default function ElectionsCard({ election, cityName }) {
   });
   const savedWard = wards.find((ward) => ward.number === locationProfile?.wardNumber) || null;
   const wardCount = wards.length || election.wards_total || 0;
+  const candidateTracker = election.candidateTracker || null;
 
   const persistLocationProfile = (nextProfile) => {
     if (typeof window !== "undefined") {
@@ -483,6 +496,23 @@ export default function ElectionsCard({ election, cityName }) {
                     Ward {savedWard.number}: {savedWard.name}
                   </strong>
                   <p>{savedWard.officeAddress}</p>
+                  <div className="candidate-chip-row">
+                    <span className={`candidate-chip ${getCandidateTone(savedWard.candidateStatus)}`}>
+                      {getCandidateLabel(savedWard.candidateStatus)}
+                    </span>
+                  </div>
+                  <p className="candidate-summary">{savedWard.candidateSummary}</p>
+                  {savedWard.candidates.length > 0 && (
+                    <div className="candidate-list compact">
+                      {savedWard.candidates.map((candidate) => (
+                        <div key={`${savedWard.number}-${candidate.name}`} className="candidate-card">
+                          <strong>{candidate.name}</strong>
+                          <span>{candidate.party}</span>
+                          {candidate.note && <p>{candidate.note}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
               <p className="profile-updated">
@@ -498,7 +528,7 @@ export default function ElectionsCard({ election, cityName }) {
         <div className="section-heading compact">
           <div>
             <h4>Official Ahmedabad ward directory</h4>
-            <p>Search by ward number, ward name, or zone.</p>
+            <p>Search by ward number, ward name, or zone. Candidate labels show what is verified versus still partial.</p>
           </div>
         </div>
 
@@ -523,6 +553,23 @@ export default function ElectionsCard({ election, cityName }) {
                 </p>
                 <p className="ward-result-meta">{foundWard.zone} Zone</p>
                 <p className="ward-result-address">{foundWard.officeAddress}</p>
+                <div className="candidate-chip-row">
+                  <span className={`candidate-chip ${getCandidateTone(foundWard.candidateStatus)}`}>
+                    {getCandidateLabel(foundWard.candidateStatus)}
+                  </span>
+                </div>
+                <p className="candidate-summary">{foundWard.candidateSummary}</p>
+                {foundWard.candidates.length > 0 && (
+                  <div className="candidate-list">
+                    {foundWard.candidates.map((candidate) => (
+                      <div key={`${foundWard.number}-${candidate.name}`} className="candidate-card">
+                        <strong>{candidate.name}</strong>
+                        <span>{candidate.party}</span>
+                        {candidate.note && <p>{candidate.note}</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <button
                   className="inline-save-btn"
                   type="button"
@@ -539,6 +586,41 @@ export default function ElectionsCard({ election, cityName }) {
           </div>
         )}
       </div>
+
+      {candidateTracker && (
+        <div className="candidate-tracker">
+          <div className="section-heading compact">
+            <div>
+              <h4>Candidate tracker</h4>
+              <p>
+                Last reviewed {formatDate(candidateTracker.lastReviewed)}. This section only shows names and ward coverage that MyCityPulse can label honestly.
+              </p>
+            </div>
+          </div>
+          <p className="candidate-tracker-note">{candidateTracker.statusNote}</p>
+          <div className="candidate-metrics">
+            <div className="candidate-metric">
+              <strong>{candidateTracker.namedEntries}</strong>
+              <span>named entries</span>
+            </div>
+            <div className="candidate-metric">
+              <strong>{candidateTracker.partyAnnouncedWards}</strong>
+              <span>party-announced wards</span>
+            </div>
+            <div className="candidate-metric">
+              <strong>{candidateTracker.officialFinalWards}</strong>
+              <span>official final wards</span>
+            </div>
+          </div>
+          <div className="candidate-legend">
+            {candidateTracker.legend.map((item) => (
+              <span key={item.key} className={`candidate-chip ${item.tone}`}>
+                {item.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {Array.isArray(election.sources) && election.sources.length > 0 && (
         <div className="elections-sources">
