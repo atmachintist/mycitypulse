@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import CivicSurvey from "./CivicSurvey";
 import { formatDigipin, getDigiPin, getLatLngFromDigiPin } from "../domain/location/digipin.js";
+import { getDigipinCityMismatch } from "../domain/location/cityProximity.js";
 import "./ElectionsCard.css";
 
 function readStoredCount(key) {
@@ -85,6 +86,7 @@ export default function ElectionsCard({ election, cityName }) {
   });
   const [locationStatus, setLocationStatus] = useState("");
   const [locationError, setLocationError] = useState("");
+  const [locationWarning, setLocationWarning] = useState("");
   const [isLocating, setIsLocating] = useState(false);
 
   useEffect(() => {
@@ -157,6 +159,20 @@ export default function ElectionsCard({ election, cityName }) {
     persistLocationProfile(nextProfile);
   };
 
+  const updateLocationWarning = (latitude, longitude) => {
+    const mismatch = getDigipinCityMismatch(cityName, latitude, longitude);
+
+    if (mismatch) {
+      setLocationWarning(
+        `This DIGIPIN looks closer to ${mismatch.detectedCity} than ${mismatch.expectedCity}. Double-check that you are using the right city section before saving your ward.`,
+      );
+      return mismatch;
+    }
+
+    setLocationWarning("");
+    return null;
+  };
+
   const clearLocationProfile = () => {
     if (typeof window !== "undefined") {
       window.localStorage.removeItem(locationProfileKey);
@@ -167,6 +183,7 @@ export default function ElectionsCard({ election, cityName }) {
     setSelectedWardNumber("");
     setLocationStatus("Saved civic profile cleared from this device.");
     setLocationError("");
+    setLocationWarning("");
   };
 
   const handlePledgeVote = () => {
@@ -227,6 +244,7 @@ export default function ElectionsCard({ election, cityName }) {
     setIsLocating(true);
     setLocationError("");
     setLocationStatus("");
+    setLocationWarning("");
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -237,6 +255,7 @@ export default function ElectionsCard({ election, cityName }) {
 
           setDigipinInput(digipin);
           saveLocationProfile({ digipin, latitude, longitude });
+          updateLocationWarning(latitude, longitude);
           setLocationStatus(`Location found and converted into a DIGIPIN. Confirm your ${cityLabel} ward below to finish the civic profile.`);
         } catch (error) {
           setLocationError("We found your location, but could not convert it into a DIGIPIN right now. You can still enter one manually.");
@@ -270,6 +289,7 @@ export default function ElectionsCard({ election, cityName }) {
         latitude: decoded.latitude,
         longitude: decoded.longitude,
       });
+      updateLocationWarning(decoded.latitude, decoded.longitude);
       setLocationError("");
       setLocationStatus(`DIGIPIN saved on this device. Confirm your ${cityLabel} ward to finish your civic profile.`);
     } catch (error) {
@@ -469,6 +489,7 @@ export default function ElectionsCard({ election, cityName }) {
                 setDigipinInput(event.target.value.toUpperCase());
                 setLocationError("");
                 setLocationStatus("");
+                setLocationWarning("");
               }}
               placeholder="Enter your DIGIPIN"
               className="digipin-input"
@@ -481,6 +502,7 @@ export default function ElectionsCard({ election, cityName }) {
           <p className="digipin-field-help">Example format: ABC-123-4DEF. If you do not know your DIGIPIN yet, use your current location instead.</p>
 
           {locationError && <p className="location-feedback error">{locationError}</p>}
+          {locationWarning && <p className="location-feedback warning">{locationWarning}</p>}
           {locationStatus && <p className="location-feedback success">{locationStatus}</p>}
 
           <label className="ward-select-label" htmlFor="saved-ward-select">

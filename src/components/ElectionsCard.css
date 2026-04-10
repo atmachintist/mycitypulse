@@ -413,6 +413,10 @@
   color: #1f6f5f;
 }
 
+.location-feedback.warning {
+  color: #8c5a00;
+}
+
 .location-feedback.error {
   color: #c24835;
 }
