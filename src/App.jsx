@@ -310,6 +310,7 @@ const GlobalStyles = () => (
 // â”€â”€â”€ Nav â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function Nav({ onLogoClick, onSearch }) {
   const [q, setQ] = useState("");
+  const [isSearchReady, setIsSearchReady] = useState(false);
   const ref = useRef(null);
   const { activeIndex, handleKeyDown, resetSearch, results, setActiveIndex } = useCitySearch({
     cities,
@@ -353,12 +354,19 @@ function Nav({ onLogoClick, onSearch }) {
         <input
           id="nav-city-search"
           name="navCitySearch"
-          autoComplete="off"
+          type="search"
+          autoComplete="new-password"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
           data-form-type="other"
           data-lpignore="true"
+          readOnly={!isSearchReady}
           value={q}
           onChange={e => setQ(e.target.value)}
           onKeyDown={(e) => handleKeyDown(e, selectCity)}
+          onFocus={() => setIsSearchReady(true)}
+          onMouseDown={() => setIsSearchReady(true)}
 	  aria-label="Search cities from navigation"
           placeholder="Search any city..."
           style={{
@@ -405,6 +413,7 @@ function Nav({ onLogoClick, onSearch }) {
 // â”€â”€â”€ Hero â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function Hero({ onCitySelect }) {
   const [q, setQ] = useState("");
+  const [isSearchReady, setIsSearchReady] = useState(false);
   const ref = useRef(null);
   const { activeIndex, handleKeyDown, resetSearch, results, setActiveIndex } = useCitySearch({
     cities,
@@ -515,12 +524,22 @@ function Hero({ onCitySelect }) {
             <input
               id="hero-city-search"
               name="heroCitySearch"
-              autoComplete="off"
+              type="search"
+              autoComplete="new-password"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
               data-form-type="other"
               data-lpignore="true"
+              readOnly={!isSearchReady}
               value={q}
               onChange={e => setQ(e.target.value)}
               onKeyDown={(e) => handleKeyDown(e, selectCity)}
+              onFocus={e => {
+                setIsSearchReady(true);
+                e.target.style.borderColor = "rgba(232,102,13,0.6)";
+              }}
+              onMouseDown={() => setIsSearchReady(true)}
 	      aria-label="Search cities"
               placeholder="Search your city..."
               style={{
@@ -529,8 +548,9 @@ function Hero({ onCitySelect }) {
                 borderRadius: 40, color: "#fff", fontSize: 16, outline: "none",
                 transition: "border-color 0.2s",
               }}
-              onFocus={e => e.target.style.borderColor = "rgba(232,102,13,0.6)"}
-              onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.15)"}
+              onBlur={e => {
+                e.target.style.borderColor = "rgba(255,255,255,0.15)";
+              }}
             />
             <div style={{
               position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
