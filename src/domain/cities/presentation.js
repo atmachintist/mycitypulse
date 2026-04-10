@@ -59,15 +59,15 @@ export const CITY_IMAGES = {
   Patna: W("Golghar_Patna.jpg"),
   Thane: W("Upvan_Lake_Thane.jpg"),
   Bhopal: W("Upper_Lake,_Bhopal.jpg"),
-  Ghaziabad: W("Hindon_River_Ghaziabad.jpg"),
+  Ghaziabad: W("Clock_House.jpg"),
   Visakhapatnam: W("Rushikonda_beach.jpg"),
   Vadodara: W("Laxmi_Vilas_Palace_(Maratha_Palace),_Vadodara.JPG"),
   "Pimpri-Chinchwad": W("Pimpri-Chinchwad.jpg"),
   Nashik: W("Trimbakeshwar_temple.jpg"),
   Faridabad: W("Suraj_Kund_Festival.JPG"),
-  Ludhiana: W("Ludhiana_city.jpg"),
+  Ludhiana: W("Clock_Tower_Ludhiana.jpg"),
   Agra: W("Taj_Mahal_(Edited).jpeg"),
-  Rajkot: W("Rajkot_night_view.jpg"),
+  Rajkot: W("Beautiful_sky_of_Rajkot_city.jpg"),
   Varanasi: W("Varanasi_ghats.jpg"),
   "Kalyan-Dombivli": W("Kalyan_fort.jpg"),
   Coimbatore: W("Marudhamalai_temple.jpg"),
@@ -92,7 +92,7 @@ export const CITY_IMAGES = {
   Dhanbad: W("Topchanchi_lake.jpg"),
   Chandigarh: W("Rock_Garden_of_Chandigarh.jpg"),
   Gwalior: W("Gwalior_Fort.jpg"),
-  "Mira Bhayandar": W("Mira_Road_skyline.jpg"),
+  "Mira Bhayandar": W("Mira_Road_Skyline.jpg"),
 };
 
 export function fmt(value) {
