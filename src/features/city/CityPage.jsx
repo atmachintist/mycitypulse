@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { CITY_ISSUES, CIVIC_ORGS, CITIES_WITH_DATA, WARD_CORPORATORS } from "../../cityData.js";
-import ElectionsCard from "../../components/ElectionsCard";
 import { CITY_IMAGES, STRESS, TYPO_C, TYPO_LABEL, TYPO_PUBLIC_DESC, fmt } from "../../domain/cities/presentation.js";
+import { loadElectionData } from "../../domain/elections/loadElectionData.js";
 import WardsPanel from "./WardsPanel.jsx";
+
+const ElectionsCard = lazy(() => import("../../components/ElectionsCard"));
 
 export default function CityPage({ city, onBack }) {
   const sc = STRESS[city.stress];
@@ -13,6 +15,8 @@ export default function CityPage({ city, onBack }) {
   const issues = CITY_ISSUES[city.city] || [];
   const orgs = CIVIC_ORGS[city.city] || [];
   const wardData = WARD_CORPORATORS[city.city] || null;
+  const [electionData, setElectionData] = useState(null);
+  const [isElectionLoading, setIsElectionLoading] = useState(false);
 
   const [activePanel, setActivePanel] = useState("health");
 
@@ -20,14 +24,41 @@ export default function CityPage({ city, onBack }) {
     { id: "health", label: "City Health" },
     { id: "issues", label: "Civic Issues" },
     { id: "ecosystem", label: "Civic Ecosystem" },
-    ...(city.elections ? [{ id: "elections", label: "Elections" }] : []),
+    ...(city.hasElections ? [{ id: "elections", label: "Elections" }] : []),
     ...(wardData ? [{ id: "wards", label: "Wards & Corporators" }] : []),
   ];
 
   useEffect(() => {
     window.scrollTo(0, 0);
     setActivePanel("health");
+    setElectionData(null);
   }, [city]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!city.hasElections || activePanel !== "elections" || electionData) {
+      return undefined;
+    }
+
+    setIsElectionLoading(true);
+
+    loadElectionData(city.city)
+      .then((data) => {
+        if (isMounted) {
+          setElectionData(data);
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsElectionLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activePanel, city, electionData]);
 
   const stats = [
     { label: "Population", value: fmt(city.population) },
@@ -43,6 +74,7 @@ export default function CityPage({ city, onBack }) {
           <img
             src={imgUrl}
             alt={city.city}
+            decoding="async"
             onError={() => setImgErr(true)}
             style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.55 }}
           />
@@ -384,14 +416,29 @@ export default function CityPage({ city, onBack }) {
         </div>
       )}
 
-      {activePanel === "elections" && city.elections && (
+      {activePanel === "elections" && city.hasElections && (
         <div style={{ background: "#fff", padding: "52px 32px" }}>
           <div style={{ maxWidth: 900, margin: "0 auto" }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#667eea", letterSpacing: "0.12em", marginBottom: 12 }}>PANEL 4 - ELECTIONS</div>
             <h2 style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 40 }}>
               Municipal Elections
             </h2>
-            <ElectionsCard election={city.elections} cityName={city.city} />
+            {isElectionLoading && (
+              <div style={{ background: "#faf8f4", borderRadius: 14, padding: "18px 20px", color: "#666" }}>
+                Loading election data for {city.city}...
+              </div>
+            )}
+            {!isElectionLoading && electionData && (
+              <Suspense
+                fallback={
+                  <div style={{ background: "#faf8f4", borderRadius: 14, padding: "18px 20px", color: "#666" }}>
+                    Loading election tools...
+                  </div>
+                }
+              >
+                <ElectionsCard election={electionData} cityName={city.city} />
+              </Suspense>
+            )}
           </div>
         </div>
       )}

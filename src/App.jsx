@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect, useRef } from "react";
 import { CITY_ISSUES, CIVIC_ORGS, WARD_CORPORATORS } from "./cityData.js";
+import { lazy, Suspense } from "react";
 import {
   CITY_IMAGES,
   STRESS,
@@ -8,13 +9,11 @@ import {
   TYPO_PUBLIC_DESC,
   fmt,
 } from "./domain/cities/presentation.js";
-import { AHMEDABAD_ELECTION_2026 } from "./domain/elections/ahmedabad.js";
-import { RAJKOT_ELECTION_2026 } from "./domain/elections/rajkot.js";
-import { SURAT_ELECTION_2026 } from "./domain/elections/surat.js";
-import { VADODARA_ELECTION_2026 } from "./domain/elections/vadodara.js";
-import CityPage from "./features/city/CityPage.jsx";
-import CompareView, { CompareTray } from "./features/compare/CompareView.jsx";
+import CompareTray from "./features/compare/CompareTray.jsx";
 import useCitySearch from "./shared/hooks/useCitySearch.js";
+
+const CityPage = lazy(() => import("./features/city/CityPage.jsx"));
+const CompareView = lazy(() => import("./features/compare/CompareView.jsx"));
 
 // â”€â”€â”€ City Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const cities = [
@@ -26,11 +25,11 @@ const cities = [
   { rank:6,  city:"Hyderabad",                state:"Telangana",       population:10534000, area:650,   density:16206, tier:"Mega Metro",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"A city of Nizams and now of tech unicorns.",                                                                       stress:"High",     stress_reason:"Rapid tech-led growth, peri-urban sprawl, lake encroachment",                              formerName:null,          aliases:["Cyberabad","Hyd"] },
   {
     rank:7,  city:"Ahmedabad",                state:"Gujarat",         population:8450000,  area:505,   density:16733, tier:"Major City",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"India's first UNESCO World Heritage City.",                                                                        stress:"High",     stress_reason:"Dense old city core, industrial pollution, heat island effect",                            formerName:null,          aliases:["Amdavad","AMD"],
-    elections: AHMEDABAD_ELECTION_2026
+    hasElections: true
   },
   {
     rank:8,  city:"Surat",                    state:"Gujarat",         population:7784000,  area:326.5, density:23841, tier:"Major City",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"Survived a plague and rebuilt into one of India's best-managed municipalities.",                                     stress:"Elevated", stress_reason:"High density but strong municipal track record; migration pressure rising",              formerName:null,          aliases:[],
-    elections: SURAT_ELECTION_2026
+    hasElections: true
   },
   { rank:9,  city:"Pune",                     state:"Maharashtra",     population:7764000,  area:331.3, density:23435, tier:"Major City",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"Mumbai's younger, more breathable neighbour.",                                                                     stress:"Elevated", stress_reason:"Fast growth, water stress, periurban planning gaps",                                      formerName:"Poona",       aliases:["Poona"] },
   { rank:10, city:"Jaipur",                   state:"Rajasthan",       population:4161000,  area:467,   density:8910,  tier:"Major City",  density_descriptor:"Moderately Dense", urban_typology:"Ancient Pulse",          one_liner:"The Pink City, built in a perfect grid in 1727.",                                                                  stress:"Elevated", stress_reason:"Heritage-growth tension, water scarcity, tourism pressure",                              formerName:null,          aliases:["Pink City"] },
@@ -45,7 +44,7 @@ const cities = [
   { rank:19, city:"Visakhapatnam",            state:"Andhra Pradesh",  population:2358000,  area:530,   density:4449,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Sleeping Giant",         one_liner:"A deep-water port city with every ingredient of greatness.",                                                       stress:"Elevated", stress_reason:"Industrial pollution, cyclone vulnerability, uneven infrastructure",                   formerName:null,          aliases:["Vizag","Waltair"] },
   {
     rank:20, city:"Vadodara",                 state:"Gujarat",         population:2300000,  area:148,   density:15541, tier:"Large City",  density_descriptor:"Very Dense",       urban_typology:"Managed Growth City",    one_liner:"Gujarat's cultural capital.",                                                                                      stress:"Moderate", stress_reason:"Dense but well-managed; flood risk in low-lying areas",                                  formerName:"Baroda",      aliases:["Baroda"],
-    elections: VADODARA_ELECTION_2026
+    hasElections: true
   },
   { rank:21, city:"Pimpri-Chinchwad",         state:"Maharashtra",     population:2273000,  area:177,   density:12842, tier:"Large City",  density_descriptor:"Moderately Dense", urban_typology:"Blueprint City",         one_liner:"Pune's industrial twin.",                                                                                          stress:"Moderate", stress_reason:"Planned industrial city; air quality concern",                                             formerName:null,          aliases:["PCMC","Pimpri","Chinchwad"] },
   { rank:22, city:"Nashik",                   state:"Maharashtra",     population:1958000,  area:259,   density:7560,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Ancient Pulse",          one_liner:"On the Godavari, host to the Kumbh Mela.",                                                                         stress:"Elevated", stress_reason:"Pilgrimage surge pressure, river health, periurban growth",                          formerName:null,          aliases:["Nasik"] },
@@ -54,7 +53,7 @@ const cities = [
   { rank:25, city:"Agra",                     state:"Uttar Pradesh",   population:1760000,  area:188.4, density:9342,  tier:"Large City",  density_descriptor:"Moderately Dense", urban_typology:"Ancient Pulse",          one_liner:"The city the Mughals built their empire around.",                                                                  stress:"High",     stress_reason:"Yamuna pollution, heritage-tourism pressure, air quality around Taj",                   formerName:null,          aliases:["Taj City"] },
   {
     rank:26, city:"Rajkot",                   state:"Gujarat",         population:1690000,  area:170,   density:9941,  tier:"Large City",  density_descriptor:"Moderately Dense", urban_typology:"Managed Growth City",    one_liner:"Gandhi's childhood city.",                                                                                         stress:"Moderate", stress_reason:"Moderate density, reasonable governance; heat stress rising",                          formerName:null,          aliases:[],
-    elections: RAJKOT_ELECTION_2026
+    hasElections: true
   },
   { rank:27, city:"Varanasi",                 state:"Uttar Pradesh",   population:1680000,  area:82,    density:20488, tier:"Large City",  density_descriptor:"Very Dense",       urban_typology:"Ancient Pulse",          one_liner:"Three thousand years of habitation in 82 square kilometres.",                                                     stress:"Critical", stress_reason:"Extreme density in ancient core, Ganga ghats under sewage stress",                   formerName:null,          aliases:["Banaras","Benares","Kashi"] },
   { rank:28, city:"Kalyan-Dombivli",          state:"Maharashtra",     population:1654000,  area:94,    density:17596, tier:"Large City",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"The city at the end of Mumbai's suburban rail line.",                                                              stress:"High",     stress_reason:"Very dense, creek pollution, infrastructure designed for half its population",          formerName:null,          aliases:["Kalyan","Dombivli","KDMC"] },
@@ -89,7 +88,7 @@ const DATASET_SCOPE = {
   issueProfileCount: Object.keys(CITY_ISSUES).length,
   orgDirectoryCount: Object.keys(CIVIC_ORGS).length,
   wardPanelCount: Object.keys(WARD_CORPORATORS).length,
-  electionTrackerCount: cities.filter((city) => city.elections).length,
+  electionTrackerCount: cities.filter((city) => city.hasElections).length,
 };
 
 const GUJARAT_ELECTION_CITIES = ["Ahmedabad", "Surat", "Vadodara", "Rajkot"];
@@ -691,6 +690,8 @@ function CityCard({ city, onSelect, onCompare, inCompare }) {
         <img
           src={imgUrl}
           alt={city.city}
+          loading="lazy"
+          decoding="async"
           onError={() => setImgErr(true)}
           style={{
             position: "absolute", inset: 0,
@@ -1244,16 +1245,24 @@ export default function App() {
       />
       <div style={{ paddingTop: 58 }}>
         {compareMode
-          ? <CompareView
-              allCities={cities}
-              cities={compareList}
-              onBack={handleCloseCompare}
-              onCitySelect={handleCitySelect}
-              onRemove={handleRemoveFromCompare}
-              onAdd={handleAddToCompare}
-            />
+          ? (
+            <Suspense fallback={<div style={{ padding: "48px 24px", textAlign: "center", color: "#666" }}>Loading compare view...</div>}>
+              <CompareView
+                allCities={cities}
+                cities={compareList}
+                onBack={handleCloseCompare}
+                onCitySelect={handleCitySelect}
+                onRemove={handleRemoveFromCompare}
+                onAdd={handleAddToCompare}
+              />
+            </Suspense>
+          )
           : selectedCity
-            ? <CityPage city={selectedCity} onBack={handleBack} />
+            ? (
+              <Suspense fallback={<div style={{ padding: "48px 24px", textAlign: "center", color: "#666" }}>Loading city page...</div>}>
+                <CityPage city={selectedCity} onBack={handleBack} />
+              </Suspense>
+            )
             : <HomePage
                 onCitySelect={handleCitySelect}
                 onCompare={handleCompareToggle}

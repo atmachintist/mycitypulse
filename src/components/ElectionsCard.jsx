@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
-import CivicSurvey from "./CivicSurvey";
+import React, { Suspense, lazy, useEffect, useState } from "react";
 import { formatDigipin, getDigiPin, getLatLngFromDigiPin } from "../domain/location/digipin.js";
 import { getDigipinCityMismatch } from "../domain/location/cityProximity.js";
 import "./ElectionsCard.css";
+
+const CivicSurvey = lazy(() => import("./CivicSurvey"));
 
 function readStoredCount(key) {
   if (typeof window === "undefined") {
@@ -707,7 +708,9 @@ export default function ElectionsCard({ election, cityName }) {
             <button className="survey-modal-close" onClick={() => setShowSurvey(false)}>
               {"\u2715"}
             </button>
-            <CivicSurvey city={cityName} onComplete={() => setShowSurvey(false)} />
+            <Suspense fallback={<div style={{ padding: 24, color: "#666" }}>Loading survey...</div>}>
+              <CivicSurvey city={cityName} onComplete={() => setShowSurvey(false)} />
+            </Suspense>
           </div>
         </div>
       )}
