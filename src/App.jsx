@@ -9,6 +9,7 @@ import {
   fmt,
 } from "./domain/cities/presentation.js";
 import { AHMEDABAD_ELECTION_2026 } from "./domain/elections/ahmedabad.js";
+import { SURAT_ELECTION_2026 } from "./domain/elections/surat.js";
 import { VADODARA_ELECTION_2026 } from "./domain/elections/vadodara.js";
 import CityPage from "./features/city/CityPage.jsx";
 import CompareView, { CompareTray } from "./features/compare/CompareView.jsx";
@@ -26,7 +27,10 @@ const cities = [
     rank:7,  city:"Ahmedabad",                state:"Gujarat",         population:8450000,  area:505,   density:16733, tier:"Major City",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"India's first UNESCO World Heritage City.",                                                                        stress:"High",     stress_reason:"Dense old city core, industrial pollution, heat island effect",                            formerName:null,          aliases:["Amdavad","AMD"],
     elections: AHMEDABAD_ELECTION_2026
   },
-  { rank:8,  city:"Surat",                    state:"Gujarat",         population:7784000,  area:326.5, density:23841, tier:"Major City",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"Survived a plague and rebuilt into one of India's best-managed municipalities.",                                     stress:"Elevated", stress_reason:"High density but strong municipal track record; migration pressure rising",              formerName:null,          aliases:[] },
+  {
+    rank:8,  city:"Surat",                    state:"Gujarat",         population:7784000,  area:326.5, density:23841, tier:"Major City",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"Survived a plague and rebuilt into one of India's best-managed municipalities.",                                     stress:"Elevated", stress_reason:"High density but strong municipal track record; migration pressure rising",              formerName:null,          aliases:[],
+    elections: SURAT_ELECTION_2026
+  },
   { rank:9,  city:"Pune",                     state:"Maharashtra",     population:7764000,  area:331.3, density:23435, tier:"Major City",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"Mumbai's younger, more breathable neighbour.",                                                                     stress:"Elevated", stress_reason:"Fast growth, water stress, periurban planning gaps",                                      formerName:"Poona",       aliases:["Poona"] },
   { rank:10, city:"Jaipur",                   state:"Rajasthan",       population:4161000,  area:467,   density:8910,  tier:"Major City",  density_descriptor:"Moderately Dense", urban_typology:"Ancient Pulse",          one_liner:"The Pink City, built in a perfect grid in 1727.",                                                                  stress:"Elevated", stress_reason:"Heritage-growth tension, water scarcity, tourism pressure",                              formerName:null,          aliases:["Pink City"] },
   { rank:11, city:"Lucknow",                  state:"Uttar Pradesh",   population:3879000,  area:349,   density:11115, tier:"Major City",  density_descriptor:"Moderately Dense", urban_typology:"Sleeping Giant",         one_liner:"The city of nawabs and tehzeeb.",                                                                                  stress:"High",     stress_reason:"Underinvestment relative to size, Gomti river stress, waste processing gaps",              formerName:null,          aliases:["Lakhnau"] },
@@ -83,6 +87,8 @@ const DATASET_SCOPE = {
   wardPanelCount: Object.keys(WARD_CORPORATORS).length,
   electionTrackerCount: cities.filter((city) => city.elections).length,
 };
+
+const GUJARAT_ELECTION_CITIES = ["Ahmedabad", "Surat", "Vadodara"];
 
 
 // Special:FilePath lets Wikimedia resolve the correct hash automatically â€” far more reliable than hardcoding thumb paths.
@@ -437,6 +443,44 @@ function Hero({ onCitySelect }) {
         }}>
           <span style={{ width: 6, height: 6, background: "#E8660D", borderRadius: "50%", animation: "pulse-dot 2s infinite" }} />
           <span style={{ color: "#E8660D", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em" }}>CIVIC INTELLIGENCE FOR URBAN INDIA</span>
+        </div>
+
+        <div style={{
+          margin: "0 auto 24px",
+          maxWidth: 760,
+          overflow: "hidden",
+          borderRadius: 999,
+          border: "1px solid rgba(255,255,255,0.1)",
+          background: "rgba(255,255,255,0.04)",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.18)",
+        }}>
+          <div style={{
+            display: "flex",
+            width: "max-content",
+            minWidth: "100%",
+            animation: "ticker 28s linear infinite",
+          }}>
+            {[0, 1].map((copy) => (
+              <div
+                key={copy}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 28,
+                  padding: "10px 20px",
+                  whiteSpace: "nowrap",
+                  color: "rgba(255,255,255,0.82)",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  letterSpacing: "0.02em",
+                }}
+              >
+                <span style={{ color: "#E8660D", fontWeight: 800 }}>GUJARAT ELECTION UPDATE</span>
+                <span>Citizens in {GUJARAT_ELECTION_CITIES.join(", ")} can now check election updates inside their city sections.</span>
+                <span style={{ color: "rgba(255,255,255,0.55)" }}>Search your city and open the Elections panel.</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Headline */}
