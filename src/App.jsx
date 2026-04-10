@@ -8,6 +8,7 @@ import {
   TYPO_PUBLIC_DESC,
   fmt,
 } from "./domain/cities/presentation.js";
+import { AHMEDABAD_ELECTION_2026 } from "./domain/elections/ahmedabad.js";
 import CityPage from "./features/city/CityPage.jsx";
 import CompareView, { CompareTray } from "./features/compare/CompareView.jsx";
 import useCitySearch from "./shared/hooks/useCitySearch.js";
@@ -22,72 +23,7 @@ const cities = [
   { rank:6,  city:"Hyderabad",                state:"Telangana",       population:10534000, area:650,   density:16206, tier:"Mega Metro",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"A city of Nizams and now of tech unicorns.",                                                                       stress:"High",     stress_reason:"Rapid tech-led growth, peri-urban sprawl, lake encroachment",                              formerName:null,          aliases:["Cyberabad","Hyd"] },
   {
     rank:7,  city:"Ahmedabad",                state:"Gujarat",         population:8450000,  area:505,   density:16733, tier:"Major City",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"India's first UNESCO World Heritage City.",                                                                        stress:"High",     stress_reason:"Dense old city core, industrial pollution, heat island effect",                            formerName:null,          aliases:["Amdavad","AMD"],
-    elections: {
-      year: 2026,
-      status: "nomination",
-      election_date: "2026-04-26",
-      result_date: "2026-04-28",
-      nomination_close: "2026-04-11",
-      wards_total: 48,
-      wards_verified: 21,
-      seats_total: 192,
-      timeline: [
-        { date: "2026-04-06", label: "Nomination opens", icon: "\uD83D\uDCDD" },
-        { date: "2026-04-11", label: "Nomination closes", icon: "\uD83D\uDD12", urgent: true },
-        { date: "2026-04-13", label: "Scrutiny", icon: "\u2713" },
-        { date: "2026-04-15", label: "Candidates finalized", icon: "\uD83D\uDCCB" },
-        { date: "2026-04-26", label: "Election day", icon: "\uD83D\uDDF3\uFE0F" },
-        { date: "2026-04-28", label: "Results announced", icon: "\uD83D\uDCCA" }
-      ],
-      verified_wards: [
-        { number: 1, name: "Gota" },
-        { number: 2, name: "Chandlodia" },
-        { number: 3, name: "Ranip" },
-        { number: 4, name: "Sabarmati" },
-        { number: 5, name: "Nava Wadaj" },
-        { number: 6, name: "Juna Wadaj" },
-        { number: 7, name: "Ghatlodia" },
-        { number: 8, name: "Thaltej" },
-        { number: 9, name: "Naranpura" },
-        { number: 10, name: "Stadium" },
-        { number: 11, name: "Sardarnagar" },
-        { number: 12, name: "Naroda" },
-        { number: 14, name: "Kubernagar" },
-        { number: 19, name: "Bodakdev" },
-        { number: 20, name: "Jodhpur" },
-        { number: 22, name: "Stadium West" },
-        { number: 23, name: "Thakkarbapanagar" },
-        { number: 25, name: "Viratnagar" },
-        { number: 26, name: "Ambawadi" },
-        { number: 27, name: "Navrangpura" },
-        { number: 40, name: "Paldi" },
-        { number: 41, name: "Vasna" }
-      ],
-      wards: [
-        { number: 1, name: "Gota" },
-        { number: 2, name: "Chandlodia" },
-        { number: 3, name: "Ranip" },
-        { number: 4, name: "Sabarmati" },
-        { number: 5, name: "Nava Wadaj" },
-        { number: 6, name: "Juna Wadaj" },
-        { number: 7, name: "Ghatlodia" },
-        { number: 8, name: "Thaltej" },
-        { number: 9, name: "Naranpura" },
-        { number: 10, name: "Stadium" },
-        { number: 11, name: "Sardarnagar" },
-        { number: 12, name: "Naroda" },
-        { number: 14, name: "Kubernagar" },
-        { number: 19, name: "Bodakdev" },
-        { number: 20, name: "Jodhpur" },
-        { number: 22, name: "Stadium West" },
-        { number: 23, name: "Thakkarbapanagar" },
-        { number: 25, name: "Viratnagar" },
-        { number: 26, name: "Ambawadi" },
-        { number: 27, name: "Navrangpura" },
-        { number: 40, name: "Paldi" },
-        { number: 41, name: "Vasna" }
-      ]
-    }
+    elections: AHMEDABAD_ELECTION_2026
   },
   { rank:8,  city:"Surat",                    state:"Gujarat",         population:7784000,  area:326.5, density:23841, tier:"Major City",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"Survived a plague and rebuilt into one of India's best-managed municipalities.",                                     stress:"Elevated", stress_reason:"High density but strong municipal track record; migration pressure rising",              formerName:null,          aliases:[] },
   { rank:9,  city:"Pune",                     state:"Maharashtra",     population:7764000,  area:331.3, density:23435, tier:"Major City",  density_descriptor:"Very Dense",       urban_typology:"Overnight City",         one_liner:"Mumbai's younger, more breathable neighbour.",                                                                     stress:"Elevated", stress_reason:"Fast growth, water stress, periurban planning gaps",                                      formerName:"Poona",       aliases:["Poona"] },

@@ -8,6 +8,7 @@ export default function WardsPanel({ city }) {
 
   if (!data) return null;
 
+  const isRepresentativeSnapshot = /representative/i.test(data.wardNote || "");
   const filtered = data.wards.filter((ward) => {
     const matchZone = zoneFilter === "All" || ward.zone === zoneFilter;
     const ql = q.toLowerCase().trim();
@@ -27,10 +28,12 @@ export default function WardsPanel({ city }) {
           PANEL 4 - WARD REPRESENTATIVES
         </div>
         <h2 style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
-          Who represents your ward.
+          {isRepresentativeSnapshot ? "Ward snapshot." : "Who represents your ward."}
         </h2>
         <p style={{ fontSize: 15, color: "#888", lineHeight: 1.6, marginBottom: 32 }}>
-          Elected corporators for {city.city} - {data.body} - {data.lastElection} elections - Term ends {data.termEnds}.
+          {isRepresentativeSnapshot
+            ? `This is a MyCityPulse snapshot of ward representation for ${city.city}, not a complete official ward register. Use the Elections panel when you need the full ward directory.`
+            : `Elected corporators for ${city.city} - ${data.body} - ${data.lastElection} elections - Term ends ${data.termEnds}.`}
         </p>
 
         <div style={{ background: "#fff", borderRadius: 14, padding: 24, marginBottom: 28, boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>

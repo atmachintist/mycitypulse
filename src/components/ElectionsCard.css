@@ -1,10 +1,10 @@
 .elections-card {
-  background: white;
+  background: #fff;
   border-radius: 12px;
   padding: 24px;
   margin: 16px 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 .elections-snapshot {
@@ -40,7 +40,7 @@
 }
 
 .countdown {
-  margin: 0 0 8px 0;
+  margin: 0 0 8px;
   font-size: 16px;
   font-weight: 600;
   color: #d9534f;
@@ -55,13 +55,14 @@
   margin: 8px 0;
   font-size: 14px;
   color: #666;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-weight: 600;
   animation: pulse 1.5s ease-in-out infinite;
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -70,9 +71,20 @@
 }
 
 .date-info {
-  margin: 8px 0;
+  margin: 8px 0 0;
   font-size: 13px;
   color: #666;
+  line-height: 1.5;
+}
+
+.coverage-note {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #f8f7f3;
+  color: #666;
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 .pledge-section {
@@ -84,7 +96,7 @@
 }
 
 .pledge-btn {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
   color: #333;
   border: none;
   padding: 12px 28px;
@@ -124,8 +136,8 @@
 }
 
 .pledge-share-modal {
-  background: white;
-  border: 2px solid #FFD700;
+  background: #fff;
+  border: 2px solid #ffd700;
   border-radius: 8px;
   padding: 16px;
   margin-top: 12px;
@@ -145,13 +157,13 @@
 }
 
 .pledge-share-modal h4 {
-  margin: 0 0 8px 0;
+  margin: 0 0 8px;
   font-size: 15px;
   color: #333;
 }
 
 .pledge-share-modal p {
-  margin: 0 0 12px 0;
+  margin: 0 0 12px;
   font-size: 13px;
   color: #666;
 }
@@ -171,7 +183,7 @@
   font-size: 18px;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
-  color: white;
+  color: #fff;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -179,15 +191,15 @@
 }
 
 .social-btn.twitter {
-  background-color: #1DA1F2;
+  background-color: #1da1f2;
 }
 
 .social-btn.facebook {
-  background-color: #1877F2;
+  background-color: #1877f2;
 }
 
 .social-btn.whatsapp {
-  background-color: #25D366;
+  background-color: #25d366;
 }
 
 .social-btn.instagram {
@@ -222,16 +234,29 @@
   justify-content: center;
 }
 
+.action-btn,
+.location-btn,
+.digipin-submit,
+.inline-save-btn {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
 .action-btn {
   background: #f8f8f8;
   color: #333;
-  border: 1px solid #ddd;
   padding: 10px 16px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
+}
+
+.action-btn:hover,
+.location-btn:hover,
+.digipin-submit:hover,
+.inline-save-btn:hover {
+  transform: translateY(-1px);
 }
 
 .action-btn:hover {
@@ -239,40 +264,246 @@
   border-color: #bbb;
 }
 
-.ward-search {
+.section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.section-heading.compact {
+  margin-bottom: 14px;
+}
+
+.section-heading h4 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  color: #1f1f1f;
+}
+
+.section-heading p {
+  margin: 0;
+  color: #777;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.text-action {
+  background: none;
+  border: none;
+  color: #c76122;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0;
+}
+
+.location-profile,
+.ward-search,
+.elections-sources {
   margin-bottom: 20px;
 }
 
-.ward-input {
+.location-profile {
+  background: #f8f5ef;
+  border-radius: 12px;
+  padding: 18px;
+  border: 1px solid #eee6d6;
+}
+
+.location-note {
+  margin: 0 0 14px;
+  color: #5f5a50;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.location-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.location-btn {
+  background: #1f6f5f;
+  color: #fff;
+  border-color: #1f6f5f;
+  padding: 10px 16px;
+}
+
+.location-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.location-actions-copy {
+  color: #7a7469;
+  font-size: 12px;
+}
+
+.digipin-form {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.digipin-input,
+.ward-input,
+.ward-select {
   width: 100%;
   padding: 12px;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 14px;
   font-family: inherit;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: #fff;
 }
 
-.ward-input:focus {
+.digipin-input {
+  flex: 1;
+  min-width: 240px;
+}
+
+.digipin-submit {
+  background: #c76122;
+  color: #fff;
+  border-color: #c76122;
+  padding: 0 16px;
+  min-height: 46px;
+}
+
+.digipin-input:focus,
+.ward-input:focus,
+.ward-select:focus {
   outline: none;
-  border-color: #4CAF50;
-  box-shadow: 0 0 4px rgba(76, 175, 80, 0.2);
+  border-color: #c76122;
+  box-shadow: 0 0 0 4px rgba(199, 97, 34, 0.12);
+}
+
+.location-feedback {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.location-feedback.success {
+  color: #1f6f5f;
+}
+
+.location-feedback.error {
+  color: #c24835;
+}
+
+.ward-select-label {
+  display: block;
+  margin: 14px 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b645a;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.profile-summary {
+  margin-top: 16px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px;
+  border: 1px solid #efe7da;
+}
+
+.profile-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.profile-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #f2efe8;
+  color: #554f46;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.profile-coordinates,
+.profile-updated {
+  margin: 0;
+  font-size: 12px;
+  color: #7b756b;
+  line-height: 1.6;
+}
+
+.profile-updated {
+  margin-top: 10px;
+}
+
+.profile-ward-card {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 10px;
+  background: #fbf9f4;
+  border-left: 3px solid #1f6f5f;
+}
+
+.profile-ward-card strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #1f1f1f;
+}
+
+.profile-ward-card p {
+  margin: 0;
+  color: #666;
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 .ward-results {
-  margin-top: 8px;
-  padding: 12px;
+  margin-top: 10px;
+  padding: 14px;
   background: #f9f9f9;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 13px;
+  border: 1px solid #efefef;
 }
 
 .ward-found {
-  color: #27ae60;
+  color: #333;
 }
 
 .ward-found p {
   margin: 4px 0;
+}
+
+.ward-result-title {
+  margin-bottom: 4px;
+}
+
+.ward-result-meta {
+  color: #7c756b;
+  font-weight: 600;
+}
+
+.ward-result-address {
+  color: #666;
+  line-height: 1.6;
+}
+
+.inline-save-btn {
+  background: #fff;
+  color: #c76122;
+  border-color: #e3c4b0;
+  padding: 9px 12px;
+  margin-top: 10px;
 }
 
 .no-result {
@@ -280,9 +511,43 @@
   margin: 0;
 }
 
+.source-list {
+  display: grid;
+  gap: 10px;
+}
+
+.source-item {
+  display: block;
+  padding: 14px 16px;
+  border: 1px solid #ece7de;
+  border-radius: 10px;
+  background: #fcfbf8;
+  color: inherit;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.source-item strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #222;
+  font-size: 14px;
+}
+
+.source-item span {
+  color: #746d62;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.source-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  border-color: #dbcbb6;
+}
+
 .cocreator-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, #1f6f5f 0%, #114f45 100%);
+  color: #fff;
   padding: 16px;
   border-radius: 8px;
   text-align: center;
@@ -290,14 +555,14 @@
 }
 
 .cocreator-section p {
-  margin: 0 0 12px 0;
+  margin: 0 0 12px;
   font-size: 14px;
   line-height: 1.5;
 }
 
 .cocreator-btn {
-  background: white;
-  color: #667eea;
+  background: #fff;
+  color: #1f6f5f;
   border: none;
   padding: 10px 20px;
   border-radius: 6px;
@@ -313,10 +578,7 @@
 
 .survey-modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
@@ -326,7 +588,7 @@
 }
 
 .survey-modal-wrapper {
-  background: white;
+  background: #fff;
   border-radius: 12px;
   max-width: 600px;
   width: 100%;
@@ -348,7 +610,8 @@
   }
 }
 
-.survey-modal-close {
+.survey-modal-close,
+.modal-close {
   position: absolute;
   top: 12px;
   right: 12px;
@@ -363,16 +626,14 @@
   z-index: 10;
 }
 
-.survey-modal-close:hover {
+.survey-modal-close:hover,
+.modal-close:hover {
   background: #e0e0e0;
 }
 
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
@@ -382,7 +643,7 @@
 }
 
 .modal-content {
-  background: white;
+  background: #fff;
   border-radius: 12px;
   padding: 24px;
   max-width: 500px;
@@ -394,26 +655,8 @@
   animation: modalSlideIn 0.3s ease-out;
 }
 
-.modal-close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: #f0f0f0;
-  border: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  font-size: 18px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.modal-close:hover {
-  background: #e0e0e0;
-}
-
 .modal-content h2 {
-  margin: 0 0 20px 0;
+  margin: 0 0 20px;
   font-size: 18px;
   color: #333;
 }
@@ -428,9 +671,8 @@
 .timeline-item {
   display: flex;
   gap: 12px;
-  padding: 12px;
+  padding: 12px 12px 12px 16px;
   border-left: 3px solid #ddd;
-  padding-left: 16px;
   position: relative;
   transition: all 0.2s;
 }
@@ -464,7 +706,7 @@
 
 .urgent-badge {
   background: #d9534f;
-  color: white;
+  color: #fff;
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 11px;
@@ -498,11 +740,14 @@
     font-size: 16px;
   }
 
-  .elections-actions {
+  .elections-actions,
+  .digipin-form {
     flex-direction: column;
   }
 
-  .action-btn {
+  .action-btn,
+  .location-btn,
+  .digipin-submit {
     width: 100%;
   }
 
@@ -525,88 +770,8 @@
     height: 40px;
     font-size: 16px;
   }
-}
 
-@media (prefers-color-scheme: dark) {
-  .elections-card {
-    background: #1e1e1e;
-    color: #fff;
-  }
-
-  .elections-header h3 {
-    color: #fff;
-  }
-
-  .elections-status {
-    background: linear-gradient(135deg, #332200 0%, #3d2817 100%);
-    color: #fff;
-  }
-
-  .timer-display {
-    color: #ccc;
-  }
-
-  .date-info {
-    color: #ccc;
-  }
-
-  .ward-input {
-    background: #2a2a2a;
-    color: #fff;
-    border-color: #444;
-  }
-
-  .ward-results {
-    background: #2a2a2a;
-    color: #ccc;
-  }
-
-  .action-btn {
-    background: #2a2a2a;
-    color: #fff;
-    border-color: #444;
-  }
-
-  .action-btn:hover {
-    background: #3a3a3a;
-    border-color: #555;
-  }
-
-  .modal-content,
-  .survey-modal-wrapper {
-    background: #1e1e1e;
-    color: #fff;
-  }
-
-  .modal-close,
-  .survey-modal-close {
-    background: #2a2a2a;
-    color: #fff;
-  }
-
-  .modal-close:hover,
-  .survey-modal-close:hover {
-    background: #3a3a3a;
-  }
-
-  .close-btn {
-    background: #2a2a2a;
-    color: #fff;
-  }
-
-  .close-btn:hover {
-    background: #3a3a3a;
-  }
-
-  .timeline-item {
-    border-left-color: #444;
-  }
-
-  .timeline-content strong {
-    color: #fff;
-  }
-
-  .timeline-content p {
-    color: #ccc;
+  .section-heading {
+    flex-direction: column;
   }
 }
