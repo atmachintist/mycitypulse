@@ -318,6 +318,25 @@
   line-height: 1.6;
 }
 
+.digipin-help,
+.digipin-field-help {
+  color: #5b564d;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.digipin-help {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f7f1e8;
+  border: 1px solid #ead9c8;
+}
+
+.digipin-field-help {
+  margin: -2px 0 0;
+}
+
 .location-actions {
   display: flex;
   align-items: center;

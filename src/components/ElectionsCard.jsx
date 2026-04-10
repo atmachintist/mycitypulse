@@ -53,6 +53,16 @@ function getCandidateLabel(status) {
   return "Awaiting verification";
 }
 
+function getDigipinErrorMessage(error) {
+  const message = error?.message || "";
+
+  if (/invalid|format|digipin/i.test(message)) {
+    return "This DIGIPIN does not look valid yet. Check the letters, numbers, and separators, then try again.";
+  }
+
+  return "We could not save this DIGIPIN right now. Please re-check the code or use your current location instead.";
+}
+
 export default function ElectionsCard({ election, cityName }) {
   const wards = election.wards || [];
   const cityLabel = cityName || "this city";
@@ -121,6 +131,7 @@ export default function ElectionsCard({ election, cityName }) {
   const wardCount = wards.length || election.wards_total || 0;
   const candidateTracker = election.candidateTracker || null;
   const dataUpdatedAt = election.lastUpdated || candidateTracker?.lastReviewed || null;
+  const digipinHelpText = `Use your current location or paste a DIGIPIN you already know. MyCityPulse saves it only on this device and still asks you to confirm your ${cityLabel} ward manually.`;
 
   const persistLocationProfile = (nextProfile) => {
     if (typeof window !== "undefined") {
@@ -206,9 +217,9 @@ export default function ElectionsCard({ election, cityName }) {
     }
   };
 
-  const handleUseMyLocation = () => {
-    if (!navigator.geolocation) {
-      setLocationError("Your browser does not support location access.");
+    const handleUseMyLocation = () => {
+      if (!navigator.geolocation) {
+      setLocationError("Your browser cannot share location here. Enter a DIGIPIN manually if you already have one.");
       setLocationStatus("");
       return;
     }
@@ -226,9 +237,9 @@ export default function ElectionsCard({ election, cityName }) {
 
           setDigipinInput(digipin);
           saveLocationProfile({ digipin, latitude, longitude });
-          setLocationStatus(`Location converted to DIGIPIN. Now confirm your ${cityLabel} ward below.`);
+          setLocationStatus(`Location found and converted into a DIGIPIN. Confirm your ${cityLabel} ward below to finish the civic profile.`);
         } catch (error) {
-          setLocationError(error.message || "We could not convert this location into a DIGIPIN.");
+          setLocationError("We found your location, but could not convert it into a DIGIPIN right now. You can still enter one manually.");
         } finally {
           setIsLocating(false);
         }
@@ -236,8 +247,8 @@ export default function ElectionsCard({ election, cityName }) {
       (error) => {
         const message =
           error.code === 1
-            ? "Location permission was denied."
-            : "We could not access your location right now.";
+            ? "Location permission is blocked. Allow location access in your browser settings, or enter a DIGIPIN manually."
+            : "We could not read your location right now. Check browser permissions, then try again.";
         setLocationError(message);
         setLocationStatus("");
         setIsLocating(false);
@@ -260,9 +271,9 @@ export default function ElectionsCard({ election, cityName }) {
         longitude: decoded.longitude,
       });
       setLocationError("");
-      setLocationStatus(`DIGIPIN saved. Confirm your ${cityLabel} ward to finish your civic profile.`);
+      setLocationStatus(`DIGIPIN saved on this device. Confirm your ${cityLabel} ward to finish your civic profile.`);
     } catch (error) {
-      setLocationError(error.message || "Enter a valid DIGIPIN.");
+      setLocationError(getDigipinErrorMessage(error));
       setLocationStatus("");
     }
   };
@@ -436,6 +447,7 @@ export default function ElectionsCard({ election, cityName }) {
           </div>
 
           {election.locationNote && <p className="location-note">{election.locationNote}</p>}
+          <p className="digipin-help">{digipinHelpText}</p>
 
           <div className="location-actions">
             <button
@@ -458,7 +470,7 @@ export default function ElectionsCard({ election, cityName }) {
                 setLocationError("");
                 setLocationStatus("");
               }}
-              placeholder="Enter DIGIPIN (example: ABC-123-4DEF)"
+              placeholder="Enter your DIGIPIN"
               className="digipin-input"
               aria-label="Enter your DIGIPIN"
             />
@@ -466,6 +478,7 @@ export default function ElectionsCard({ election, cityName }) {
               Save DIGIPIN
             </button>
           </form>
+          <p className="digipin-field-help">Example format: ABC-123-4DEF. If you do not know your DIGIPIN yet, use your current location instead.</p>
 
           {locationError && <p className="location-feedback error">{locationError}</p>}
           {locationStatus && <p className="location-feedback success">{locationStatus}</p>}
