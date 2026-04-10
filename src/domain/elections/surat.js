@@ -51,6 +51,7 @@ export const SURAT_WARDS_2026 = baseWards.map((entry) => ({
 export const SURAT_ELECTION_2026 = {
   year: 2026,
   status: "ward_directory",
+  lastUpdated: "2026-04-10T18:20:00+05:30",
   election_date: "2026-04-26",
   result_date: "2026-04-28",
   nomination_open: "2026-04-06",

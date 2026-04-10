@@ -120,6 +120,7 @@ export default function ElectionsCard({ election, cityName }) {
   const savedWard = wards.find((ward) => ward.number === locationProfile?.wardNumber) || null;
   const wardCount = wards.length || election.wards_total || 0;
   const candidateTracker = election.candidateTracker || null;
+  const dataUpdatedAt = election.lastUpdated || candidateTracker?.lastReviewed || null;
 
   const persistLocationProfile = (nextProfile) => {
     if (typeof window !== "undefined") {
@@ -333,6 +334,13 @@ export default function ElectionsCard({ election, cityName }) {
             {election.polling_hours ? ` | Polling ${election.polling_hours}` : ""}
           </p>
         </div>
+
+        {dataUpdatedAt && (
+          <p className="coverage-note">
+            Last updated {formatDate(dataUpdatedAt, { hour: "numeric", minute: "2-digit" })}.
+            {" "}This timestamp reflects the latest MyCityPulse review of this election section.
+          </p>
+        )}
 
         {election.scopeNote && <p className="coverage-note">{election.scopeNote}</p>}
 
