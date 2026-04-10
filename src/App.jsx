@@ -436,6 +436,9 @@ function Hero({ onCitySelect }) {
     setQ("");
     resetSearch();
   };
+  const gujaratElectionCities = GUJARAT_ELECTION_CITIES
+    .map((name) => cities.find((city) => city.city === name))
+    .filter(Boolean);
 
   return (
     <section style={{
@@ -493,7 +496,32 @@ function Hero({ onCitySelect }) {
                 }}
               >
                 <span style={{ color: "#E8660D", fontWeight: 800 }}>GUJARAT ELECTION UPDATE</span>
-                <span>Citizens in {GUJARAT_ELECTION_CITIES.join(", ")} can now check election updates inside their city sections.</span>
+                <span>
+                  Citizens in{" "}
+                  {gujaratElectionCities.map((city, index) => (
+                    <span key={city.city}>
+                      <button
+                        onClick={() => selectCity(city)}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          padding: 0,
+                          color: "#fff",
+                          fontSize: "inherit",
+                          fontWeight: 700,
+                          textDecoration: "underline",
+                          textUnderlineOffset: "3px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {city.city}
+                      </button>
+                      {index < gujaratElectionCities.length - 2 ? ", " : ""}
+                      {index === gujaratElectionCities.length - 2 ? " and " : ""}
+                    </span>
+                  ))}
+                  {" "}can now check election updates inside their city sections.
+                </span>
                 <span style={{ color: "rgba(255,255,255,0.55)" }}>Search your city and open the Elections panel.</span>
               </div>
             ))}
