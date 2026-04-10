@@ -55,6 +55,7 @@ function getCandidateLabel(status) {
 
 export default function ElectionsCard({ election, cityName }) {
   const wards = election.wards || [];
+  const cityLabel = cityName || "this city";
   const pledgeCountKey = `${cityName}_pledge_count`;
   const votedKey = `${cityName}_voted`;
   const locationProfileKey = `${cityName}_location_profile`;
@@ -224,7 +225,7 @@ export default function ElectionsCard({ election, cityName }) {
 
           setDigipinInput(digipin);
           saveLocationProfile({ digipin, latitude, longitude });
-          setLocationStatus("Location converted to DIGIPIN. Now confirm your Ahmedabad ward below.");
+          setLocationStatus(`Location converted to DIGIPIN. Now confirm your ${cityLabel} ward below.`);
         } catch (error) {
           setLocationError(error.message || "We could not convert this location into a DIGIPIN.");
         } finally {
@@ -258,7 +259,7 @@ export default function ElectionsCard({ election, cityName }) {
         longitude: decoded.longitude,
       });
       setLocationError("");
-      setLocationStatus("DIGIPIN saved. Confirm your Ahmedabad ward to finish your civic profile.");
+      setLocationStatus(`DIGIPIN saved. Confirm your ${cityLabel} ward to finish your civic profile.`);
     } catch (error) {
       setLocationError(error.message || "Enter a valid DIGIPIN.");
       setLocationStatus("");
@@ -462,7 +463,7 @@ export default function ElectionsCard({ election, cityName }) {
           {locationStatus && <p className="location-feedback success">{locationStatus}</p>}
 
           <label className="ward-select-label" htmlFor="saved-ward-select">
-            Confirm your Ahmedabad ward
+            Confirm your {cityLabel} ward
           </label>
           <select
             id="saved-ward-select"
@@ -527,8 +528,8 @@ export default function ElectionsCard({ election, cityName }) {
       <div className="ward-search">
         <div className="section-heading compact">
           <div>
-            <h4>Official Ahmedabad ward directory</h4>
-            <p>Search by ward number, ward name, or zone. Candidate labels show what is verified versus still partial.</p>
+              <h4>Official {cityLabel} ward directory</h4>
+              <p>Search by ward number, ward name, or zone. Candidate labels show what is verified versus still partial.</p>
           </div>
         </div>
 
@@ -580,7 +581,7 @@ export default function ElectionsCard({ election, cityName }) {
               </div>
             ) : (
               <p className="no-result">
-                Ward not found. Try a number like "43" for Naranpura or a zone like "South West".
+                Ward not found. Try a ward number, ward name, or zone from {cityLabel}.
               </p>
             )}
           </div>
