@@ -351,6 +351,11 @@ function Nav({ onLogoClick, onSearch }) {
       {/* Nav search (desktop) */}
       <div ref={ref} style={{ flex: 1, maxWidth: 320, position: "relative" }} className="nav-links">
         <input
+          id="nav-city-search"
+          name="navCitySearch"
+          autoComplete="off"
+          data-form-type="other"
+          data-lpignore="true"
           value={q}
           onChange={e => setQ(e.target.value)}
           onKeyDown={(e) => handleKeyDown(e, selectCity)}
@@ -508,6 +513,11 @@ function Hero({ onCitySelect }) {
         <div ref={ref} style={{ position: "relative", maxWidth: 480, margin: "0 auto 32px" }}>
           <div style={{ position: "relative" }}>
             <input
+              id="hero-city-search"
+              name="heroCitySearch"
+              autoComplete="off"
+              data-form-type="other"
+              data-lpignore="true"
               value={q}
               onChange={e => setQ(e.target.value)}
               onKeyDown={(e) => handleKeyDown(e, selectCity)}
