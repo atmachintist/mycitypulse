@@ -428,6 +428,7 @@ function Nav({ onLogoClick, onSearch }) {
       </div>
 
       <div className="nav-links" style={{ display: "flex", gap: 24, alignItems: "center", marginLeft: "auto" }}>
+        <a href="#elections" style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, letterSpacing: "0.02em" }}>Elections</a>
         <a href="#pulse" style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, letterSpacing: "0.02em" }}>Issues</a>
         <a href="#cities" style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, letterSpacing: "0.02em" }}>All Cities</a>
         <a href="#join" style={{
@@ -703,6 +704,72 @@ function StatsBanner() {
         </p>
       </div>
     </div>
+  );
+}
+
+function ElectionsHub({ onCitySelect }) {
+  const electionCities = cities
+    .filter((city) => city.hasElections)
+    .sort((left, right) => left.city.localeCompare(right.city));
+
+  return (
+    <section id="elections" style={{ background: "#fff", padding: "56px 32px 40px" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 12 }}>
+          MUNICIPAL ELECTIONS
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 24, alignItems: "flex-end", flexWrap: "wrap", marginBottom: 24 }}>
+          <div style={{ maxWidth: 680 }}>
+            <h2 style={{ fontSize: 34, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 10 }}>
+              Election updates, without the treasure hunt.
+            </h2>
+            <p style={{ fontSize: 15, color: "#666", lineHeight: 1.7 }}>
+              Open any election city directly here. Each city page carries the election timeline, ward lookup, and candidate status labels so people can see what is verified, what is only announced, and what still needs checking.
+            </p>
+          </div>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#1a1a1a", background: "#fff4ea", border: "1px solid #ffd7b3", borderRadius: 8, padding: "7px 10px" }}>
+              {electionCities.length} cities with election desks
+            </span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#1a1a1a", background: "#f6f2ea", border: "1px solid #e6dccf", borderRadius: 8, padding: "7px 10px" }}>
+              Gujarat civic polls on Apr 26, 2026
+            </span>
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
+          {electionCities.map((city) => (
+            <button
+              key={city.city}
+              onClick={() => onCitySelect(city)}
+              style={{
+                textAlign: "left",
+                background: "#faf8f4",
+                border: "1px solid #ebe4d8",
+                borderRadius: 8,
+                padding: "16px 16px 14px",
+                display: "grid",
+                gap: 8,
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
+                <strong style={{ fontSize: 17, color: "#1a1a1a" }}>{city.city}</strong>
+                <span style={{ fontSize: 10, fontWeight: 800, color: "#E8660D", letterSpacing: "0.08em" }}>OPEN</span>
+              </div>
+              <div style={{ fontSize: 12, color: "#7a746c", lineHeight: 1.5 }}>{city.state}</div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#5b554c", background: "#fff", border: "1px solid #e6dccf", borderRadius: 8, padding: "4px 8px" }}>
+                  Elections panel
+                </span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#5b554c", background: "#fff", border: "1px solid #e6dccf", borderRadius: 8, padding: "4px 8px" }}>
+                  Ward lookup
+                </span>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -1328,6 +1395,7 @@ function HomePage({ onCitySelect, onCompare, compareList }) {
   return (
     <>
       <Hero onCitySelect={onCitySelect} />
+      <ElectionsHub onCitySelect={onCitySelect} />
       <StatsBanner />
       <TrustSection />
       <NationalPulse onCitySelect={onCitySelect} />
