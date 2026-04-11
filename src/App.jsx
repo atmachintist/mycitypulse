@@ -10,6 +10,8 @@ import {
   fmt,
 } from "./domain/cities/presentation.js";
 import CompareTray from "./features/compare/CompareTray.jsx";
+import { buildMailtoHref, openMailtoDraft } from "./lib/contact.js";
+import { submitCocreatorInterest } from "./lib/submissions.js";
 import useCitySearch from "./shared/hooks/useCitySearch.js";
 
 const CityPage = lazy(() => import("./features/city/CityPage.jsx"));
@@ -79,6 +81,17 @@ const cities = [
   { rank:48, city:"Dhanbad",                  state:"Jharkhand",       population:1196000,  area:70,    density:17086, tier:"Large City",  density_descriptor:"Very Dense",       urban_typology:"Blueprint City",         one_liner:"India's coal capital.",                                                                                            stress:"High",     stress_reason:"Mining subsidence, high density, coal dust, water contamination",                  formerName:null,          aliases:["Coal Capital"] },
   { rank:49, city:"Chandigarh",               state:"Chandigarh",      population:1158000,  area:114,   density:10158, tier:"Large City",  density_descriptor:"Moderately Dense", urban_typology:"Blueprint City",         one_liner:"Le Corbusier's gift to a newly independent India.",                                                               stress:"Stable",   stress_reason:"Planned city, strong green cover, good services; satellite town pressure growing",  formerName:null,          aliases:["City Beautiful"] },
   { rank:50, city:"Gwalior",                  state:"Madhya Pradesh",  population:1153000,  area:289,   density:3990,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Ancient Pulse",          one_liner:"A fort city that controlled the heart of the subcontinent for centuries.",                                          stress:"Moderate", stress_reason:"Low density, moderate services; water scarcity and air quality concerns",          formerName:null,          aliases:[] },
+  { rank:52, city:"Bhavnagar",                state:"Gujarat",         population:745000,   area:108,   density:6898,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Managed Growth City",    one_liner:"A port city where shipbreaking, trade, and civic growth all meet the Gulf.",                                      stress:"Elevated", stress_reason:"Industrial pressure, coastal exposure, and uneven urban services",                 formerName:null,          aliases:[], hasElections: true },
+  { rank:53, city:"Jamnagar",                 state:"Gujarat",         population:668000,   area:75,    density:8907,  tier:"Large City",  density_descriptor:"Moderately Dense", urban_typology:"Managed Growth City",    one_liner:"Refinery wealth at the edge of a historic princely city.",                                                         stress:"Elevated", stress_reason:"Industrial emissions, coastal vulnerability, and growth around energy infrastructure", formerName:"Nawanagar",   aliases:["Nawanagar"], hasElections: true },
+  { rank:54, city:"Junagadh",                 state:"Gujarat",         population:430000,   area:160,   density:2687,  tier:"Large City",  density_descriptor:"Spacious",         urban_typology:"Ancient Pulse",          one_liner:"A historic city under Girnar, carrying layers of empire and pilgrimage.",                                         stress:"Moderate", stress_reason:"Moderate urban scale, but drainage and heritage pressures remain",                 formerName:null,          aliases:[], hasElections: true },
+  { rank:55, city:"Gandhinagar",              state:"Gujarat",         population:390000,   area:177,   density:2203,  tier:"Large City",  density_descriptor:"Spacious",         urban_typology:"Blueprint City",         one_liner:"A planned capital with wide sectors and a quieter civic rhythm than its neighbours.",                            stress:"Moderate", stress_reason:"Planned layout helps, though expansion pressure is rising on the edges",           formerName:null,          aliases:[], hasElections: true },
+  { rank:56, city:"Anand",                    state:"Gujarat",         population:290000,   area:47,    density:6170,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Managed Growth City",    one_liner:"The milk capital's urban core is small, busy, and growing beyond its older footprint.",                          stress:"Moderate", stress_reason:"Steady growth, traffic pressure, and service capacity that needs to keep pace",     formerName:null,          aliases:[], hasElections: true },
+  { rank:57, city:"Nadiad",                   state:"Gujarat",         population:225000,   area:32,    density:7031,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Ancient Pulse",          one_liner:"A dense central Gujarat city where older neighborhoods still shape daily movement.",                             stress:"Moderate", stress_reason:"Compact core, drainage pressure, and ageing civic assets",                         formerName:null,          aliases:[], hasElections: true },
+  { rank:58, city:"Mehsana",                  state:"Gujarat",         population:220000,   area:32,    density:6875,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Managed Growth City",    one_liner:"An oil-and-dairy city balancing regional commerce with local service demands.",                                   stress:"Moderate", stress_reason:"Growth is manageable, but water and transport pressures are building",              formerName:"Mahesana",    aliases:["Mahesana"], hasElections: true },
+  { rank:59, city:"Morbi",                    state:"Gujarat",         population:250000,   area:51,    density:4902,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Overnight City",         one_liner:"A ceramics powerhouse rebuilt after disaster and still expanding fast.",                                          stress:"Elevated", stress_reason:"Rapid industrial growth, infrastructure catch-up, and flood memory",                 formerName:null,          aliases:[], hasElections: true },
+  { rank:60, city:"Surendranagar",            state:"Gujarat",         population:200000,   area:58,    density:3448,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Sleeping Giant",         one_liner:"A regional center whose civic profile is bigger than the national attention it gets.",                           stress:"Moderate", stress_reason:"Underinvestment relative to role, with heat and water stress to manage",            formerName:null,          aliases:["Surendranagar Dudhrej"], hasElections: true },
+  { rank:61, city:"Bharuch",                  state:"Gujarat",         population:190000,   area:42,    density:4524,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Ancient Pulse",          one_liner:"One of India's oldest port cities, now shaped by river, industry, and logistics.",                               stress:"Elevated", stress_reason:"Industrial corridor pressure, Narmada flood risk, and ageing civic systems",         formerName:"Broach",      aliases:["Broach"], hasElections: true },
+  { rank:62, city:"Porbandar",                state:"Gujarat",         population:152000,   area:35,    density:4343,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Border Effect City",     one_liner:"A coastal city where fishing, trade, and history all compete for space.",                                        stress:"Moderate", stress_reason:"Coastal exposure and service constraints, but still a manageable urban scale",       formerName:null,          aliases:[], hasElections: true },
   { rank:51, city:"Mira Bhayandar",           state:"Maharashtra",     population:907000,   area:79.4,  density:11425, tier:"Large City",  density_descriptor:"Moderately Dense", urban_typology:"Overnight City",         one_liner:"Mumbai's northern edge \u2014 where affordable housing met the sea.",                                                    stress:"High",     stress_reason:"Explosive growth without matching infrastructure, water supply dependence, connectivity gaps", formerName:null, aliases:["Mira Road","Bhayandar"] },
 ];
 
@@ -91,7 +104,23 @@ const DATASET_SCOPE = {
   electionTrackerCount: cities.filter((city) => city.hasElections).length,
 };
 
-const GUJARAT_ELECTION_CITIES = ["Ahmedabad", "Surat", "Vadodara", "Rajkot"];
+const GUJARAT_ELECTION_CITIES = [
+  "Ahmedabad",
+  "Surat",
+  "Vadodara",
+  "Rajkot",
+  "Bhavnagar",
+  "Jamnagar",
+  "Junagadh",
+  "Gandhinagar",
+  "Anand",
+  "Nadiad",
+  "Mehsana",
+  "Morbi",
+  "Surendranagar",
+  "Bharuch",
+  "Porbandar",
+];
 
 
 // Special:FilePath lets Wikimedia resolve the correct hash automatically â€” far more reliable than hardcoding thumb paths.
@@ -1019,6 +1048,8 @@ function JoinCTA() {
   const [city, setCity] = useState("");
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+  const [submitState, setSubmitState] = useState("idle");
+  const [deliveryMode, setDeliveryMode] = useState(null);
   const [permissions, setPermissions] = useState({
     updates: true,
     surveys: true,
@@ -1039,7 +1070,7 @@ function JoinCTA() {
     setContributions((current) => ({ ...current, [key]: !current[key] }));
   };
 
-  const handleJoin = () => {
+  const handleJoin = async () => {
     const validEmail = email.includes("@") && email.includes(".");
     const selectedContributions = Object.entries(contributions)
       .filter(([, selected]) => selected)
@@ -1064,9 +1095,32 @@ function JoinCTA() {
       capturedAt: new Date().toISOString(),
     };
 
-    localStorage.setItem("mycitypulse_cocreator_interest", JSON.stringify(payload));
-    setError("");
-    setDone(true);
+    try {
+      setSubmitState("submitting");
+      const result = await submitCocreatorInterest(payload);
+      setDeliveryMode(result.delivery);
+      if (result.delivery !== "remote") {
+        openMailtoDraft({
+          subject: `Cocreator interest from ${fullName.trim() || email}`,
+          lines: [
+            "Hi MyCityPulse,",
+            "",
+            "I want to join as a cocreator.",
+            `Name: ${fullName.trim() || "Not shared"}`,
+            `Email: ${email}`,
+            `City: ${city.trim() || "Not shared"}`,
+            `Interested in: ${selectedContributions.join(", ")}`,
+            `Permissions: ${Object.entries(permissions).filter(([, value]) => value).map(([key]) => key).join(", ")}`,
+          ],
+        });
+      }
+      setError("");
+      setDone(true);
+    } catch {
+      setError("We could not submit your interest right now. You can also reach us at hello@mycitypulse.in.");
+    } finally {
+      setSubmitState("idle");
+    }
   };
 
   return (
@@ -1090,11 +1144,23 @@ function JoinCTA() {
             margin: "0 auto",
           }}>
             <div style={{ color: "#2dc653", fontSize: 16, fontFamily: "Georgia, serif", fontStyle: "italic", marginBottom: 10 }}>
-              {"\u2713 You're in. We’ve saved your cocreator intent on this device."}
+              {deliveryMode === "remote"
+                ? "\u2713 You're in. Your cocreator interest reached the MyCityPulse inbox."
+                : "\u2713 Your cocreator interest is saved on this device."}
             </div>
             <p style={{ color: "rgba(255,255,255,0.58)", fontSize: 14, lineHeight: 1.7, margin: 0 }}>
-              This is a lightweight first step: email plus permissions. Once we wire a real backend inbox, this can become a live cocreator pipeline without forcing account creation.
+              {deliveryMode === "remote"
+                ? "We have your email, permissions, and contribution interests. This is now a real signup path, not just a local prototype."
+                : "This browser does not have a live form endpoint configured yet. For a real reply today, email hello@mycitypulse.in and mention the city or civic work you'd like to help with."}
             </p>
+            {deliveryMode !== "remote" && (
+              <a
+                href="mailto:hello@mycitypulse.in?subject=MyCityPulse%20Cocreator%20Interest"
+                style={{ color: "#ffcf99", display: "inline-block", marginTop: 12, fontSize: 13, fontWeight: 700 }}
+              >
+                Email the team directly -&gt;
+              </a>
+            )}
           </div>
         ) : (
           <div style={{
@@ -1205,18 +1271,23 @@ function JoinCTA() {
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
               <button
                 onClick={handleJoin}
+                disabled={submitState === "submitting"}
                 style={{
                   background: "#E8660D", color: "#fff", border: "none",
                   padding: "13px 24px", borderRadius: 30, fontSize: 14, fontWeight: 700,
-                  cursor: "pointer", letterSpacing: "0.04em", whiteSpace: "nowrap",
+                  cursor: submitState === "submitting" ? "progress" : "pointer", letterSpacing: "0.04em", whiteSpace: "nowrap",
+                  opacity: submitState === "submitting" ? 0.7 : 1,
                 }}
               >
-                {"Join as Cocreator \u2192"}
+                {submitState === "submitting" ? "Submitting..." : "Join as Cocreator \u2192"}
               </button>
               <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>
                 No account creation. Just email plus clear permissions.
               </span>
             </div>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.28)", lineHeight: 1.6, margin: "14px 0 0" }}>
+              Without a configured form endpoint, this saves locally in the browser and offers email fallback. Add `VITE_COCREATOR_ENDPOINT` to make it a live signup.
+            </p>
           </div>
         )}
 
@@ -1231,12 +1302,22 @@ function JoinCTA() {
 // â”€â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function Footer() {
   const year = new Date().getFullYear();
+  const contactHref = buildMailtoHref({
+    subject: "Hello from MyCityPulse",
+    lines: [
+      "Hi MyCityPulse,",
+      "",
+      "I’m reaching out from the website.",
+    ],
+  });
   return (
     <footer style={{ background: "#080b0f", padding: "28px 32px", textAlign: "center" }}>
       <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 12, letterSpacing: "0.06em" }}>
         {"\u00A9"} {year} MyCityPulse {"\u00B7"} <span style={{ color: "rgba(255,255,255,0.15)" }}>mycitypulse.in</span>
         <span style={{ color: "rgba(255,255,255,0.1)", margin: "0 8px" }}>{"\u00B7"}</span>
         Built from public sources, Wikimedia, and MyCityPulse editorial analysis. Coverage depth varies by city.
+        <span style={{ color: "rgba(255,255,255,0.1)", margin: "0 8px" }}>{"\u00B7"}</span>
+        <a href={contactHref} style={{ color: "rgba(255,255,255,0.45)" }}>Contact</a>
       </div>
     </footer>
   );
@@ -1262,6 +1343,37 @@ export default function App() {
   const [selectedCity, setSelectedCity] = useState(null);
   const [compareList, setCompareList]   = useState([]);
   const [compareMode, setCompareMode]   = useState(false);
+
+  useEffect(() => {
+    const title = selectedCity
+      ? `${selectedCity.city} | MyCityPulse`
+      : compareMode
+        ? "Compare Cities | MyCityPulse"
+        : "MyCityPulse | Indian Cities, Civic Issues, and Municipal Elections";
+    const description = selectedCity
+      ? `${selectedCity.city} city profile with civic stress, local issues, civic ecosystem, and election coverage where available.`
+      : compareMode
+        ? "Compare Indian cities across population, density, civic stress, and urban typology."
+        : "MyCityPulse helps citizens understand Indian cities through public facts, civic issues, municipal election guides, and editorial city intelligence.";
+
+    document.title = title;
+
+    const ensureMeta = (name, attribute = "name") => {
+      let element = document.head.querySelector(`meta[${attribute}="${name}"]`);
+      if (!element) {
+        element = document.createElement("meta");
+        element.setAttribute(attribute, name);
+        document.head.appendChild(element);
+      }
+      return element;
+    };
+
+    ensureMeta("description").setAttribute("content", description);
+    ensureMeta("og:title", "property").setAttribute("content", title);
+    ensureMeta("og:description", "property").setAttribute("content", description);
+    ensureMeta("twitter:title").setAttribute("content", title);
+    ensureMeta("twitter:description").setAttribute("content", description);
+  }, [compareMode, selectedCity]);
 
   const handleCitySelect = (city) => {
     setSelectedCity(city);
@@ -1318,7 +1430,7 @@ export default function App() {
           : selectedCity
             ? (
               <Suspense fallback={<div style={{ padding: "48px 24px", textAlign: "center", color: "#666" }}>Loading city page...</div>}>
-                <CityPage city={selectedCity} onBack={handleBack} />
+                <CityPage key={selectedCity.city} city={selectedCity} onBack={handleBack} />
               </Suspense>
             )
             : <HomePage
