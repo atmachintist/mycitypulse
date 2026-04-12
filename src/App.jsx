@@ -729,6 +729,9 @@ const GlobalStyles = () => (
         line-height: 1.7;
       }
     }
+    @media (max-width: 375px) {
+      .hero-headline { font-size: 24px !important; }
+    }
     @media (max-width: 480px) {
       .page-section,
       .page-section-tight {
@@ -958,119 +961,17 @@ function Hero({ onCitySelect }) {
       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(248,244,236,0.78) 0%, rgba(248,244,236,0.96) 70%, #f8f4ec 100%)" }} />
 
       <div className="hero-inner">
-        <div className="hero-badge">
-          <span style={{ width: 6, height: 6, background: "#E8660D", borderRadius: "50%", animation: "pulse-dot 2s infinite" }} />
-          <span style={{ color: "#A55116", fontSize: 12, fontWeight: 700, letterSpacing: "0.08em" }}>CITIZEN'S GUIDE TO INDIAN CITIES</span>
-        </div>
-
-        <div className="hero-ticker">
-          <div className="hero-ticker-track">
-            {[0, 1].map((copy) => (
-              <div
-                key={copy}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 28,
-                  padding: "10px 20px",
-                  whiteSpace: "nowrap",
-                  color: "#554b40",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  letterSpacing: "0.02em",
-                }}
-              >
-                <span style={{ color: "#E8660D", fontWeight: 800 }}>GUJARAT ELECTION UPDATE</span>
-                <span>
-                  Citizens in{" "}
-                  {gujaratElectionCities.map((city, index) => (
-                    <span key={city.city}>
-                      <button
-                        onClick={() => selectCity(city)}
-                        style={{
-                          background: "none",
-                          border: "none",
-                          padding: 0,
-                          color: "#1f1a14",
-                          fontSize: "inherit",
-                          fontWeight: 700,
-                          textDecoration: "underline",
-                          textUnderlineOffset: "3px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        {city.city}
-                      </button>
-                      {index < gujaratElectionCities.length - 2 ? ", " : ""}
-                      {index === gujaratElectionCities.length - 2 ? " and " : ""}
-                    </span>
-                  ))}
-                  {" "}can now check election updates inside their city sections.
-                </span>
-                <span style={{ color: "#8d8378" }}>Search your city and open the Elections panel.</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="hero-mobile-notice">
-          <div className="hero-mobile-notice-title">GUJARAT ELECTION UPDATE</div>
-          <p className="hero-mobile-notice-copy">
-            Open a city below to check election updates, wards, and candidate tracking.
-          </p>
-          <div className="hero-mobile-chip-row">
-            {gujaratElectionCities.map((city) => (
-              <button
-                key={`mobile-${city.city}`}
-                onClick={() => selectCity(city)}
-                className="hero-mobile-chip"
-              >
-                {city.city}
-              </button>
-            ))}
-          </div>
-        </div>
-
+        {/* Single value prop headline */}
         <h1 className="hero-headline" style={{
-          fontSize: 56, fontFamily: "Georgia, serif", fontWeight: 700,
-          color: "#1f1a14", lineHeight: 1.15, marginBottom: 20,
-          letterSpacing: "-0.02em",
+          fontSize: 40, fontFamily: "Georgia, serif", fontWeight: 700,
+          color: "#1f1a14", lineHeight: 1.3, marginBottom: 40,
+          letterSpacing: "-0.02em", maxWidth: 600, margin: "0 auto 40px",
         }}>
-          Understand your city<br />
-          <span style={{ color: "#E8660D" }}>before it overwhelms you.</span>
+          👉 Find facts, civic issues, and election info for your city in seconds
         </h1>
 
-        <p className="hero-sub" style={{
-          fontSize: 18, color: "#5f564c", lineHeight: 1.7,
-          maxWidth: 620, margin: "0 auto 36px",
-        }}>
-          MyCityPulse helps ordinary citizens find their city, see what pressures shape daily life, discover who is working on local problems, and follow municipal elections without digging through ten tabs.
-        </p>
-
-        <div className="hero-points">
-          {[
-            "Search your city in seconds",
-            "Read issues in plain language",
-            "Track wards and elections where available",
-          ].map((item) => (
-            <span
-              key={item}
-              style={{
-                background: "#fff",
-                border: "1px solid #eadfce",
-                borderRadius: 8,
-                padding: "8px 12px",
-                fontSize: 13,
-                color: "#5b5247",
-                fontWeight: 600,
-              }}
-            >
-              {item}
-            </span>
-          ))}
-        </div>
-
-        <div ref={ref} className="hero-search-wrap">
+        {/* Search bar - primary CTA */}
+        <div ref={ref} className="hero-search-wrap" style={{ maxWidth: 620, marginBottom: 48 }}>
           <div style={{ position: "relative" }}>
             <input
               id="hero-city-search"
@@ -1092,8 +993,15 @@ function Hero({ onCitySelect }) {
               }}
               onMouseDown={() => setIsSearchReady(true)}
 	      aria-label="Search cities"
-              placeholder="Search your city..."
+              placeholder="Search your city (e.g., Ahmedabad, Surat)"
               className="hero-search-input"
+              style={{
+                width: "100%", padding: "18px 56px 18px 24px",
+                background: "#fff", border: "1.5px solid #e0d5c6",
+                borderRadius: 8, color: "#1f1a14", fontSize: 16,
+                outline: "none",
+                transition: "border-color 0.2s",
+              }}
               onBlur={e => {
                 e.target.style.borderColor = "#e0d5c6";
               }}
@@ -1132,14 +1040,15 @@ function Hero({ onCitySelect }) {
           )}
         </div>
 
-        <div className="hero-quick-links">
+        {/* Quick city links */}
+        <div className="hero-quick-links" style={{ marginBottom: 0 }}>
           {quickCities.map(name => {
             const c = cities.find(x => x.city === name);
             return (
               <button key={name} onClick={() => onCitySelect(c)} style={{
                 background: "#fff", border: "1px solid #eadfce",
-                color: "#5b5247", padding: "7px 16px", borderRadius: 8,
-                fontSize: 13, cursor: "pointer", transition: "all 0.15s",
+                color: "#5b5247", padding: "8px 16px", borderRadius: 8,
+                fontSize: 13, cursor: "pointer", transition: "all 0.15s", fontWeight: 500,
               }}
               onMouseEnter={e => { e.currentTarget.style.background = "#f7f1e6"; e.currentTarget.style.color = "#1f1a14"; }}
               onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#5b5247"; }}

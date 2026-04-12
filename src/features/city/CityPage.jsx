@@ -120,7 +120,7 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
 
   return (
     <div style={{ background: "#FAF8F4", minHeight: "100vh" }}>
-      <div className="city-page-hero" style={{ height: 380, position: "relative", overflow: "hidden", background: "#0D1117" }}>
+      <div className="city-page-hero" style={{ height: "auto", position: "relative", overflow: "hidden", background: "#0D1117", paddingTop: 100, paddingBottom: 40 }}>
         {imgUrl && !imgErr ? (
           <img
             src={imgUrl}
@@ -133,12 +133,13 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
           <div style={{ position: "absolute", inset: 0, background: `linear-gradient(135deg, ${sc.color}44, ${typoColor}33)` }} />
         )}
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(13,17,23,0.2) 0%, rgba(13,17,23,0.85) 100%)" }} />
+
         <button
           onClick={onBack}
           className="city-page-back-btn"
           style={{
             position: "absolute",
-            top: 76,
+            top: 20,
             left: 32,
             background: "rgba(0,0,0,0.4)",
             border: "1px solid rgba(255,255,255,0.2)",
@@ -148,14 +149,16 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
             fontSize: 13,
             cursor: "pointer",
             backdropFilter: "blur(8px)",
+            zIndex: 10,
           }}
         >
           ← All Cities
         </button>
-        <div className="city-page-hero-copy" style={{ position: "absolute", bottom: 32, left: 32, right: 32 }}>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+
+        <div style={{ position: "relative", zIndex: 5, maxWidth: 900, margin: "0 auto", padding: "0 32px" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
             <span
-              title={`${city.stress} Stress - ${STRESS[city.stress]?.tagline}`}
+              title={`${city.stress} Stress - Indicates the level of civic and infrastructure pressures the city faces`}
               style={{
                 fontSize: 11,
                 fontWeight: 700,
@@ -185,6 +188,7 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
               {TYPO_LABEL[city.urban_typology]}
             </span>
             <span
+              title={`Ranked #${city.rank} by population across Indian cities`}
               style={{
                 fontSize: 11,
                 color: "rgba(255,255,255,0.7)",
@@ -192,11 +196,13 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
                 padding: "4px 12px",
                 borderRadius: 12,
                 backdropFilter: "blur(4px)",
+                cursor: "help",
               }}
             >
-              {city.tier}
+              Rank #{city.rank}
             </span>
           </div>
+
           <h1
             className="city-page-title"
             style={{
@@ -211,9 +217,23 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
           >
             {city.city}
           </h1>
-          <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 15 }}>
+
+          <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 15, marginBottom: 32 }}>
             {city.state}
             {city.formerName ? ` - formerly ${city.formerName}` : ""}
+          </div>
+
+          {/* Key stats above the fold */}
+          <div className="city-stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 16 }}>
+            {stats.map((stat) => (
+              <div
+                key={stat.label}
+                style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)", borderRadius: 12, padding: "16px 12px", textAlign: "center", border: "1px solid rgba(255,255,255,0.1)" }}
+              >
+                <div style={{ fontSize: 22, fontWeight: 900, color: "#fff", fontFamily: "Georgia, serif" }}>{stat.value}</div>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginTop: 5, textTransform: "uppercase", letterSpacing: "0.08em" }}>{stat.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -264,30 +284,18 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
               "{city.one_liner}"
             </blockquote>
 
-            <div className="city-stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 28 }}>
-              {stats.map((stat) => (
-                <div
-                  key={stat.label}
-                  style={{ background: "#fff", borderRadius: 12, padding: "20px 16px", textAlign: "center", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}
-                >
-                  <div style={{ fontSize: 22, fontWeight: 900, color: "#1a1a1a", fontFamily: "Georgia, serif" }}>{stat.value}</div>
-                  <div style={{ fontSize: 10, color: "#aaa", marginTop: 5, textTransform: "uppercase", letterSpacing: "0.08em" }}>{stat.label}</div>
-                </div>
-              ))}
-            </div>
-
             <p style={{ fontSize: 11, color: "#bbb", marginBottom: 24, lineHeight: 1.6 }}>
               Population and area come from public datasets. Stress, city category, and city narratives are MyCityPulse editorial judgments. Issue,
               organisation, ward, and election coverage varies by city and should be read as a guided starting point, not an official civic record.
             </p>
 
             <div style={{ background: "#fff", borderRadius: 14, padding: "18px 20px", marginBottom: 32, boxShadow: "0 1px 4px rgba(0,0,0,0.05)", borderLeft: "3px solid #E8660D" }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#E8660D", letterSpacing: "0.1em", marginBottom: 10 }}>HOW TO READ THIS PAGE</div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#E8660D", letterSpacing: "0.1em", marginBottom: 10 }}>WHAT'S ON THIS PAGE</div>
               <p style={{ fontSize: 14, color: "#666", lineHeight: 1.7, margin: "0 0 14px" }}>
-                This page mixes public facts with editorial analysis. Use it to orient yourself quickly, understand what pressure points matter, and decide where to dig deeper next.
+                Facts from public data plus our analysis. Use this to understand your city quickly and decide what to learn more about.
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {["Public data where available", "Editorial analysis", "Coverage varies by city"].map((label) => (
+                {["Public facts", "Our analysis", "Coverage varies"].map((label) => (
                   <span
                     key={label}
                     style={{ fontSize: 11, fontWeight: 700, color: "#666", background: "#f5f3ee", padding: "5px 10px", borderRadius: 999 }}
@@ -324,10 +332,10 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
           <div style={{ maxWidth: 900, margin: "0 auto" }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 12 }}>PANEL 2 - CIVIC ISSUES</div>
             <h2 className="city-panel-title" style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
-              What's happening in {city.city}.
+              Key problems in {city.city}
             </h2>
             <p style={{ fontSize: 15, color: "#888", marginBottom: 40, lineHeight: 1.6 }}>
-              The issues that shape daily life in this city, explained plainly and editorially. This is not a live complaints feed or official incident dashboard.
+              The key problems in your city. Explained clearly. Not a complaints feed or official tracker.
             </p>
 
             {!hasData ? (
@@ -403,10 +411,10 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
           <div style={{ maxWidth: 900, margin: "0 auto" }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 12 }}>PANEL 3 - CIVIC ECOSYSTEM</div>
             <h2 className="city-panel-title" style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
-              Who's fighting for {city.city}.
+              Organizations working in {city.city}
             </h2>
             <p style={{ fontSize: 15, color: "#888", marginBottom: 40, lineHeight: 1.6 }}>
-              Selected organizations, collectives, and initiatives doing real civic work in this city. This is a curated directory, not a complete registry.
+              Organizations and groups working on problems in your city. This is not a complete list, but a starting point to get involved.
             </p>
 
             {orgs.length === 0 ? (
@@ -508,10 +516,10 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
       <div className="page-section" style={{ background: "#0D1117", paddingTop: 60, paddingBottom: 60 }}>
         <div style={{ maxWidth: 680, margin: "0 auto", textAlign: "center" }}>
           <div style={{ fontSize: 26, fontFamily: "Georgia, serif", fontWeight: 700, color: "#fff", marginBottom: 12 }}>
-            {city.city} is your city too.
+            Want to help improve {city.city}?
           </div>
           <p style={{ fontSize: 15, color: "rgba(255,255,255,0.45)", lineHeight: 1.7, maxWidth: 440, margin: "0 auto 28px", fontFamily: "Georgia, serif" }}>
-            MyCityPulse exists to make the civic layer of your city legible - and to connect you with the people already working to fix it. Join the conversation.
+            Share information about issues, organizations, or wards. Help us make this resource better for your city.
           </p>
           <a
             href={cocreatorHref}
@@ -526,7 +534,7 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
               letterSpacing: "0.02em",
             }}
           >
-              Become a Cocreator -&gt;
+              Get Involved -&gt;
           </a>
         </div>
       </div>
