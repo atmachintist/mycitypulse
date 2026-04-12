@@ -14,6 +14,7 @@ import { buildMailtoHref, openMailtoDraft } from "./lib/contact.js";
 import { submitCocreatorInterest } from "./lib/submissions.js";
 import useCitySearch from "./shared/hooks/useCitySearch.js";
 import { parseUrl, updateUrlForCity, findCityByUrlSlug, updateUrlForCompare, updateUrlToHome } from "./lib/routing.js";
+import { Analytics } from "@vercel/analytics/react";
 
 const CityPage = lazy(() => import("./features/city/CityPage.jsx"));
 const CompareView = lazy(() => import("./features/compare/CompareView.jsx"));
@@ -2032,6 +2033,7 @@ export default function App() {
           onClear={() => setCompareList([])}
         />
       )}
+      <Analytics />
     </>
   );
 }
