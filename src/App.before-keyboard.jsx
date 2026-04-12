@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { CITY_ISSUES, CIVIC_ORGS, CITIES_WITH_DATA } from "./cityData.js";
 
 // ─── City Data ────────────────────────────────────────────────────────────────
@@ -290,15 +290,12 @@ const GlobalStyles = () => (
 // ─── Nav ──────────────────────────────────────────────────────────────────────
 function Nav({ onLogoClick, onSearch }) {
   const [q, setQ] = useState("");
-  const [results, setResults] = useState([]);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const ref = useRef(null);
+  const results = useMemo(() => (q.length >= 2 ? searchCities(q) : []), [q]);
 
   useEffect(() => {
-    setResults(q.length >= 2 ? searchCities(q) : []);
-  }, [q]);
-
-  useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setResults([]); };
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setIsSearchOpen(false); };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
@@ -323,8 +320,9 @@ function Nav({ onLogoClick, onSearch }) {
       <div ref={ref} style={{ flex: 1, maxWidth: 320, position: "relative" }} className="nav-links">
         <input
           value={q}
-          onChange={e => setQ(e.target.value)}
-          onKeyDown={e => { if (e.key === "Enter" && results[0]) { onSearch(results[0]); setQ(""); setResults([]); } }}
+          onChange={e => { setQ(e.target.value); setIsSearchOpen(true); }}
+          onFocus={() => setIsSearchOpen(true)}
+          onKeyDown={e => { if (e.key === "Enter" && results[0]) { onSearch(results[0]); setQ(""); setIsSearchOpen(false); } }}
 	  aria-label="Search cities from navigation"
           placeholder="Search any city..."
           style={{
@@ -333,14 +331,14 @@ function Nav({ onLogoClick, onSearch }) {
             outline: "none",
           }}
         />
-        {results.length > 0 && (
+        {isSearchOpen && results.length > 0 && (
           <div style={{
             position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0,
             background: "#1a1e26", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
             border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden", zIndex: 300,
           }}>
             {results.map(c => (
-              <button key={c.city} onClick={() => { onSearch(c); setQ(""); setResults([]); }} style={{
+              <button key={c.city} onClick={() => { onSearch(c); setQ(""); setIsSearchOpen(false); }} style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between",
                 width: "100%", padding: "10px 16px", background: "none", border: "none",
                 color: "#fff", fontSize: 13, textAlign: "left", cursor: "pointer",
@@ -372,15 +370,12 @@ function Nav({ onLogoClick, onSearch }) {
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 function Hero({ onCitySelect }) {
   const [q, setQ] = useState("");
-  const [results, setResults] = useState([]);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const ref = useRef(null);
+  const results = useMemo(() => (q.length >= 2 ? searchCities(q) : []), [q]);
 
   useEffect(() => {
-    setResults(q.length >= 2 ? searchCities(q) : []);
-  }, [q]);
-
-  useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setResults([]); };
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setIsSearchOpen(false); };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
@@ -435,8 +430,9 @@ function Hero({ onCitySelect }) {
           <div style={{ position: "relative" }}>
             <input
               value={q}
-              onChange={e => setQ(e.target.value)}
-              onKeyDown={e => { if (e.key === "Enter" && results[0]) { onCitySelect(results[0]); } }}
+              onChange={e => { setQ(e.target.value); setIsSearchOpen(true); }}
+              onFocus={() => setIsSearchOpen(true)}
+              onKeyDown={e => { if (e.key === "Enter" && results[0]) { onCitySelect(results[0]); setQ(""); setIsSearchOpen(false); } }}
 	      aria-label="Search cities"
               placeholder="Search your city..."
               style={{
@@ -458,14 +454,14 @@ function Hero({ onCitySelect }) {
           </div>
 
           {/* Dropdown */}
-          {results.length > 0 && (
+          {isSearchOpen && results.length > 0 && (
             <div style={{
               position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0,
               background: "#1a1e26", borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
               border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden", zIndex: 300, textAlign: "left",
             }}>
               {results.map(c => (
-                <button key={c.city} onClick={() => { onCitySelect(c); setQ(""); setResults([]); }} style={{
+                <button key={c.city} onClick={() => { onCitySelect(c); setQ(""); setIsSearchOpen(false); }} style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between",
                   width: "100%", padding: "12px 20px", background: "none", border: "none",
                   color: "#fff", fontSize: 14, cursor: "pointer",

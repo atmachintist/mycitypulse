@@ -14,9 +14,9 @@ export const BHAVNAGAR_ELECTION_2026 = createGujaratElection({
   status: "ward_directory",
   wards: BHAVNAGAR_WARDS_2026,
   seatsTotal: 52,
-  lastUpdated: "2026-04-11T13:05:00+05:30",
+  lastUpdated: "2026-04-12T16:20:00+05:30",
   scopeNote:
-    "Bhavnagar's election desk now publishes the corporation-wide ward directory and election timeline. Ward-wise 2026 candidate names are still awaiting verification before MyCityPulse will attach them to any ward.",
+    "Bhavnagar's election desk now reflects the closed nomination phase as of April 11, 2026. The ward directory is live, but ward-wise candidate names are still awaiting verification before MyCityPulse will attach them to any ward.",
   sources: [
     {
       label: "Bhavnagar Municipal Corporation official site",

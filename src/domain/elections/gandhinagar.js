@@ -20,9 +20,9 @@ export const GANDHINAGAR_ELECTION_2026 = createGujaratElection({
   status: "ward_directory",
   wards: GANDHINAGAR_WARDS_2026,
   seatsTotal: 44,
-  lastUpdated: "2026-04-11T13:05:00+05:30",
+  lastUpdated: "2026-04-12T16:20:00+05:30",
   scopeNote:
-    "Gandhinagar's election desk now includes the official ward structure and citizen-readable area coverage. Ward-wise 2026 candidate names are still awaiting verification before MyCityPulse publishes them.",
+    "Gandhinagar's election desk now reflects the closed nomination phase as of April 11, 2026. The official ward structure is in place, while ward-wise candidate names still await verification before publication.",
   sources: [
     {
       label: "GMC councillors list",

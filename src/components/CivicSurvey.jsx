@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import './CivicSurvey.css';
+import { openMailtoDraft } from '../lib/contact.js';
+import { submitSurveyResponse } from '../lib/submissions.js';
 
 const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -8,6 +10,10 @@ const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
   const [showThankYou, setShowThankYou] = useState(false);
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [submitError, setSubmitError] = useState('');
+  const [submitState, setSubmitState] = useState('idle');
+  const [deliveryMode, setDeliveryMode] = useState(null);
+  const [submittedResponses, setSubmittedResponses] = useState(null);
 
   const questions = [
     // Section 1: Demographics
@@ -184,6 +190,7 @@ const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
     }
     return true;
   });
+  const questionMap = Object.fromEntries(questions.map((question) => [question.id, question]));
 
   const handleStart = () => {
     setShowWelcome(false);
@@ -197,11 +204,11 @@ const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
     if (currentQuestion < visibleQuestions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
-      handleComplete(newResponses);
+      void handleComplete(newResponses);
     }
   };
 
-  const handleComplete = (finalResponses) => {
+  const handleComplete = async (finalResponses) => {
     const surveyData = {
       city,
       timestamp: new Date().toISOString(),
@@ -209,11 +216,18 @@ const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
       responses: finalResponses,
     };
 
-    // Save to localStorage
-    const key = `survey_${city}_${Date.now()}`;
-    localStorage.setItem(key, JSON.stringify(surveyData));
-
-    setShowThankYou(true);
+    try {
+      setSubmitState('submitting');
+      setSubmitError('');
+      const result = await submitSurveyResponse(surveyData);
+      setDeliveryMode(result.delivery);
+      setSubmittedResponses(finalResponses);
+      setShowThankYou(true);
+    } catch {
+      setSubmitError('We could not submit your survey right now. You can try again or email hello@mycitypulse.in.');
+    } finally {
+      setSubmitState('idle');
+    }
   };
 
   const handlePrevious = () => {
@@ -226,7 +240,7 @@ const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
     if (currentQuestion < visibleQuestions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
-      handleComplete(responses);
+      void handleComplete(responses);
     }
   };
 
@@ -243,6 +257,14 @@ const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
     }
     setEmailError('');
     handleStart();
+  };
+
+  const getResponseLabel = (value) => {
+    if (Array.isArray(value)) {
+      return value.join(', ');
+    }
+
+    return String(value);
   };
 
   if (showWelcome) {
@@ -277,7 +299,9 @@ const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
               Start Survey
             </button>
           </form>
-          <p className="privacy-note">Your email won't be shared publicly. We respect your privacy.</p>
+          <p className="privacy-note">
+            Your email won't be shared publicly. If `VITE_SURVEY_ENDPOINT` is not configured, responses stay on this device.
+          </p>
         </div>
       </div>
     );
@@ -289,18 +313,47 @@ const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
         <div className="survey-thank-you">
           <div className="thank-you-icon">{"\uD83D\uDE4F"}</div>
           <h2>Thank You!</h2>
-          <p>Your feedback has been recorded and will help improve civic services in {city}.</p>
+          <p>
+            {deliveryMode === 'remote'
+              ? `Your feedback has been submitted and will help improve civic services in ${city}.`
+              : `Your feedback has been saved on this device for ${city}.`}
+          </p>
           <p className="follow-up">
             {email && email !== '' ? `We'll keep you updated at ${email}.` : 'Stay tuned for updates!'}
           </p>
           <div className="next-steps">
             <h3>What happens next?</h3>
             <ul>
-              <li>Your responses are saved for the MyCityPulse team to review</li>
+              <li>{deliveryMode === 'remote' ? 'Your responses reached the MyCityPulse team for review' : 'Your responses are stored locally in this browser until a live survey inbox is wired up'}</li>
               <li>We look for patterns across local priorities and service gaps</li>
               <li>Those insights help shape future civic coverage and outreach</li>
             </ul>
           </div>
+          {deliveryMode !== 'remote' && (
+            <>
+              <p className="privacy-note">For a guaranteed human follow-up today, email your saved response to the team.</p>
+              <button
+                type="button"
+                className="start-btn survey-close-btn"
+                onClick={() => openMailtoDraft({
+                  subject: `${city} civic survey response`,
+                  lines: [
+                    'Hi MyCityPulse,',
+                    '',
+                    `I’m sharing my civic survey responses for ${city}.`,
+                    `Email: ${email || 'anonymous'}`,
+                    '',
+                    ...Object.entries(submittedResponses || {}).map(([questionId, value]) => {
+                      const question = questionMap[questionId];
+                      return `${question?.question || questionId}: ${getResponseLabel(value)}`;
+                    }),
+                  ],
+                })}
+              >
+                Email My Responses
+              </button>
+            </>
+          )}
           {onComplete && (
             <button type="button" className="start-btn survey-close-btn" onClick={onComplete}>
               Close Survey
@@ -435,11 +488,12 @@ const CivicSurvey = ({ city = 'Ahmedabad', onComplete }) => {
           <button
             className={`nav-btn next-btn ${!responses[currentQ.id] ? 'disabled' : ''}`}
             onClick={() => handleAnswer(responses[currentQ.id])}
-            disabled={!responses[currentQ.id]}
+            disabled={!responses[currentQ.id] || submitState === 'submitting'}
           >
-            {currentQuestion === visibleQuestions.length - 1 ? 'Submit' : 'Next \u2192'}
+            {submitState === 'submitting' ? 'Submitting...' : currentQuestion === visibleQuestions.length - 1 ? 'Submit' : 'Next \u2192'}
           </button>
         </div>
+        {submitError && <p className="error-text">{submitError}</p>}
       </div>
     </div>
   );

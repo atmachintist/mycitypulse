@@ -29,17 +29,82 @@ const baseWards = [
   ward(18, "Ward 18", "South", officeSummary("South Zone", "Served through Khodaldham Residency-4 on Swati Park Road, Kothariya village, and nearby ward facilities in the Kothariya corridor.")),
 ];
 
+const candidateInfoByWard = {
+  1: {
+    candidateStatus: "party_announced",
+    candidateSummary: "ABP Asmita reported BJP's full four-name panel for Rajkot Ward 1 on April 10, 2026.",
+    candidates: [
+      { name: "Anjana Murjariya", party: "BJP", status: "party_announced" },
+      { name: "Sejal Chaudhary", party: "BJP", status: "party_announced" },
+      { name: "Jayrajsinh Jadeja", party: "BJP", status: "party_announced" },
+      { name: "Paresh Thakar", party: "BJP", status: "party_announced" },
+    ],
+  },
+  2: {
+    candidateStatus: "party_announced",
+    candidateSummary: "ABP Asmita reported BJP's full four-name panel for Rajkot Ward 2 on April 10, 2026.",
+    candidates: [
+      { name: "Dakshaben Vaghela", party: "BJP", status: "party_announced" },
+      { name: "Minaba Jadeja", party: "BJP", status: "party_announced" },
+      { name: "Shailesh Vasani", party: "BJP", status: "party_announced" },
+      { name: "Dhairya Parekh", party: "BJP", status: "party_announced" },
+    ],
+  },
+  3: {
+    candidateStatus: "party_announced",
+    candidateSummary: "ABP Asmita reported BJP's full four-name panel for Rajkot Ward 3 on April 10, 2026.",
+    candidates: [
+      { name: "Alpa Dave", party: "BJP", status: "party_announced" },
+      { name: "Hina Belani", party: "BJP", status: "party_announced" },
+      { name: "Ajay Majethiya", party: "BJP", status: "party_announced" },
+      { name: "Narendrasinh Jadeja", party: "BJP", status: "party_announced" },
+    ],
+  },
+  4: {
+    candidateStatus: "party_announced",
+    candidateSummary: "ABP Asmita reported BJP's full four-name panel for Rajkot Ward 4 on April 10, 2026.",
+    candidates: [
+      { name: "Kankuben Udhareja", party: "BJP", status: "party_announced" },
+      { name: "Rajeshwari Malaviya", party: "BJP", status: "party_announced" },
+      { name: "Bharatbhai Limbasiya", party: "BJP", status: "party_announced" },
+      { name: "Kalubhai Kungsiya", party: "BJP", status: "party_announced" },
+    ],
+  },
+  5: {
+    candidateStatus: "party_announced",
+    candidateSummary: "ABP Asmita reported BJP's full four-name panel for Rajkot Ward 5 on April 10, 2026.",
+    candidates: [
+      { name: "Rasilaben Sakariya", party: "BJP", status: "party_announced" },
+      { name: "Smitaben Gohil", party: "BJP", status: "party_announced" },
+      { name: "Sanjay Chavda", party: "BJP", status: "party_announced" },
+      { name: "Dilip Lunagariya", party: "BJP", status: "party_announced" },
+    ],
+  },
+  6: {
+    candidateStatus: "party_announced",
+    candidateSummary: "ABP Asmita reported BJP's full four-name panel for Rajkot Ward 6 on April 10, 2026.",
+    candidates: [
+      { name: "Dharmishthaben Parmar", party: "BJP", status: "party_announced" },
+      { name: "Poonamben Morvadiya", party: "BJP", status: "party_announced" },
+      { name: "Anil Chauhan", party: "BJP", status: "party_announced" },
+      { name: "Paresh Pipliya", party: "BJP", status: "party_announced" },
+    ],
+  },
+};
+
 export const RAJKOT_WARDS_2026 = baseWards.map((entry) => ({
   ...entry,
-  candidateStatus: "awaiting_verification",
-  candidateSummary: "No candidate names have been verified for this ward yet in MyCityPulse.",
-  candidates: [],
+  ...(candidateInfoByWard[entry.number] || {
+    candidateStatus: "awaiting_verification",
+    candidateSummary: "No candidate names have been verified for this ward yet in MyCityPulse.",
+    candidates: [],
+  }),
 }));
 
 export const RAJKOT_ELECTION_2026 = {
   year: 2026,
   status: "ward_directory",
-  lastUpdated: "2026-04-10T18:30:00+05:30",
+  lastUpdated: "2026-04-11T12:20:00+05:30",
   election_date: "2026-04-26",
   result_date: "2026-04-28",
   nomination_open: "2026-04-06",
@@ -51,12 +116,12 @@ export const RAJKOT_ELECTION_2026 = {
   seats_total: 72,
   polling_hours: "7:00 AM to 6:00 PM",
   candidateTracker: {
-    lastReviewed: "2026-04-10",
+    lastReviewed: "2026-04-11",
     officialFinalWards: 0,
-    partyAnnouncedWards: 0,
-    namedEntries: 0,
+    partyAnnouncedWards: 6,
+    namedEntries: 24,
     statusNote:
-      "MyCityPulse currently shows the Rajkot ward directory, but ward-wise final candidate names are still awaiting verification here.",
+      "MyCityPulse now shows BJP's announced candidates for Rajkot wards 1 to 6 from April 10 reporting. Other wards still remain unfilled here until we can verify more names.",
     legend: [
       { key: "official_final", label: "Official final list", tone: "verified" },
       { key: "party_announced", label: "Party-announced", tone: "partial" },
@@ -86,6 +151,11 @@ export const RAJKOT_ELECTION_2026 = {
       label: "RMC ward office network",
       note: "Official zone offices and ward / sub-ward office addresses",
       url: "https://egov.rmc.gov.in/RMCOffices",
+    },
+    {
+      label: "ABP Asmita Rajkot BJP list",
+      note: "BJP ward-wise Rajkot candidate panels reported on April 10, 2026",
+      url: "https://gujarati.abplive.com/news/rajkot/72-bjp-candidates-declared-in-18-wards-of-rajkot-municipal-corporation-977024/amp",
     },
     {
       label: "Gujarat local body poll schedule",

@@ -436,6 +436,28 @@
 }
 
 /* Responsive Design */
+@media (max-width: 768px) {
+  .survey-container {
+    padding: 16px;
+    align-items: flex-start;
+  }
+
+  .survey-welcome,
+  .survey-thank-you,
+  .survey-content {
+    margin-top: 12px;
+  }
+
+  .survey-actions {
+    flex-direction: column;
+  }
+
+  .nav-btn,
+  .skip-btn {
+    width: 100%;
+  }
+}
+
 @media (max-width: 600px) {
   .survey-welcome,
   .survey-thank-you {

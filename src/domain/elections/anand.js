@@ -23,9 +23,9 @@ export const ANAND_ELECTION_2026 = createGujaratElection({
   status: "ward_directory",
   wards: ANAND_WARDS_2026,
   seatsTotal: 52,
-  lastUpdated: "2026-04-11T13:05:00+05:30",
+  lastUpdated: "2026-04-12T16:20:00+05:30",
   scopeNote:
-    "Anand's election desk now includes the inherited municipality ward structure used as a citizen-facing starting point while the new corporation's first ward-wise candidate list is still being verified.",
+    "Anand's election desk now reflects the closed nomination phase as of April 11, 2026. The inherited ward structure remains the citizen-facing starting point while the new corporation's first ward-wise candidate list is still being verified.",
   sources: [
     {
       label: "Karamsad Anand Municipal Corporation",

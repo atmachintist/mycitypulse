@@ -13,6 +13,7 @@ import CompareTray from "./features/compare/CompareTray.jsx";
 import { buildMailtoHref, openMailtoDraft } from "./lib/contact.js";
 import { submitCocreatorInterest } from "./lib/submissions.js";
 import useCitySearch from "./shared/hooks/useCitySearch.js";
+import { parseUrl, updateUrlForCity, findCityByUrlSlug, updateUrlForCompare, updateUrlToHome } from "./lib/routing.js";
 
 const CityPage = lazy(() => import("./features/city/CityPage.jsx"));
 const CompareView = lazy(() => import("./features/compare/CompareView.jsx"));
@@ -165,6 +166,7 @@ const GlobalStyles = () => (
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #FAF8F4; color: #1a1a1a; overflow-x: hidden; max-width: 100vw; }
     a { text-decoration: none; }
     button { font-family: inherit; cursor: pointer; }
+    input, textarea, select { min-width: 0; }
 
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(20px); }
@@ -186,12 +188,132 @@ const GlobalStyles = () => (
       transition: transform 0.25s ease, box-shadow 0.25s ease;
       box-shadow: 0 2px 12px rgba(0,0,0,0.14);
     }
-    .city-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 14px 36px rgba(0,0,0,0.22);
+
+    .hero-shell {
+      min-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 100px 24px 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
     }
-    .city-card:hover img {
-      transform: scale(1.06);
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 760px);
+      animation: fadeUp 0.7s ease both;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff3e7;
+      border: 1px solid #f1d1b1;
+      border-radius: 8px;
+      padding: 6px 14px;
+      margin-bottom: 28px;
+    }
+    .hero-ticker {
+      margin: 0 auto 24px;
+      max-width: 760px;
+      overflow: hidden;
+      border-radius: 8px;
+      border: 1px solid #eadfce;
+      background: rgba(255,255,255,0.85);
+      box-shadow: 0 10px 30px rgba(98,81,57,0.08);
+    }
+    .hero-ticker-track {
+      display: flex;
+      width: max-content;
+      min-width: 100%;
+      animation: ticker 28s linear infinite;
+    }
+    .hero-mobile-notice {
+      display: none;
+      margin: 0 auto 20px;
+      width: 100%;
+      text-align: left;
+      background: rgba(255,255,255,0.88);
+      border: 1px solid #eadfce;
+      border-radius: 8px;
+      padding: 14px;
+      box-shadow: 0 10px 30px rgba(98,81,57,0.08);
+    }
+    .hero-mobile-notice-title {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: #E8660D;
+      margin-bottom: 8px;
+    }
+    .hero-mobile-notice-copy {
+      font-size: 13px;
+      color: #554b40;
+      line-height: 1.55;
+      margin-bottom: 10px;
+    }
+    .hero-mobile-chip-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+    .hero-mobile-chip-row::-webkit-scrollbar {
+      display: none;
+    }
+    .hero-mobile-chip {
+      border: 1px solid #eadfce;
+      background: #fff;
+      color: #1f1a14;
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .hero-points,
+    .hero-quick-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+    .hero-points {
+      margin: 0 auto 28px;
+      max-width: 760px;
+    }
+    .hero-search-wrap {
+      position: relative;
+      max-width: 560px;
+      margin: 0 auto 32px;
+    }
+    .hero-search-input {
+      width: 100%;
+      padding: 16px 56px 16px 24px;
+      background: #fff;
+      border: 1.5px solid #e0d5c6;
+      border-radius: 8px;
+      color: #1f1a14;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .hero-search-cta {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #E8660D;
+      border-radius: 8px;
+      padding: 8px 16px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
     }
 
     .pill-btn {
@@ -259,6 +381,149 @@ const GlobalStyles = () => (
     .panel-tab:hover { color: #333; }
     .panel-tab.active { color: #E8660D; border-bottom-color: #E8660D; }
 
+    .page-section {
+      padding: 72px 32px;
+    }
+    .page-section-tight {
+      padding: 56px 32px 40px;
+    }
+    .stack-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+    .city-legend-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+    }
+    .city-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 32px;
+      align-items: center;
+    }
+    .compare-card-grid {
+      display: grid;
+      gap: 14px;
+    }
+    .compare-table-scroll {
+      overflow: hidden;
+    }
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .city-page-hero {
+      min-height: 380px;
+    }
+    .city-page-back-btn {
+      max-width: calc(100% - 64px);
+    }
+    .city-page-hero-copy {
+      max-width: 100%;
+    }
+    .city-page-title {
+      font-size: 48px;
+      line-height: 1.1;
+    }
+    .city-panel-title {
+      font-size: 32px;
+      line-height: 1.2;
+    }
+    .city-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .city-dual-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .city-issue-card {
+      display: flex;
+      gap: 0;
+    }
+    .city-issue-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .join-fields-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .hero-scrollcue {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #9a8f82;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-align: center;
+    }
+    .footer-copy {
+      color: #877d71;
+      font-size: 12px;
+      letter-spacing: 0.03em;
+    }
+    .site-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+      background: rgba(250,248,244,0.94);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(79,67,52,0.1);
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      padding: 0 clamp(16px, 4vw, 32px);
+      gap: 24px;
+    }
+    .site-nav-search {
+      flex: 1;
+      max-width: 320px;
+      position: relative;
+    }
+    .site-nav-links {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      margin-left: auto;
+    }
+    .mobile-nav-row {
+      display: none;
+    }
+    .app-shell {
+      padding-top: 58px;
+    }
+    .section-title {
+      font-size: 36px;
+      line-height: 1.2;
+    }
+    .join-copy-title {
+      font-size: 38px;
+      line-height: 1.25;
+    }
+    .join-form-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .join-form-actions button {
+      flex-shrink: 0;
+    }
+
     /* â”€â”€ Ward table â”€â”€ */
     .ward-table { width: 100%; border-collapse: collapse; }
     .ward-table th {
@@ -296,11 +561,29 @@ const GlobalStyles = () => (
       backdrop-filter: blur(4px);
       z-index: 10; letter-spacing: 0.02em;
     }
-    .city-card:hover .compare-btn { opacity: 1; }
     .compare-btn.selected {
       opacity: 1 !important;
       background: rgba(255,255,255,0.92);
       color: #E8660D;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .city-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 14px 36px rgba(0,0,0,0.22);
+      }
+      .city-card:hover img {
+        transform: scale(1.06);
+      }
+      .city-card:hover .compare-btn {
+        opacity: 1;
+      }
+    }
+
+    @media (hover: none), (pointer: coarse) {
+      .compare-btn {
+        opacity: 1;
+      }
     }
 
     /* â”€â”€ Compare tray (sticky bottom) â”€â”€ */
@@ -313,31 +596,215 @@ const GlobalStyles = () => (
       background: #0D1117;
       border-top: 1px solid rgba(255,255,255,0.1);
       padding: 12px 32px;
-      display: flex; align-items: center; gap: 16;
+      display: flex; align-items: center; gap: 16px;
       box-shadow: 0 -4px 24px rgba(0,0,0,0.5);
       animation: slideUp 0.22s ease;
     }
 
     @media (max-width: 768px) {
+      .page-section,
+      .page-section-tight {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
       .city-grid { grid-template-columns: 1fr 1fr !important; }
+      .site-nav {
+        flex-wrap: wrap;
+        align-items: stretch;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        gap: 10px;
+      }
+      .app-shell {
+        padding-top: 104px;
+      }
+      .site-nav-search {
+        display: none !important;
+      }
+      .site-nav-links {
+        display: none !important;
+      }
+      .mobile-nav-row {
+        display: flex;
+        width: 100%;
+        gap: 8px;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+      .mobile-nav-row::-webkit-scrollbar {
+        display: none;
+      }
       .hero-headline { font-size: 36px !important; }
       .hero-sub { font-size: 16px !important; }
-      .nav-links { display: none !important; }
+      .hero-shell {
+        min-height: auto;
+        justify-content: flex-start;
+        padding: 32px 20px 44px;
+      }
+      .hero-inner {
+        width: 100%;
+      }
+      .hero-badge {
+        margin-bottom: 18px;
+        padding: 6px 12px;
+      }
+      .hero-ticker {
+        display: none;
+      }
+      .hero-mobile-notice {
+        display: block;
+      }
+      .hero-points,
+      .hero-quick-links {
+        gap: 8px;
+      }
+      .hero-search-wrap {
+        max-width: none;
+        width: 100%;
+      }
+      .hero-search-input {
+        padding: 14px 16px;
+        font-size: 16px;
+      }
+      .hero-search-cta {
+        display: none;
+      }
       .stats-grid { grid-template-columns: 1fr 1fr !important; }
       .thread-grid { grid-template-columns: 1fr !important; }
       .panel-nav-inner { padding: 0 16px; }
       .ward-table td, .ward-table th { padding: 9px 10px; }
       .compare-tray { padding: 10px 16px; flex-wrap: wrap; gap: 10px; }
+      .stack-header,
+      .city-filters {
+        gap: 12px;
+      }
+      .compare-card-grid {
+        grid-template-columns: 1fr 1fr !important;
+      }
+      .city-legend-grid,
+      .join-fields-grid {
+        grid-template-columns: 1fr;
+      }
+      .city-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
+      .city-dual-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .city-page-back-btn {
+        left: 20px !important;
+        top: 70px !important;
+        max-width: calc(100% - 40px);
+      }
+      .city-page-title {
+        font-size: 40px !important;
+      }
+      .city-panel-title {
+        font-size: 28px !important;
+      }
+      .city-page-hero-copy {
+        left: 20px !important;
+        right: 20px !important;
+        bottom: 24px !important;
+      }
+      .city-issue-card {
+        padding: 24px 20px 24px 0 !important;
+      }
+      .city-issue-header {
+        flex-wrap: wrap;
+      }
+      .hero-scrollcue {
+        display: none;
+      }
+      .section-title {
+        font-size: 30px !important;
+      }
+      .join-copy-title {
+        font-size: 32px !important;
+      }
+      .join-form-actions {
+        align-items: stretch;
+      }
+      .footer-copy {
+        line-height: 1.7;
+      }
     }
     @media (max-width: 480px) {
+      .page-section,
+      .page-section-tight {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+      .app-shell {
+        padding-top: 108px;
+      }
       .city-grid { grid-template-columns: 1fr !important; }
+      .compare-card-grid { grid-template-columns: 1fr !important; }
       .hero-headline { font-size: 28px !important; }
+      .section-title {
+        font-size: 25px !important;
+      }
+      .hero-shell {
+        padding: 20px 16px 36px;
+      }
+      .hero-badge {
+        width: 100%;
+        justify-content: center;
+      }
+      .join-copy-title {
+        font-size: 26px !important;
+      }
+      .stats-grid { grid-template-columns: 1fr !important; }
+      .hero-scrollcue { width: calc(100% - 32px); }
+      .compare-tray { padding: 10px 12px; }
+      .compare-tray > * {
+        width: 100%;
+      }
+      .city-page-hero {
+        min-height: 340px;
+      }
+      .city-page-back-btn {
+        left: 16px !important;
+        top: 68px !important;
+        padding: 8px 14px !important;
+        font-size: 12px !important;
+      }
+      .city-page-title {
+        font-size: 32px !important;
+      }
+      .city-panel-title {
+        font-size: 24px !important;
+      }
+      .city-page-hero-copy {
+        left: 16px !important;
+        right: 16px !important;
+        bottom: 20px !important;
+      }
+      .city-stats-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .city-issue-card {
+        flex-direction: column !important;
+        padding: 0 !important;
+      }
+      .city-issue-card > div:first-child {
+        width: 100% !important;
+        height: 5px;
+        margin-right: 0 !important;
+        border-radius: 14px 14px 0 0 !important;
+      }
+      .city-issue-card > div:last-child {
+        padding: 20px;
+      }
+      .join-form-actions > * {
+        width: 100%;
+      }
     }
   `}</style>
 );
 
 // â”€â”€â”€ Nav â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function Nav({ onLogoClick, onSearch }) {
+function Nav({ onLogoClick, onSearch, onOpenIssues, onOpenElections, onOpenAllCities, showElectionsLink = true }) {
   const [q, setQ] = useState("");
   const [isSearchReady, setIsSearchReady] = useState(false);
   const ref = useRef(null);
@@ -363,23 +830,17 @@ function Nav({ onLogoClick, onSearch }) {
   };
 
   return (
-    <nav style={{
-      position: "fixed", top: 0, left: 0, right: 0, zIndex: 200,
-      background: "rgba(13,17,23,0.96)", backdropFilter: "blur(10px)",
-      borderBottom: "1px solid rgba(255,255,255,0.07)",
-      height: 58, display: "flex", alignItems: "center",
-      padding: "0 32px", gap: 24,
-    }}>
+    <nav className="site-nav">
       {/* Logo */}
       <button onClick={onLogoClick} style={{ background: "none", border: "none", display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
         <span style={{ width: 8, height: 8, background: "#E8660D", borderRadius: "50%", display: "inline-block", animation: "pulse-dot 2s infinite" }} />
-        <span style={{ color: "#fff", fontWeight: 800, fontSize: 17, fontFamily: "Georgia, serif", letterSpacing: "-0.01em" }}>
+        <span style={{ color: "#1f1a14", fontWeight: 800, fontSize: 17, fontFamily: "Georgia, serif", letterSpacing: "-0.01em" }}>
           MyCityPulse
         </span>
       </button>
 
       {/* Nav search (desktop) */}
-      <div ref={ref} style={{ flex: 1, maxWidth: 320, position: "relative" }} className="nav-links">
+      <div ref={ref} className="site-nav-search">
         <input
           id="nav-city-search"
           name="navCitySearch"
@@ -399,27 +860,27 @@ function Nav({ onLogoClick, onSearch }) {
 	  aria-label="Search cities from navigation"
           placeholder="Search any city..."
           style={{
-            width: "100%", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)",
-            borderRadius: 24, padding: "7px 16px", color: "#fff", fontSize: 13,
+            width: "100%", background: "#fff", border: "1px solid #e5ddd1",
+            borderRadius: 24, padding: "7px 16px", color: "#1f1a14", fontSize: 13,
             outline: "none",
           }}
         />
         {results.length > 0 && (
           <div style={{
             position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0,
-            background: "#1a1e26", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
-            border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden", zIndex: 300,
+            background: "#fff", borderRadius: 10, boxShadow: "0 12px 24px rgba(74,59,40,0.14)",
+            border: "1px solid #eadfce", overflow: "hidden", zIndex: 300,
           }}>
             {results.map((c, index) => (
               <button key={c.city} onClick={() => selectCity(c)} style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between",
-                width: "100%", padding: "10px 16px", background: activeIndex === index ? "rgba(255,255,255,0.08)" : "none", border: "none",
-                color: "#fff", fontSize: 13, textAlign: "left", cursor: "pointer",
-                borderBottom: "1px solid rgba(255,255,255,0.06)",
+                width: "100%", padding: "10px 16px", background: activeIndex === index ? "#f7f2ea" : "none", border: "none",
+                color: "#1f1a14", fontSize: 13, textAlign: "left", cursor: "pointer",
+                borderBottom: "1px solid #f2eadf",
               }}
               onMouseEnter={() => setActiveIndex(index)}
               >
-                <span>{c.city} <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 11 }}>{c.state}</span></span>
+                <span>{c.city} <span style={{ color: "#8d8378", fontSize: 11 }}>{c.state}</span></span>
                 <span style={{ fontSize: 10, background: STRESS[c.stress].color + "33", color: STRESS[c.stress].color, padding: "2px 8px", borderRadius: 10, fontWeight: 700 }}>{c.stress}</span>
               </button>
             ))}
@@ -427,14 +888,24 @@ function Nav({ onLogoClick, onSearch }) {
         )}
       </div>
 
-      <div className="nav-links" style={{ display: "flex", gap: 24, alignItems: "center", marginLeft: "auto" }}>
-        <a href="#elections" style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, letterSpacing: "0.02em" }}>Elections</a>
-        <a href="#pulse" style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, letterSpacing: "0.02em" }}>Issues</a>
-        <a href="#cities" style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, letterSpacing: "0.02em" }}>All Cities</a>
+      <div className="site-nav-links">
+        {showElectionsLink && (
+          <button onClick={onOpenElections} style={{ color: "#675f53", fontSize: 13, letterSpacing: "0.02em", background: "none", border: "none", padding: 0, cursor: "pointer" }}>Elections</button>
+        )}
+        <button onClick={onOpenIssues} style={{ color: "#675f53", fontSize: 13, letterSpacing: "0.02em", background: "none", border: "none", padding: 0, cursor: "pointer" }}>Issues</button>
+        <button onClick={onOpenAllCities} style={{ color: "#675f53", fontSize: 13, letterSpacing: "0.02em", background: "none", border: "none", padding: 0, cursor: "pointer" }}>All Cities</button>
         <a href="#join" style={{
           background: "#E8660D", color: "#fff", padding: "6px 18px",
-          borderRadius: 20, fontSize: 12, fontWeight: 700, letterSpacing: "0.06em",
-        }}>JOIN</a>
+          borderRadius: 8, fontSize: 12, fontWeight: 700, letterSpacing: "0.06em",
+        }}>STAY IN TOUCH</a>
+      </div>
+      <div className="mobile-nav-row">
+        {showElectionsLink && (
+          <button onClick={onOpenElections} className="pill-btn">Elections</button>
+        )}
+        <button onClick={onOpenIssues} className="pill-btn">Issues</button>
+        <button onClick={onOpenAllCities} className="pill-btn">All Cities</button>
+        <a href="#join" className="pill-btn" style={{ display: "inline-flex", alignItems: "center" }}>Stay In Touch</a>
       </div>
     </nav>
   );
@@ -471,45 +942,29 @@ function Hero({ onCitySelect }) {
     .filter(Boolean);
 
   return (
-    <section style={{
-      minHeight: "92vh", background: "linear-gradient(160deg, #0D1117 0%, #141920 60%, #0f1620 100%)",
-      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-      padding: "100px 24px 60px", textAlign: "center", position: "relative", overflow: "hidden",
-    }}>
-      {/* Background grid pattern */}
-      <div style={{
-        position: "absolute", inset: 0, opacity: 0.04,
-        backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
-        backgroundSize: "40px 40px",
-        pointerEvents: "none",
-      }} />
+    <section className="hero-shell" style={{ background: "#f8f4ec" }}>
+      <img
+        src={CITY_IMAGES.Delhi || CITY_IMAGES.Mumbai}
+        alt="Indian city street"
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          opacity: 0.18,
+        }}
+      />
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(248,244,236,0.78) 0%, rgba(248,244,236,0.96) 70%, #f8f4ec 100%)" }} />
 
-      <div style={{ position: "relative", zIndex: 1, maxWidth: 760, animation: "fadeUp 0.7s ease both" }}>
-        {/* Eyebrow */}
-        <div style={{
-          display: "inline-flex", alignItems: "center", gap: 8,
-          background: "rgba(232,102,13,0.12)", border: "1px solid rgba(232,102,13,0.3)",
-          borderRadius: 20, padding: "5px 14px", marginBottom: 28,
-        }}>
+      <div className="hero-inner">
+        <div className="hero-badge">
           <span style={{ width: 6, height: 6, background: "#E8660D", borderRadius: "50%", animation: "pulse-dot 2s infinite" }} />
-          <span style={{ color: "#E8660D", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em" }}>CIVIC INTELLIGENCE FOR URBAN INDIA</span>
+          <span style={{ color: "#A55116", fontSize: 12, fontWeight: 700, letterSpacing: "0.08em" }}>CITIZEN'S GUIDE TO INDIAN CITIES</span>
         </div>
 
-        <div style={{
-          margin: "0 auto 24px",
-          maxWidth: 760,
-          overflow: "hidden",
-          borderRadius: 999,
-          border: "1px solid rgba(255,255,255,0.1)",
-          background: "rgba(255,255,255,0.04)",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.18)",
-        }}>
-          <div style={{
-            display: "flex",
-            width: "max-content",
-            minWidth: "100%",
-            animation: "ticker 28s linear infinite",
-          }}>
+        <div className="hero-ticker">
+          <div className="hero-ticker-track">
             {[0, 1].map((copy) => (
               <div
                 key={copy}
@@ -519,7 +974,7 @@ function Hero({ onCitySelect }) {
                   gap: 28,
                   padding: "10px 20px",
                   whiteSpace: "nowrap",
-                  color: "rgba(255,255,255,0.82)",
+                  color: "#554b40",
                   fontSize: 13,
                   fontWeight: 600,
                   letterSpacing: "0.02em",
@@ -536,7 +991,7 @@ function Hero({ onCitySelect }) {
                           background: "none",
                           border: "none",
                           padding: 0,
-                          color: "#fff",
+                          color: "#1f1a14",
                           fontSize: "inherit",
                           fontWeight: 700,
                           textDecoration: "underline",
@@ -552,32 +1007,70 @@ function Hero({ onCitySelect }) {
                   ))}
                   {" "}can now check election updates inside their city sections.
                 </span>
-                <span style={{ color: "rgba(255,255,255,0.55)" }}>Search your city and open the Elections panel.</span>
+                <span style={{ color: "#8d8378" }}>Search your city and open the Elections panel.</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Headline */}
+        <div className="hero-mobile-notice">
+          <div className="hero-mobile-notice-title">GUJARAT ELECTION UPDATE</div>
+          <p className="hero-mobile-notice-copy">
+            Open a city below to check election updates, wards, and candidate tracking.
+          </p>
+          <div className="hero-mobile-chip-row">
+            {gujaratElectionCities.map((city) => (
+              <button
+                key={`mobile-${city.city}`}
+                onClick={() => selectCity(city)}
+                className="hero-mobile-chip"
+              >
+                {city.city}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <h1 className="hero-headline" style={{
           fontSize: 56, fontFamily: "Georgia, serif", fontWeight: 700,
-          color: "#fff", lineHeight: 1.15, marginBottom: 20,
+          color: "#1f1a14", lineHeight: 1.15, marginBottom: 20,
           letterSpacing: "-0.02em",
         }}>
-          Your city has a story.<br />
-          <span style={{ color: "#E8660D" }}>Are you reading it?</span>
+          Understand your city<br />
+          <span style={{ color: "#E8660D" }}>before it overwhelms you.</span>
         </h1>
 
-        {/* Sub */}
         <p className="hero-sub" style={{
-          fontSize: 18, color: "rgba(255,255,255,0.55)", lineHeight: 1.7,
-          maxWidth: 580, margin: "0 auto 40px", fontFamily: "Georgia, serif",
+          fontSize: 18, color: "#5f564c", lineHeight: 1.7,
+          maxWidth: 620, margin: "0 auto 36px",
         }}>
-          MyCityPulse is an editorial guide to {DATASET_SCOPE.cityCount} large Indian city profiles in the current dataset, combining public data, reported civic issues, and citizen entry points without pretending every page is complete.
+          MyCityPulse helps ordinary citizens find their city, see what pressures shape daily life, discover who is working on local problems, and follow municipal elections without digging through ten tabs.
         </p>
 
-        {/* Search */}
-        <div ref={ref} style={{ position: "relative", maxWidth: 480, margin: "0 auto 32px" }}>
+        <div className="hero-points">
+          {[
+            "Search your city in seconds",
+            "Read issues in plain language",
+            "Track wards and elections where available",
+          ].map((item) => (
+            <span
+              key={item}
+              style={{
+                background: "#fff",
+                border: "1px solid #eadfce",
+                borderRadius: 8,
+                padding: "8px 12px",
+                fontSize: 13,
+                color: "#5b5247",
+                fontWeight: 600,
+              }}
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+
+        <div ref={ref} className="hero-search-wrap">
           <div style={{ position: "relative" }}>
             <input
               id="hero-city-search"
@@ -600,44 +1093,34 @@ function Hero({ onCitySelect }) {
               onMouseDown={() => setIsSearchReady(true)}
 	      aria-label="Search cities"
               placeholder="Search your city..."
-              style={{
-                width: "100%", padding: "16px 56px 16px 24px",
-                background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(255,255,255,0.15)",
-                borderRadius: 40, color: "#fff", fontSize: 16, outline: "none",
-                transition: "border-color 0.2s",
-              }}
+              className="hero-search-input"
               onBlur={e => {
-                e.target.style.borderColor = "rgba(255,255,255,0.15)";
+                e.target.style.borderColor = "#e0d5c6";
               }}
             />
-            <div style={{
-              position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
-              background: "#E8660D", borderRadius: 28, padding: "8px 16px",
-              color: "#fff", fontSize: 13, fontWeight: 700,
-            }}>
+            <div className="hero-search-cta">
               {"Explore \u2192"}
             </div>
           </div>
 
-          {/* Dropdown */}
           {results.length > 0 && (
             <div style={{
               position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0,
-              background: "#1a1e26", borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
-              border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden", zIndex: 300, textAlign: "left",
+              background: "#fff", borderRadius: 8, boxShadow: "0 12px 40px rgba(74,59,40,0.14)",
+              border: "1px solid #eadfce", overflow: "hidden", zIndex: 300, textAlign: "left",
             }}>
               {results.map((c, index) => (
                 <button key={c.city} onClick={() => selectCity(c)} style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between",
-                  width: "100%", padding: "12px 20px", background: activeIndex === index ? "rgba(255,255,255,0.06)" : "none", border: "none",
-                  color: "#fff", fontSize: 14, cursor: "pointer",
-                  borderBottom: "1px solid rgba(255,255,255,0.05)",
+                  width: "100%", padding: "12px 20px", background: activeIndex === index ? "#f7f2ea" : "none", border: "none",
+                  color: "#1f1a14", fontSize: 14, cursor: "pointer",
+                  borderBottom: "1px solid #f2eadf",
                 }}
                 onMouseEnter={() => setActiveIndex(index)}
                 >
                   <div>
                     <span style={{ fontWeight: 600 }}>{c.city}</span>
-                    <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, marginLeft: 8 }}>{c.state}</span>
+                    <span style={{ color: "#8d8378", fontSize: 12, marginLeft: 8 }}>{c.state}</span>
                   </div>
                   <span style={{
                     fontSize: 11, background: STRESS[c.stress].color + "22",
@@ -649,18 +1132,17 @@ function Hero({ onCitySelect }) {
           )}
         </div>
 
-        {/* Quick city pills */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
+        <div className="hero-quick-links">
           {quickCities.map(name => {
             const c = cities.find(x => x.city === name);
             return (
               <button key={name} onClick={() => onCitySelect(c)} style={{
-                background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)",
-                color: "rgba(255,255,255,0.75)", padding: "6px 16px", borderRadius: 20,
+                background: "#fff", border: "1px solid #eadfce",
+                color: "#5b5247", padding: "7px 16px", borderRadius: 8,
                 fontSize: 13, cursor: "pointer", transition: "all 0.15s",
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = "#fff"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "rgba(255,255,255,0.75)"; }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#f7f1e6"; e.currentTarget.style.color = "#1f1a14"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#5b5247"; }}
               >
                 {name}
               </button>
@@ -669,8 +1151,7 @@ function Hero({ onCitySelect }) {
         </div>
       </div>
 
-      {/* Scroll cue */}
-      <div style={{ position: "absolute", bottom: 32, left: "50%", transform: "translateX(-50%)", color: "rgba(255,255,255,0.25)", fontSize: 12, letterSpacing: "0.12em" }}>
+      <div className="hero-scrollcue">
         {"SCROLL TO EXPLORE \u2193"}
       </div>
     </section>
@@ -687,17 +1168,17 @@ function StatsBanner() {
     { value: `${DATASET_SCOPE.issueProfileCount}`, label: "Issue Profiles Published" },
   ];
   return (
-    <div style={{ background: "#1a1a1a", padding: "28px 32px" }}>
+    <div style={{ background: "#fffdf9", padding: "36px 32px", borderTop: "1px solid #eee2d3", borderBottom: "1px solid #eee2d3" }}>
       <div style={{ maxWidth: 960, margin: "0 auto" }}>
         <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 24, textAlign: "center" }}>
           {stats.map(s => (
-            <div key={s.label}>
+            <div key={s.label} style={{ background: "#fff", border: "1px solid #eadfce", borderRadius: 8, padding: "18px 14px" }}>
               <div style={{ fontSize: 32, fontWeight: 900, color: "#E8660D", fontFamily: "Georgia, serif", letterSpacing: "-0.03em" }}>{s.value}</div>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 4, letterSpacing: "0.06em", textTransform: "uppercase" }}>{s.label}</div>
+              <div style={{ fontSize: 12, color: "#7d7266", marginTop: 4, letterSpacing: "0.06em", textTransform: "uppercase" }}>{s.label}</div>
             </div>
           ))}
         </div>
-        <p style={{ marginTop: 20, color: "rgba(255,255,255,0.55)", fontSize: 13, lineHeight: 1.7, textAlign: "center" }}>
+        <p style={{ marginTop: 20, color: "#6f6559", fontSize: 13, lineHeight: 1.7, textAlign: "center" }}>
           Current scope: {DATASET_SCOPE.issueProfileCount} city issue briefs, {DATASET_SCOPE.orgDirectoryCount} civic ecosystem directories,
           {` ${DATASET_SCOPE.wardPanelCount}`} ward panels, and {DATASET_SCOPE.electionTrackerCount} live election tracker.
           Public facts and editorial judgments are intentionally separated elsewhere on the site.
@@ -713,14 +1194,14 @@ function ElectionsHub({ onCitySelect }) {
     .sort((left, right) => left.city.localeCompare(right.city));
 
   return (
-    <section id="elections" style={{ background: "#fff", padding: "56px 32px 40px" }}>
+    <section id="elections" className="page-section-tight" style={{ background: "#fff" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 12 }}>
           MUNICIPAL ELECTIONS
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 24, alignItems: "flex-end", flexWrap: "wrap", marginBottom: 24 }}>
+        <div className="stack-header" style={{ marginBottom: 24 }}>
           <div style={{ maxWidth: 680 }}>
-            <h2 style={{ fontSize: 34, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 10 }}>
+            <h2 className="section-title" style={{ fontSize: 34, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 10 }}>
               Election updates, without the treasure hunt.
             </h2>
             <p style={{ fontSize: 15, color: "#666", lineHeight: 1.7 }}>
@@ -777,36 +1258,35 @@ function ElectionsHub({ onCitySelect }) {
 function TrustSection() {
   const cards = [
     {
-      title: "Is this official?",
-      body: "No. MyCityPulse is a citizen-facing guide, not a government portal. Where possible, we use public or official source material for basics like population, wards, and elections, then layer editorial interpretation on top.",
+      title: "Find your bearings",
+      body: "Open your city and get a quick sense of what matters there: the pressure points, the local context, and the civic language people keep throwing around.",
     },
     {
-      title: "Is this complete?",
-      body: `Not yet. This release covers ${DATASET_SCOPE.cityCount} city profiles across ${DATASET_SCOPE.stateCount} states / UTs, but only ${DATASET_SCOPE.issueProfileCount} cities currently have issue briefs and ${DATASET_SCOPE.wardPanelCount} have ward panels. Missing depth is shown openly instead of hidden behind vague claims.`,
+      title: "See what is actually covered",
+      body: `This release covers ${DATASET_SCOPE.cityCount} cities, but depth still varies. Some places have issue briefs, ward panels, and election desks. Others are still growing. We show that openly.`,
     },
     {
-      title: "What should citizens use it for?",
-      body: "Use it to orient yourself quickly: understand what kind of city you are in, what pressure points matter, who is working on them, and where to dig deeper next. Treat it as a starting point, not the final word.",
+      title: "Know what to trust",
+      body: "MyCityPulse is not a government portal. It mixes public facts, reported material, and editorial judgment so citizens can start somewhere sensible instead of starting from zero.",
     },
   ];
 
   return (
-    <section style={{ padding: "56px 32px", background: "#fff7f0", borderTop: "1px solid #f0e3d7", borderBottom: "1px solid #f0e3d7" }}>
+    <section className="page-section" style={{ paddingTop: 64, paddingBottom: 64, background: "#f4efe6", borderTop: "1px solid #ece1d3", borderBottom: "1px solid #ece1d3" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div style={{ maxWidth: 720, marginBottom: 28 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#E8660D", letterSpacing: "0.1em", marginBottom: 10 }}>READ THIS LIKE A CITIZEN</div>
-          <h2 style={{ fontSize: 34, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 12 }}>
-            Ambitious does not have to mean overstated.
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#E8660D", letterSpacing: "0.1em", marginBottom: 10 }}>START HERE</div>
+          <h2 className="section-title" style={{ fontSize: 34, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 12 }}>
+            A lighter way to make sense of city life.
           </h2>
           <p style={{ fontSize: 16, color: "#666", lineHeight: 1.7 }}>
-            The product should feel bold because it helps people see their city clearly, not because it implies certainty it has not earned.
-            We show scope, judgment, and incompleteness directly so users know what to trust and what still needs work.
+            Most people do not need another dense portal. They need a calm starting point. This is built to help citizens orient fast, read clearly, and keep moving.
           </p>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 18 }}>
           {cards.map((card) => (
-            <div key={card.title} style={{ background: "#fff", borderRadius: 16, padding: 24, boxShadow: "0 1px 6px rgba(0,0,0,0.06)", borderTop: "3px solid #E8660D" }}>
+            <div key={card.title} style={{ background: "#fff", borderRadius: 8, padding: 24, boxShadow: "0 1px 6px rgba(0,0,0,0.04)", border: "1px solid #eadfce" }}>
               <h3 style={{ fontSize: 18, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 10 }}>{card.title}</h3>
               <p style={{ fontSize: 14, color: "#666", lineHeight: 1.7, margin: 0 }}>{card.body}</p>
             </div>
@@ -814,7 +1294,7 @@ function TrustSection() {
         </div>
 
         <p style={{ marginTop: 20, fontSize: 13, color: "#7a6a5c", lineHeight: 1.7 }}>
-          If something looks stale, thin, or incorrect, that should be visible in the interface. The right next step is not to sound bigger; it is to show what is sourced, what is editorial, and what is still being built.
+          If something is thin, stale, or still under construction, that should be visible. The point is clarity, not posturing.
         </p>
       </div>
     </section>
@@ -954,18 +1434,18 @@ function CityGrid({ onCitySelect, onCompare, compareList }) {
   });
 
   return (
-    <section id="cities" style={{ padding: "72px 32px", background: "#FAF8F4" }}>
+    <section id="cities" className="page-section" style={{ background: "#FAF8F4" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         {/* Section header */}
         <div style={{ marginBottom: 40 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: "#E8660D", letterSpacing: "0.1em", marginBottom: 10 }}>EXPLORE</div>
-          <h2 style={{ fontSize: 36, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 12 }}>
-            {DATASET_SCOPE.cityCount} city profiles in this release.
+          <h2 className="section-title" style={{ fontSize: 36, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 12 }}>
+            Pick a city and begin where you live.
           </h2>
           <p style={{ fontSize: 16, color: "#666", maxWidth: 500, lineHeight: 1.6 }}>
-            A working dataset of large Indian cities, mapped through public facts and MyCityPulse editorial lenses. Some cities are deep, some are still being built, and the interface should make that obvious.
+            Search, filter, and open city pages built for citizens. Some are deeper than others today, but each one should help you get oriented faster than a generic search result page.
           </p>
-          <div style={{ marginTop: 16, background: "#fff", borderRadius: 14, border: "1px solid #e8e5e0", padding: "16px 18px", maxWidth: 760 }}>
+          <div style={{ marginTop: 16, background: "#fff", borderRadius: 8, border: "1px solid #e8e5e0", padding: "16px 18px", maxWidth: 760 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#9a6b3d", letterSpacing: "0.08em", marginBottom: 8 }}>CURRENT SCOPE</div>
             <p style={{ margin: 0, fontSize: 14, color: "#666", lineHeight: 1.7 }}>
               This release covers {DATASET_SCOPE.cityCount} city profiles across {DATASET_SCOPE.stateCount} states / UTs.
@@ -978,16 +1458,15 @@ function CityGrid({ onCitySelect, onCompare, compareList }) {
             style={{
               marginTop: 14, background: "none", border: "1.5px solid #e0ddd8",
               color: "#888", fontSize: 12, fontWeight: 600, padding: "6px 16px",
-              borderRadius: 20, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6,
+              borderRadius: 8, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6,
             }}
           >
             {legendOpen ? "\u25B2" : "\u25BC"} What do these tags mean?
           </button>
           {legendOpen && (
-            <div style={{
+            <div className="city-legend-grid" style={{
               marginTop: 16, background: "#fff", borderRadius: 14,
               padding: "24px 28px", border: "1px solid #e8e5e0",
-              display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28,
             }}>
               {/* Stress levels */}
               <div>
@@ -1014,14 +1493,14 @@ function CityGrid({ onCitySelect, onCompare, compareList }) {
         </div>
 
         {/* Filters */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 16, marginBottom: 32, alignItems: "center" }}>
+        <div className="city-filters">
           {/* Search */}
           <input
             value={q} onChange={e => setQ(e.target.value)}
             placeholder="Filter cities..."
             style={{
               padding: "7px 16px", border: "1.5px solid #e0ddd8", borderRadius: 24,
-              fontSize: 13, outline: "none", background: "#fff", minWidth: 160,
+              fontSize: 13, outline: "none", background: "#fff", minWidth: 160, flex: "1 1 220px",
             }}
           />
           {/* Tier pills */}
@@ -1060,11 +1539,11 @@ function CityGrid({ onCitySelect, onCompare, compareList }) {
 // â”€â”€â”€ National Pulse â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function NationalPulse({ onCitySelect }) {
   return (
-    <section id="pulse" style={{ padding: "72px 32px", background: "#fff" }}>
+    <section id="pulse" className="page-section" style={{ background: "#fff" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div style={{ marginBottom: 40 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: "#E8660D", letterSpacing: "0.1em", marginBottom: 10 }}>NATIONAL PULSE</div>
-          <h2 style={{ fontSize: 36, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 12 }}>
+          <h2 className="section-title" style={{ fontSize: 36, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 12 }}>
             What India's cities are talking about.
           </h2>
           <p style={{ fontSize: 16, color: "#666", maxWidth: 520, lineHeight: 1.6 }}>
@@ -1191,31 +1670,31 @@ function JoinCTA() {
   };
 
   return (
-    <section id="join" style={{ background: "#0D1117", padding: "80px 32px" }}>
+    <section id="join" className="page-section" style={{ background: "#fffaf3", paddingTop: 80, paddingBottom: 80, borderTop: "1px solid #ede2d4" }}>
       <div style={{ maxWidth: 680, margin: "0 auto", textAlign: "center" }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 16 }}>BECOME A COCREATOR</div>
-        <h2 style={{ fontSize: 38, fontFamily: "Georgia, serif", fontWeight: 700, color: "#fff", lineHeight: 1.25, marginBottom: 16, letterSpacing: "-0.02em" }}>
-          Help shape India's<br />civic conversation.
+        <h2 className="join-copy-title" style={{ fontSize: 38, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1f1a14", lineHeight: 1.25, marginBottom: 16, letterSpacing: "-0.02em" }}>
+          Stay close to what your city is becoming.
         </h2>
-        <p style={{ fontSize: 16, color: "rgba(255,255,255,0.5)", lineHeight: 1.7, maxWidth: 480, margin: "0 auto 36px", fontFamily: "Georgia, serif" }}>
-          MyCityPulse is being built in public, with a small group of curious urban Indians who care about how their cities actually work. We call them cocreators.
+        <p style={{ fontSize: 16, color: "#655c50", lineHeight: 1.7, maxWidth: 520, margin: "0 auto 36px" }}>
+          Join the people helping us keep city pages sharper, clearer, and more useful. You can simply get updates, or help verify what is changing on the ground.
         </p>
 
         {done ? (
           <div style={{
-            background: "rgba(45,198,83,0.08)",
+            background: "#f4fbf5",
             border: "1px solid rgba(45,198,83,0.25)",
-            borderRadius: 20,
+            borderRadius: 8,
             padding: "24px 22px",
             maxWidth: 560,
             margin: "0 auto",
           }}>
-            <div style={{ color: "#2dc653", fontSize: 16, fontFamily: "Georgia, serif", fontStyle: "italic", marginBottom: 10 }}>
+            <div style={{ color: "#2b8a48", fontSize: 16, fontFamily: "Georgia, serif", fontStyle: "italic", marginBottom: 10 }}>
               {deliveryMode === "remote"
                 ? "\u2713 You're in. Your cocreator interest reached the MyCityPulse inbox."
                 : "\u2713 Your cocreator interest is saved on this device."}
             </div>
-            <p style={{ color: "rgba(255,255,255,0.58)", fontSize: 14, lineHeight: 1.7, margin: 0 }}>
+            <p style={{ color: "#5c6b5f", fontSize: 14, lineHeight: 1.7, margin: 0 }}>
               {deliveryMode === "remote"
                 ? "We have your email, permissions, and contribution interests. This is now a real signup path, not just a local prototype."
                 : "This browser does not have a live form endpoint configured yet. For a real reply today, email hello@mycitypulse.in and mention the city or civic work you'd like to help with."}
@@ -1223,7 +1702,7 @@ function JoinCTA() {
             {deliveryMode !== "remote" && (
               <a
                 href="mailto:hello@mycitypulse.in?subject=MyCityPulse%20Cocreator%20Interest"
-                style={{ color: "#ffcf99", display: "inline-block", marginTop: 12, fontSize: 13, fontWeight: 700 }}
+                style={{ color: "#c76122", display: "inline-block", marginTop: 12, fontSize: 13, fontWeight: 700 }}
               >
                 Email the team directly -&gt;
               </a>
@@ -1233,13 +1712,13 @@ function JoinCTA() {
           <div style={{
             maxWidth: 620,
             margin: "0 auto",
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: 24,
+            background: "#fff",
+            border: "1px solid #eadfce",
+            borderRadius: 8,
             padding: "24px 20px",
             textAlign: "left",
           }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+            <div className="join-fields-grid">
               <input
                 type="text"
                 value={fullName}
@@ -1247,8 +1726,8 @@ function JoinCTA() {
                 placeholder="Your name"
                 style={{
                   width: "100%", padding: "13px 18px",
-                  background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(255,255,255,0.12)",
-                  borderRadius: 16, color: "#fff", fontSize: 14, outline: "none",
+                  background: "#fff", border: "1.5px solid #e3d7c9",
+                  borderRadius: 8, color: "#1f1a14", fontSize: 14, outline: "none",
                 }}
               />
               <input
@@ -1258,8 +1737,8 @@ function JoinCTA() {
                 placeholder="Your city"
                 style={{
                   width: "100%", padding: "13px 18px",
-                  background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(255,255,255,0.12)",
-                  borderRadius: 16, color: "#fff", fontSize: 14, outline: "none",
+                  background: "#fff", border: "1.5px solid #e3d7c9",
+                  borderRadius: 8, color: "#1f1a14", fontSize: 14, outline: "none",
                 }}
               />
             </div>
@@ -1271,8 +1750,8 @@ function JoinCTA() {
               placeholder="your@email.com"
               style={{
                 width: "100%", padding: "13px 18px", marginBottom: 18,
-                background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(255,255,255,0.12)",
-                borderRadius: 16, color: "#fff", fontSize: 14, outline: "none",
+                background: "#fff", border: "1.5px solid #e3d7c9",
+                borderRadius: 8, color: "#1f1a14", fontSize: 14, outline: "none",
               }}
             />
 
@@ -1291,9 +1770,9 @@ function JoinCTA() {
                     key={key}
                     onClick={() => toggleContribution(key)}
                     style={{
-                      border: contributions[key] ? "1.5px solid #E8660D" : "1.5px solid rgba(255,255,255,0.12)",
-                      background: contributions[key] ? "rgba(232,102,13,0.14)" : "rgba(255,255,255,0.04)",
-                      color: contributions[key] ? "#fff" : "rgba(255,255,255,0.7)",
+                      border: contributions[key] ? "1.5px solid #E8660D" : "1.5px solid #e3d7c9",
+                      background: contributions[key] ? "rgba(232,102,13,0.14)" : "#fff",
+                      color: contributions[key] ? "#8d3f12" : "#655c50",
                       padding: "9px 14px",
                       borderRadius: 999,
                       fontSize: 13,
@@ -1316,7 +1795,7 @@ function JoinCTA() {
                   ["surveys", "Requests for civic surveys, feedback, and verification"],
                   ["pilotGroup", "Early pilot access to new MyCityPulse features"],
                 ].map(([key, label]) => (
-                  <label key={key} style={{ display: "flex", alignItems: "center", gap: 10, color: "rgba(255,255,255,0.72)", fontSize: 14, cursor: "pointer" }}>
+                  <label key={key} style={{ display: "flex", alignItems: "center", gap: 10, color: "#655c50", fontSize: 14, cursor: "pointer" }}>
                     <input
                       type="checkbox"
                       checked={permissions[key]}
@@ -1330,35 +1809,35 @@ function JoinCTA() {
             </div>
 
             {error && (
-              <p style={{ color: "#ffb366", fontSize: 13, lineHeight: 1.6, margin: "0 0 14px" }}>
+              <p style={{ color: "#b45b21", fontSize: 13, lineHeight: 1.6, margin: "0 0 14px" }}>
                 {error}
               </p>
             )}
 
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+            <div className="join-form-actions">
               <button
                 onClick={handleJoin}
                 disabled={submitState === "submitting"}
                 style={{
                   background: "#E8660D", color: "#fff", border: "none",
-                  padding: "13px 24px", borderRadius: 30, fontSize: 14, fontWeight: 700,
+                  padding: "13px 24px", borderRadius: 8, fontSize: 14, fontWeight: 700,
                   cursor: submitState === "submitting" ? "progress" : "pointer", letterSpacing: "0.04em", whiteSpace: "nowrap",
                   opacity: submitState === "submitting" ? 0.7 : 1,
                 }}
               >
-                {submitState === "submitting" ? "Submitting..." : "Join as Cocreator \u2192"}
+                {submitState === "submitting" ? "Submitting..." : "Stay in touch \u2192"}
               </button>
-              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>
+              <span style={{ fontSize: 12, color: "#8d8378" }}>
                 No account creation. Just email plus clear permissions.
               </span>
             </div>
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.28)", lineHeight: 1.6, margin: "14px 0 0" }}>
+            <p style={{ fontSize: 12, color: "#92887c", lineHeight: 1.6, margin: "14px 0 0" }}>
               Without a configured form endpoint, this saves locally in the browser and offers email fallback. Add `VITE_COCREATOR_ENDPOINT` to make it a live signup.
             </p>
           </div>
         )}
 
-        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", marginTop: 16 }}>
+        <p style={{ fontSize: 12, color: "#93897d", marginTop: 16 }}>
           No spam. Just city stories, targeted asks for help, and the permissions you checked above.
         </p>
       </div>
@@ -1378,13 +1857,13 @@ function Footer() {
     ],
   });
   return (
-    <footer style={{ background: "#080b0f", padding: "28px 32px", textAlign: "center" }}>
-      <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 12, letterSpacing: "0.06em" }}>
-        {"\u00A9"} {year} MyCityPulse {"\u00B7"} <span style={{ color: "rgba(255,255,255,0.15)" }}>mycitypulse.in</span>
-        <span style={{ color: "rgba(255,255,255,0.1)", margin: "0 8px" }}>{"\u00B7"}</span>
+    <footer style={{ background: "#f4eee4", padding: "28px clamp(16px, 4vw, 32px)", textAlign: "center", borderTop: "1px solid #e6dac9" }}>
+      <div className="footer-copy">
+        {"\u00A9"} {year} MyCityPulse {"\u00B7"} <span style={{ color: "#9a8f82" }}>mycitypulse.in</span>
+        <span style={{ color: "#c0b4a7", margin: "0 8px" }}>{"\u00B7"}</span>
         Built from public sources, Wikimedia, and MyCityPulse editorial analysis. Coverage depth varies by city.
-        <span style={{ color: "rgba(255,255,255,0.1)", margin: "0 8px" }}>{"\u00B7"}</span>
-        <a href={contactHref} style={{ color: "rgba(255,255,255,0.45)" }}>Contact</a>
+        <span style={{ color: "#c0b4a7", margin: "0 8px" }}>{"\u00B7"}</span>
+        <a href={contactHref} style={{ color: "#7f5a37" }}>Contact</a>
       </div>
     </footer>
   );
@@ -1411,6 +1890,7 @@ export default function App() {
   const [selectedCity, setSelectedCity] = useState(null);
   const [compareList, setCompareList]   = useState([]);
   const [compareMode, setCompareMode]   = useState(false);
+  const [requestedCityPanel, setRequestedCityPanel] = useState(null);
 
   useEffect(() => {
     const title = selectedCity
@@ -1443,12 +1923,67 @@ export default function App() {
     ensureMeta("twitter:description").setAttribute("content", description);
   }, [compareMode, selectedCity]);
 
+  // Initialize state from URL on page load
+  useEffect(() => {
+    const { citySlug, panel, compareMode } = parseUrl();
+
+    if (compareMode) {
+      setCompareMode(true);
+      setSelectedCity(null);
+      setRequestedCityPanel(null);
+    } else if (citySlug) {
+      const matched = findCityByUrlSlug(citySlug, cities);
+      if (matched) {
+        setSelectedCity(matched);
+        setRequestedCityPanel(panel || null);
+        setCompareMode(false);
+      }
+    } else {
+      setSelectedCity(null);
+      setCompareMode(false);
+      setRequestedCityPanel(null);
+    }
+  }, []);
+
+  // Listen for browser back/forward button clicks
+  useEffect(() => {
+    const handlePopState = () => {
+      const { citySlug, panel, compareMode } = parseUrl();
+
+      if (compareMode) {
+        setCompareMode(true);
+        setSelectedCity(null);
+        setRequestedCityPanel(null);
+      } else if (citySlug) {
+        const matched = findCityByUrlSlug(citySlug, cities);
+        if (matched) {
+          setSelectedCity(matched);
+          setRequestedCityPanel(panel || null);
+          setCompareMode(false);
+        }
+      } else {
+        setSelectedCity(null);
+        setCompareMode(false);
+        setRequestedCityPanel(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const handleCitySelect = (city) => {
     setSelectedCity(city);
     setCompareMode(false);
+    setRequestedCityPanel(null);
+    updateUrlForCity(city);
     window.scrollTo(0, 0);
   };
-  const handleBack = () => { setSelectedCity(null); };
+  const handleBack = () => {
+    setSelectedCity(null);
+    setRequestedCityPanel(null);
+    updateUrlToHome();
+  };
 
   const handleCompareToggle = (city) => {
     setCompareList(prev =>
@@ -1461,10 +1996,20 @@ export default function App() {
   const handleOpenCompare = () => {
     setCompareMode(true);
     setSelectedCity(null);
+    updateUrlForCompare();
     window.scrollTo(0, 0);
   };
 
-  const handleCloseCompare = () => { setCompareMode(false); };
+  const handleCloseCompare = () => {
+    setCompareMode(false);
+    updateUrlToHome();
+  };
+
+  const handlePanelChange = (panelId) => {
+    if (selectedCity && panelId) {
+      updateUrlForCity(selectedCity, panelId);
+    }
+  };
 
   const handleRemoveFromCompare = (cityName) => {
     setCompareList(prev => prev.filter(c => c.city !== cityName));
@@ -1474,14 +2019,69 @@ export default function App() {
     setCompareList(prev => prev.length < 3 ? [...prev, city] : prev);
   };
 
+  const scrollHomeSection = (sectionId) => {
+    window.setTimeout(() => {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }, 0);
+  };
+
+  const handleOpenIssues = () => {
+    if (selectedCity) {
+      setRequestedCityPanel("issues");
+      updateUrlForCity(selectedCity, "issues");
+      return;
+    }
+
+    if (compareMode) {
+      setCompareMode(false);
+    }
+
+    scrollHomeSection("pulse");
+  };
+
+  const handleOpenElections = () => {
+    if (selectedCity) {
+      setRequestedCityPanel("elections");
+      updateUrlForCity(selectedCity, "elections");
+      return;
+    }
+
+    if (compareMode) {
+      setCompareMode(false);
+    }
+
+    scrollHomeSection("elections");
+  };
+
+  const handleOpenAllCities = () => {
+    if (selectedCity || compareMode) {
+      setSelectedCity(null);
+      setCompareMode(false);
+      setRequestedCityPanel(null);
+      scrollHomeSection("cities");
+      return;
+    }
+
+    scrollHomeSection("cities");
+  };
+
   return (
     <>
       <GlobalStyles />
       <Nav
         onLogoClick={() => { handleBack(); setCompareMode(false); }}
         onSearch={handleCitySelect}
+        onOpenIssues={handleOpenIssues}
+        onOpenElections={handleOpenElections}
+        onOpenAllCities={handleOpenAllCities}
+        showElectionsLink={!selectedCity || Boolean(selectedCity.hasElections)}
       />
-      <div style={{ paddingTop: 58 }}>
+      <div className="app-shell">
         {compareMode
           ? (
             <Suspense fallback={<div style={{ padding: "48px 24px", textAlign: "center", color: "#666" }}>Loading compare view...</div>}>
@@ -1498,7 +2098,14 @@ export default function App() {
           : selectedCity
             ? (
               <Suspense fallback={<div style={{ padding: "48px 24px", textAlign: "center", color: "#666" }}>Loading city page...</div>}>
-                <CityPage key={selectedCity.city} city={selectedCity} onBack={handleBack} />
+                <CityPage
+                  key={selectedCity.city}
+                  city={selectedCity}
+                  onBack={handleBack}
+                  requestedPanel={requestedCityPanel}
+                  onPanelHandled={() => setRequestedCityPanel(null)}
+                  onPanelChange={handlePanelChange}
+                />
               </Suspense>
             )
             : <HomePage

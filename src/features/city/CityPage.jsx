@@ -2,11 +2,12 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { CITY_ISSUES, CIVIC_ORGS, CITIES_WITH_DATA, WARD_CORPORATORS } from "../../cityData.js";
 import { CITY_IMAGES, STRESS, TYPO_C, TYPO_LABEL, TYPO_PUBLIC_DESC, fmt } from "../../domain/cities/presentation.js";
 import { loadElectionData } from "../../domain/elections/loadElectionData.js";
+import { buildMailtoHref } from "../../lib/contact.js";
 import WardsPanel from "./WardsPanel.jsx";
 
 const ElectionsCard = lazy(() => import("../../components/ElectionsCard"));
 
-export default function CityPage({ city, onBack }) {
+export default function CityPage({ city, onBack, requestedPanel = null, onPanelHandled, onPanelChange }) {
   const sc = STRESS[city.stress];
   const typoColor = TYPO_C[city.urban_typology];
   const imgUrl = CITY_IMAGES[city.city];
@@ -19,6 +20,39 @@ export default function CityPage({ city, onBack }) {
   const [isElectionLoading, setIsElectionLoading] = useState(false);
 
   const [activePanel, setActivePanel] = useState("health");
+  const issueContributionHref = buildMailtoHref({
+    subject: `${city.city} issue profile contribution`,
+    lines: [
+      "Hi MyCityPulse,",
+      "",
+      `I want to help build the civic issue profile for ${city.city}.`,
+      "Here are the issues, sources, or local observations I’d like to contribute:",
+      "",
+    ],
+  });
+  const orgContributionHref = buildMailtoHref({
+    subject: `${city.city} organization nomination`,
+    lines: [
+      "Hi MyCityPulse,",
+      "",
+      `I want to nominate an organization or civic group in ${city.city}.`,
+      "Organization name:",
+      "What they work on:",
+      "Link or contact:",
+      "Why they matter:",
+    ],
+  });
+  const cocreatorHref = buildMailtoHref({
+    subject: `${city.city} cocreator interest`,
+    lines: [
+      "Hi MyCityPulse,",
+      "",
+      `I want to help with ${city.city}.`,
+      "My name:",
+      "My email:",
+      "How I’d like to contribute:",
+    ],
+  });
 
   const panels = [
     { id: "health", label: "City Health" },
@@ -30,18 +64,35 @@ export default function CityPage({ city, onBack }) {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    setActivePanel("health");
-    setElectionData(null);
-  }, [city]);
+  }, []);
+
+  useEffect(() => {
+    if (!requestedPanel) {
+      return;
+    }
+
+    const panelExists = panels.some((panel) => panel.id === requestedPanel);
+
+    if (!panelExists) {
+      onPanelHandled?.();
+      return;
+    }
+
+    if (requestedPanel === "elections" && city.hasElections && !electionData) {
+      setIsElectionLoading(true);
+    }
+
+    setActivePanel(requestedPanel);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    onPanelHandled?.();
+  }, [requestedPanel, panels, city.hasElections, electionData, onPanelHandled]);
 
   useEffect(() => {
     let isMounted = true;
 
-    if (!city.hasElections || activePanel !== "elections" || electionData) {
+    if (!city.hasElections || activePanel !== "elections" || electionData || !isElectionLoading) {
       return undefined;
     }
-
-    setIsElectionLoading(true);
 
     loadElectionData(city.city)
       .then((data) => {
@@ -58,7 +109,7 @@ export default function CityPage({ city, onBack }) {
     return () => {
       isMounted = false;
     };
-  }, [activePanel, city, electionData]);
+  }, [activePanel, city, electionData, isElectionLoading]);
 
   const stats = [
     { label: "Population", value: fmt(city.population) },
@@ -69,21 +120,22 @@ export default function CityPage({ city, onBack }) {
 
   return (
     <div style={{ background: "#FAF8F4", minHeight: "100vh" }}>
-      <div style={{ height: 380, position: "relative", overflow: "hidden", background: "#0D1117" }}>
+      <div className="city-page-hero" style={{ height: 380, position: "relative", overflow: "hidden", background: "#0D1117" }}>
         {imgUrl && !imgErr ? (
           <img
             src={imgUrl}
             alt={city.city}
             decoding="async"
             onError={() => setImgErr(true)}
-            style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.55 }}
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.55 }}
           />
         ) : (
-          <div style={{ height: "100%", background: `linear-gradient(135deg, ${sc.color}44, ${typoColor}33)` }} />
+          <div style={{ position: "absolute", inset: 0, background: `linear-gradient(135deg, ${sc.color}44, ${typoColor}33)` }} />
         )}
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(13,17,23,0.2) 0%, rgba(13,17,23,0.85) 100%)" }} />
         <button
           onClick={onBack}
+          className="city-page-back-btn"
           style={{
             position: "absolute",
             top: 76,
@@ -100,7 +152,7 @@ export default function CityPage({ city, onBack }) {
         >
           ← All Cities
         </button>
-        <div style={{ position: "absolute", bottom: 32, left: 32, right: 32 }}>
+        <div className="city-page-hero-copy" style={{ position: "absolute", bottom: 32, left: 32, right: 32 }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
             <span
               title={`${city.stress} Stress - ${STRESS[city.stress]?.tagline}`}
@@ -146,6 +198,7 @@ export default function CityPage({ city, onBack }) {
             </span>
           </div>
           <h1
+            className="city-page-title"
             style={{
               fontSize: 48,
               fontFamily: "Georgia, serif",
@@ -172,7 +225,13 @@ export default function CityPage({ city, onBack }) {
               key={panel.id}
               className={`panel-tab${activePanel === panel.id ? " active" : ""}`}
               onClick={() => {
+                if (panel.id === "elections" && city.hasElections && !electionData) {
+                  setIsElectionLoading(true);
+                }
                 setActivePanel(panel.id);
+                if (onPanelChange) {
+                  onPanelChange(panel.id);
+                }
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
               aria-current={activePanel === panel.id ? "page" : undefined}
@@ -184,7 +243,7 @@ export default function CityPage({ city, onBack }) {
       </nav>
 
       {activePanel === "health" && (
-        <div style={{ background: "#FAF8F4", padding: "52px 32px 0" }}>
+        <div className="page-section-tight" style={{ background: "#FAF8F4", paddingTop: 52, paddingBottom: 0 }}>
           <div style={{ maxWidth: 900, margin: "0 auto" }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 20 }}>
               PANEL 1 - CITY HEALTH
@@ -205,7 +264,7 @@ export default function CityPage({ city, onBack }) {
               "{city.one_liner}"
             </blockquote>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 28 }}>
+            <div className="city-stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 28 }}>
               {stats.map((stat) => (
                 <div
                   key={stat.label}
@@ -239,7 +298,7 @@ export default function CityPage({ city, onBack }) {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 64 }}>
+            <div className="city-dual-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 64 }}>
               <div style={{ background: "#fff", borderRadius: 14, padding: 28, borderTop: `3px solid ${sc.color}`, boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: sc.color, letterSpacing: "0.12em", marginBottom: 10 }}>CIVIC STRESS</div>
                 <div style={{ fontSize: 24, fontWeight: 800, color: sc.color, fontFamily: "Georgia, serif", marginBottom: 6 }}>{city.stress}</div>
@@ -261,10 +320,10 @@ export default function CityPage({ city, onBack }) {
       )}
 
       {activePanel === "issues" && (
-        <div style={{ background: "#fff", padding: "52px 32px" }}>
+        <div className="page-section-tight" style={{ background: "#fff", paddingTop: 52, paddingBottom: 52 }}>
           <div style={{ maxWidth: 900, margin: "0 auto" }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 12 }}>PANEL 2 - CIVIC ISSUES</div>
-            <h2 style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
+            <h2 className="city-panel-title" style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
               What's happening in {city.city}.
             </h2>
             <p style={{ fontSize: 15, color: "#888", marginBottom: 40, lineHeight: 1.6 }}>
@@ -280,8 +339,8 @@ export default function CityPage({ city, onBack }) {
                 <p style={{ fontSize: 14, color: "#888", maxWidth: 400, margin: "0 auto 20px", lineHeight: 1.6 }}>
                   Know the civic issues shaping {city.city}? Know organizations working on them? Help us build this.
                 </p>
-                <a href="#join" style={{ background: "#E8660D", color: "#fff", padding: "10px 24px", borderRadius: 24, fontSize: 13, fontWeight: 700, display: "inline-block" }}>
-                  Become a Cocreator -&gt;
+                <a href={issueContributionHref} style={{ background: "#E8660D", color: "#fff", padding: "10px 24px", borderRadius: 24, fontSize: 13, fontWeight: 700, display: "inline-block" }}>
+                  Send Issue Notes -&gt;
                 </a>
               </div>
             ) : (
@@ -289,6 +348,7 @@ export default function CityPage({ city, onBack }) {
                 {issues.map((issue, index) => (
                   <div
                     key={index}
+                    className="city-issue-card"
                     style={{
                       background: "#FAF8F4",
                       borderRadius: 14,
@@ -301,7 +361,7 @@ export default function CityPage({ city, onBack }) {
                   >
                     <div style={{ width: 5, flexShrink: 0, background: issue.categoryColor, borderRadius: "14px 0 0 14px", marginRight: 28 }} />
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                      <div className="city-issue-header" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                         <span style={{ fontSize: 11, fontWeight: 700, color: issue.categoryColor, background: `${issue.categoryColor}18`, padding: "3px 10px", borderRadius: 8 }}>
                           {issue.tag}
                         </span>
@@ -339,10 +399,10 @@ export default function CityPage({ city, onBack }) {
       )}
 
       {activePanel === "ecosystem" && (
-        <div style={{ background: "#FAF8F4", padding: "52px 32px" }}>
+        <div className="page-section-tight" style={{ background: "#FAF8F4", paddingTop: 52, paddingBottom: 52 }}>
           <div style={{ maxWidth: 900, margin: "0 auto" }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 12 }}>PANEL 3 - CIVIC ECOSYSTEM</div>
-            <h2 style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
+            <h2 className="city-panel-title" style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
               Who's fighting for {city.city}.
             </h2>
             <p style={{ fontSize: 15, color: "#888", marginBottom: 40, lineHeight: 1.6 }}>
@@ -358,7 +418,7 @@ export default function CityPage({ city, onBack }) {
                 <p style={{ fontSize: 14, color: "#888", maxWidth: 400, margin: "0 auto 20px", lineHeight: 1.6 }}>
                   Help us map the civic ecosystem - NGOs, RWAs, collectives, journalists doing good work here.
                 </p>
-                <a href="#join" style={{ background: "#E8660D", color: "#fff", padding: "10px 24px", borderRadius: 24, fontSize: 13, fontWeight: 700, display: "inline-block" }}>
+                <a href={orgContributionHref} style={{ background: "#E8660D", color: "#fff", padding: "10px 24px", borderRadius: 24, fontSize: 13, fontWeight: 700, display: "inline-block" }}>
                   Nominate an Organization -&gt;
                 </a>
               </div>
@@ -406,7 +466,7 @@ export default function CityPage({ city, onBack }) {
 
                 <div style={{ borderRadius: 14, padding: "24px 28px", border: "2px dashed #e0ddd8", textAlign: "center" }}>
                   <p style={{ fontSize: 14, color: "#aaa", margin: "0 0 12px" }}>Know an organization doing good work in {city.city} that should be here?</p>
-                  <a href="#join" style={{ fontSize: 13, fontWeight: 700, color: "#E8660D" }}>
+                  <a href={orgContributionHref} style={{ fontSize: 13, fontWeight: 700, color: "#E8660D" }}>
                       Nominate them -&gt;
                   </a>
                 </div>
@@ -417,10 +477,10 @@ export default function CityPage({ city, onBack }) {
       )}
 
       {activePanel === "elections" && city.hasElections && (
-        <div style={{ background: "#fff", padding: "52px 32px" }}>
+        <div className="page-section-tight" style={{ background: "#fff", paddingTop: 52, paddingBottom: 52 }}>
           <div style={{ maxWidth: 900, margin: "0 auto" }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#667eea", letterSpacing: "0.12em", marginBottom: 12 }}>PANEL 4 - ELECTIONS</div>
-            <h2 style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 40 }}>
+            <h2 className="city-panel-title" style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 40 }}>
               Municipal Elections
             </h2>
             {isElectionLoading && (
@@ -445,7 +505,7 @@ export default function CityPage({ city, onBack }) {
 
       {activePanel === "wards" && <WardsPanel city={city} />}
 
-      <div style={{ background: "#0D1117", padding: "60px 32px" }}>
+      <div className="page-section" style={{ background: "#0D1117", paddingTop: 60, paddingBottom: 60 }}>
         <div style={{ maxWidth: 680, margin: "0 auto", textAlign: "center" }}>
           <div style={{ fontSize: 26, fontFamily: "Georgia, serif", fontWeight: 700, color: "#fff", marginBottom: 12 }}>
             {city.city} is your city too.
@@ -454,7 +514,7 @@ export default function CityPage({ city, onBack }) {
             MyCityPulse exists to make the civic layer of your city legible - and to connect you with the people already working to fix it. Join the conversation.
           </p>
           <a
-            href="mailto:hello@mycitypulse.in"
+            href={cocreatorHref}
             style={{
               background: "#E8660D",
               color: "#fff",

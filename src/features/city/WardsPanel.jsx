@@ -22,12 +22,12 @@ export default function WardsPanel({ city }) {
   });
 
   return (
-    <div style={{ background: "#FAF8F4", padding: "52px 32px" }}>
+    <div className="page-section-tight" style={{ background: "#FAF8F4", paddingTop: 52, paddingBottom: 52 }}>
       <div style={{ maxWidth: 900, margin: "0 auto" }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 12 }}>
           PANEL 4 - WARD REPRESENTATIVES
         </div>
-        <h2 style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
+        <h2 className="city-panel-title" style={{ fontSize: 32, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
           {isRepresentativeSnapshot ? "Ward snapshot." : "Who represents your ward."}
         </h2>
         <p style={{ fontSize: 15, color: "#888", lineHeight: 1.6, marginBottom: 32 }}>
@@ -61,7 +61,7 @@ export default function WardsPanel({ city }) {
           )}
         </div>
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 20, alignItems: "center" }}>
+        <div className="city-filters" style={{ marginBottom: 20 }}>
           <input
             value={q}
             onChange={(event) => setQ(event.target.value)}
@@ -73,9 +73,9 @@ export default function WardsPanel({ city }) {
               fontSize: 13,
               outline: "none",
               background: "#fff",
-              minWidth: 200,
-              flex: 1,
-              maxWidth: 300,
+              minWidth: 0,
+              flex: "1 1 220px",
+              maxWidth: 320,
             }}
           />
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>

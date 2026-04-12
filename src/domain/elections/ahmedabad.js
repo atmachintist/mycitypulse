@@ -5,6 +5,13 @@ const ward = (number, name, zone, officeAddress) => ({
   officeAddress,
 });
 
+const candidate = (name, party, note) => ({
+  name,
+  party,
+  status: "party_announced",
+  ...(note ? { note } : {}),
+});
+
 const baseWards = [
   ward(1, "Shahpur", "Central", "Ahmedabad Municipal Corporation, Shahpur Ward Office, Bapu Smruti Kunj, Near Shahpur Darwaja, Ahmedabad"),
   ward(2, "Dariapur", "Central", "Ahmedabad Municipal Corporation, Dariapur Ward Office, Near Kuti Masjid, Near Rupapari Ni Pol, Dariapur Darwaja, Ahmedabad"),
@@ -109,6 +116,30 @@ const candidateInfoByWard = {
     candidateSummary: "Congress has announced candidates in Ramol Hathijan, but MyCityPulse has not yet verified individual names.",
     candidates: [],
   },
+  15: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Ahmedabad Mirror reported BJP's Bapunagar panel and Congress has also announced candidates in this ward, but MyCityPulse is only naming the BJP names we could verify from the current report.",
+    candidates: [
+      {
+        name: "Pravin Patel",
+        party: "BJP",
+        status: "party_announced",
+        note: "Ahmedabad Mirror reported this as part of BJP's Bapunagar panel on April 10, 2026.",
+      },
+      {
+        name: "Jayashriben Datta",
+        party: "BJP",
+        status: "party_announced",
+        note: "Ahmedabad Mirror reported this as part of BJP's Bapunagar panel on April 10, 2026.",
+      },
+      {
+        name: "Gopal Shengaar",
+        party: "BJP",
+        status: "party_announced",
+        note: "Ahmedabad Mirror reported this as part of BJP's Bapunagar panel on April 10, 2026.",
+      },
+    ],
+  },
   16: {
     candidateStatus: "party_announced",
     candidateSummary: "Congress has announced candidates in India Colony, but names are still being verified here.",
@@ -151,8 +182,33 @@ const candidateInfoByWard = {
   },
   27: {
     candidateStatus: "party_announced",
-    candidateSummary: "Congress has announced candidates in Bodakdev, but names are still being verified here.",
-    candidates: [],
+    candidateSummary: "Ahmedabad Mirror reported four BJP names as selected for Bodakdev. These are still labelled party-announced here until a formal final ward list is cross-checked after scrutiny.",
+    candidates: [
+      {
+        name: "Devang Dani",
+        party: "BJP",
+        status: "party_announced",
+        note: "Ahmedabad Mirror reported this as part of BJP's Bodakdev panel on April 10, 2026.",
+      },
+      {
+        name: "Dharamsinh Desai",
+        party: "BJP",
+        status: "party_announced",
+        note: "Ahmedabad Mirror reported this as part of BJP's Bodakdev panel on April 10, 2026.",
+      },
+      {
+        name: "Parul Vaibhav Makwana",
+        party: "BJP",
+        status: "party_announced",
+        note: "Ahmedabad Mirror reported this as part of BJP's Bodakdev panel on April 10, 2026.",
+      },
+      {
+        name: "Bhavnaben Patel",
+        party: "BJP",
+        status: "party_announced",
+        note: "Ahmedabad Mirror reported this as part of BJP's Bodakdev panel on April 10, 2026.",
+      },
+    ],
   },
   29: {
     candidateStatus: "party_announced",
@@ -181,6 +237,36 @@ const candidateInfoByWard = {
     candidateStatus: "party_announced",
     candidateSummary: "Ahmedabad Mirror reported that Congress announced candidates in Vatva, but MyCityPulse has not yet verified all names.",
     candidates: [],
+  },
+  36: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Ahmedabad Mirror reported four BJP names as selected for Sarkhej. These remain tagged party-announced here pending scrutiny and withdrawal checks.",
+    candidates: [
+      {
+        name: "Raju Shukla",
+        party: "BJP",
+        status: "party_announced",
+        note: "Ahmedabad Mirror reported this as part of BJP's Sarkhej panel on April 10, 2026.",
+      },
+      {
+        name: "Jethiben Bharwad",
+        party: "BJP",
+        status: "party_announced",
+        note: "Ahmedabad Mirror reported this as part of BJP's Sarkhej panel on April 10, 2026.",
+      },
+      {
+        name: "Hema Shah",
+        party: "BJP",
+        status: "party_announced",
+        note: "Ahmedabad Mirror reported this as part of BJP's Sarkhej panel on April 10, 2026.",
+      },
+      {
+        name: "Divyesh Tripathi",
+        party: "BJP",
+        status: "party_announced",
+        note: "Ahmedabad Mirror reported this as part of BJP's Sarkhej panel on April 10, 2026.",
+      },
+    ],
   },
   40: {
     candidateStatus: "party_announced",
@@ -223,7 +309,320 @@ const candidateInfoByWard = {
     candidateSummary: "Congress has announced candidates in Paldi, but names are still being verified here.",
     candidates: [],
   },
+  37: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Ahmedabad Mirror named two BJP candidates in Jodhpur, but the report snippet we verified did not surface the full four-name panel.",
+    candidates: [
+      {
+        name: "Vinod Patel",
+        party: "BJP",
+        status: "party_announced",
+        note: "Ahmedabad Mirror reported this as part of BJP's Jodhpur panel on April 10, 2026.",
+      },
+      {
+        name: "Bhagyash Patel",
+        party: "BJP",
+        status: "party_announced",
+        note: "Ahmedabad Mirror reported this as part of BJP's Jodhpur panel on April 10, 2026.",
+      },
+    ],
+  },
+  38: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Ahmedabad Mirror reported four BJP names as selected for Vejalpur. These remain marked party-announced here until a formal post-scrutiny ward list is cross-checked.",
+    candidates: [
+      {
+        name: "Parul Dave",
+        party: "BJP",
+        status: "party_announced",
+        note: "Ahmedabad Mirror reported this as part of BJP's Vejalpur panel on April 10, 2026.",
+      },
+      {
+        name: "Rajesh Thakor",
+        party: "BJP",
+        status: "party_announced",
+        note: "Ahmedabad Mirror reported this as part of BJP's Vejalpur panel on April 10, 2026.",
+      },
+      {
+        name: "Devang Mehta",
+        party: "BJP",
+        status: "party_announced",
+        note: "Ahmedabad Mirror reported this as part of BJP's Vejalpur panel on April 10, 2026.",
+      },
+      {
+        name: "Julie Chauhan",
+        party: "BJP",
+        status: "party_announced",
+        note: "Ahmedabad Mirror reported this as part of BJP's Vejalpur panel on April 10, 2026.",
+      },
+    ],
+  },
 };
+
+const CONGRESS_NOTE = "Named in Congress's Ahmedabad municipal list published during the April 2026 nomination phase.";
+
+Object.assign(candidateInfoByWard, {
+  1: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 1 panel.",
+    candidates: [
+      candidate("Ushaben Jayeshkumar Brahmbhatt", "INC", CONGRESS_NOTE),
+      candidate("Bhatsara Nita Ashokkumar", "INC", CONGRESS_NOTE),
+      candidate("Dineshbhai Lallubhai Desai", "INC", CONGRESS_NOTE),
+      candidate("Jalay Ashokbhai Chauhan", "INC", CONGRESS_NOTE),
+    ],
+  },
+  2: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 2 panel.",
+    candidates: [
+      candidate("Nefal Jitendrabhai Panchal", "INC", CONGRESS_NOTE),
+      candidate("Sonalben Gautambhai Patel", "INC", CONGRESS_NOTE),
+      candidate("Gajjar Purav Chandrakantbhai", "INC", CONGRESS_NOTE),
+      candidate("Pradipbhai Patel", "INC", CONGRESS_NOTE),
+    ],
+  },
+  3: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 3 panel.",
+    candidates: [
+      candidate("Varsha Mukeshbhai Katara", "INC", CONGRESS_NOTE),
+      candidate("Rajshri Vijaykumar Kesari", "INC", CONGRESS_NOTE),
+      candidate("Subodh Kumud", "INC", CONGRESS_NOTE),
+      candidate("Sudhirkumar Chotalal Patel", "INC", CONGRESS_NOTE),
+    ],
+  },
+  4: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 4 panel.",
+    candidates: [
+      candidate("Pushpaben Harishbhai Vaghela", "INC", CONGRESS_NOTE),
+      candidate("Hiralben Umangbhai Bhavsar", "INC", CONGRESS_NOTE),
+      candidate("Makwana Ajit Ganeshbhai", "INC", CONGRESS_NOTE),
+      candidate("Dipenkumar Manubhai Patel", "INC", CONGRESS_NOTE),
+    ],
+  },
+  5: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 5 panel.",
+    candidates: [
+      candidate("Chandaben Ganeshji Parmar", "INC", CONGRESS_NOTE),
+      candidate("Ritaben Devjibhai Patel", "INC", CONGRESS_NOTE),
+      candidate("Vinodbhai Jayantilal Patel", "INC", CONGRESS_NOTE),
+      candidate("Jigarbhai Chandrakantbhai Pandya", "INC", CONGRESS_NOTE),
+    ],
+  },
+  6: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 6 panel.",
+    candidates: [
+      candidate("Jyotsnaben Kiranbhai Chavda", "INC", CONGRESS_NOTE),
+      candidate("Ramilaben Arjunbhai Dabhi", "INC", CONGRESS_NOTE),
+      candidate("Rameshgiri Motigiri Goswami", "INC", CONGRESS_NOTE),
+      candidate("Premal Mayurbhai Trivedi", "INC", CONGRESS_NOTE),
+    ],
+  },
+  7: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 7 panel.",
+    candidates: [
+      candidate("Manishaben Parmar", "INC", CONGRESS_NOTE),
+      candidate("Pujaben Prajapati", "INC", CONGRESS_NOTE),
+      candidate("Parag Ratilal Panchal", "INC", CONGRESS_NOTE),
+      candidate("Amitkumar Arvindbhai Ojha", "INC", CONGRESS_NOTE),
+    ],
+  },
+  8: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 8 panel.",
+    candidates: [
+      candidate("Ramilaben Dineshji Thakor", "INC", CONGRESS_NOTE),
+      candidate("Anitaben Salemi Goms", "INC", CONGRESS_NOTE),
+      candidate("Manojbhai Haribhai Parmar", "INC", CONGRESS_NOTE),
+      candidate("Sureshasinh Rohitasinh Viher", "INC", CONGRESS_NOTE),
+    ],
+  },
+  9: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 9 panel.",
+    candidates: [
+      candidate("Shraddhaben Nomeshbhai Sheja", "INC", CONGRESS_NOTE),
+      candidate("Shitalben Devendrabhai Kadiya", "INC", CONGRESS_NOTE),
+      candidate("Maheshbhai Trikamlal Vaghela", "INC", CONGRESS_NOTE),
+      candidate("Dineshbhai Harshadbhai Thakor", "INC", CONGRESS_NOTE),
+    ],
+  },
+  10: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published three visible Ward 10 names in the accessible list.",
+    candidates: [
+      candidate("Jayaben Jitubhai Solanki", "INC", CONGRESS_NOTE),
+      candidate("Kapilaben Jadav", "INC", CONGRESS_NOTE),
+      candidate("Amit Ganpatbhai Nayak", "INC", CONGRESS_NOTE),
+    ],
+  },
+  11: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 11 panel.",
+    candidates: [
+      candidate("Ankitaben Jigneshbhai Panchal", "INC", CONGRESS_NOTE),
+      candidate("Romaben Shyamlal Ramani", "INC", CONGRESS_NOTE),
+      candidate("Shanabhai Govindbhai Bhoi", "INC", CONGRESS_NOTE),
+      candidate("Omprakash Tiwari", "INC", CONGRESS_NOTE),
+    ],
+  },
+  12: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 12 panel.",
+    candidates: [
+      candidate("Kaminiben Mehulkumar Raval", "INC", CONGRESS_NOTE),
+      candidate("Ridhyiben Bharatbhai Parmar", "INC", CONGRESS_NOTE),
+      candidate("Jigneshbhai Mohanbhai Davda", "INC", CONGRESS_NOTE),
+      candidate("Jigar Vyas", "INC", CONGRESS_NOTE),
+    ],
+  },
+  13: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 13 panel.",
+    candidates: [
+      candidate("Chetnaben Gaurangbhai Rathod", "INC", CONGRESS_NOTE),
+      candidate("Chhayaben Arvindkumar Sonvane", "INC", CONGRESS_NOTE),
+      candidate("Bhavik Solanki", "INC", CONGRESS_NOTE),
+      candidate("Devangkumar Ashok Pradhan", "INC", CONGRESS_NOTE),
+    ],
+  },
+  14: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published three visible Ward 14 names in the accessible list.",
+    candidates: [
+      candidate("Kaminiben Jha", "INC", CONGRESS_NOTE),
+      candidate("Parth Raghunath Desai", "INC", CONGRESS_NOTE),
+      candidate("Nikulsinh Tomar", "INC", CONGRESS_NOTE),
+    ],
+  },
+  15: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Ahmedabad now has both BJP and Congress names visible in Ward 15 from current reporting.",
+    candidates: [
+      candidate("Pravin Patel", "BJP", "Ahmedabad Mirror reported this as part of BJP's Bapunagar panel on April 10, 2026."),
+      candidate("Jayashriben Datta", "BJP", "Ahmedabad Mirror reported this as part of BJP's Bapunagar panel on April 10, 2026."),
+      candidate("Gopal Shengaar", "BJP", "Ahmedabad Mirror reported this as part of BJP's Bapunagar panel on April 10, 2026."),
+      candidate("Durgeshkuvar Narayansinh Sisodiya", "INC", CONGRESS_NOTE),
+      candidate("Govindbhai Patni", "INC", CONGRESS_NOTE),
+      candidate("Maneklal D. Thakor", "INC", CONGRESS_NOTE),
+    ],
+  },
+  16: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 16 panel.",
+    candidates: [
+      candidate("Jayshreeben Devdattbhai Parmar", "INC", CONGRESS_NOTE),
+      candidate("Darshanaben Vipulbhai Thakor", "INC", CONGRESS_NOTE),
+      candidate("Rameshkumar S. Mali", "INC", CONGRESS_NOTE),
+      candidate("Milap Bharatbhai Patel", "INC", CONGRESS_NOTE),
+    ],
+  },
+  17: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 17 panel.",
+    candidates: [
+      candidate("Indiraben Shamjibhai Parmar", "INC", CONGRESS_NOTE),
+      candidate("Ashaben Dantani", "INC", CONGRESS_NOTE),
+      candidate("Brijesh Sharma", "INC", CONGRESS_NOTE),
+      candidate("Akbar Husenbhai Bhatti", "INC", CONGRESS_NOTE),
+    ],
+  },
+  18: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 18 panel.",
+    candidates: [
+      candidate("Miraben Makwana", "INC", CONGRESS_NOTE),
+      candidate("Hetalben Riteshkumar Sarvaiya", "INC", CONGRESS_NOTE),
+      candidate("Vinodbhai Umedji Thakor", "INC", CONGRESS_NOTE),
+      candidate("Tejabhai Vanzol", "INC", CONGRESS_NOTE),
+    ],
+  },
+  19: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 19 panel.",
+    candidates: [
+      candidate("Ashaben Vinodkumar Parmar", "INC", CONGRESS_NOTE),
+      candidate("Hemlata Tejaskumar Bhatt", "INC", CONGRESS_NOTE),
+      candidate("Jitendra Triklamlal Sharma", "INC", CONGRESS_NOTE),
+      candidate("Avadh Ashikbhai Patel", "INC", CONGRESS_NOTE),
+    ],
+  },
+  22: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published one visible Ward 22 name in the accessible list.",
+    candidates: [candidate("Premilaben Yashwant Yogi", "INC", CONGRESS_NOTE)],
+  },
+  32: {
+    candidateStatus: "awaiting_verification",
+    candidateSummary: "Older carry-forward reporting for Danilimda has been removed until a current 2026 ward list is verified.",
+    candidates: [],
+  },
+  40: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 40 panel.",
+    candidates: [
+      candidate("Surekhaben Rajendrabhai Chaudhary", "INC", CONGRESS_NOTE),
+      candidate("Avaniben Prashantkumar Chauhan", "INC", CONGRESS_NOTE),
+      candidate("Kapilbhai Desai", "INC", CONGRESS_NOTE),
+      candidate("Pravinbhai Kantibhai Parmar", "INC", CONGRESS_NOTE),
+    ],
+  },
+  41: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 41 panel.",
+    candidates: [
+      candidate("Gitaben Manishbhai Parmar", "INC", CONGRESS_NOTE),
+      candidate("Payal Hasmukhbhai Patel", "INC", CONGRESS_NOTE),
+      candidate("Darji Vijaybhai Jayantibhai", "INC", CONGRESS_NOTE),
+      candidate("Sandip Bhikhabhai Patel", "INC", CONGRESS_NOTE),
+    ],
+  },
+  42: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 42 panel.",
+    candidates: [
+      candidate("Priyankaben Janakkumar Parekh", "INC", CONGRESS_NOTE),
+      candidate("Nehaben Jitendrabhai Patel", "INC", CONGRESS_NOTE),
+      candidate("Kirankumar Dhulabhai Ojha", "INC", CONGRESS_NOTE),
+      candidate("Rajendrakumar Ramanlal Sengar", "INC", CONGRESS_NOTE),
+    ],
+  },
+  43: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 43 panel.",
+    candidates: [
+      candidate("Falguniben Narayanbhai Desai", "INC", CONGRESS_NOTE),
+      candidate("Sangitaben Selvaraj Gounder", "INC", CONGRESS_NOTE),
+      candidate("Gaurangbhai Maganbhai Makwana", "INC", CONGRESS_NOTE),
+      candidate("Tilakram Ramsurat Tiwari", "INC", CONGRESS_NOTE),
+    ],
+  },
+  44: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a full Ward 44 panel.",
+    candidates: [
+      candidate("Bhavanaben Upadhyay", "INC", CONGRESS_NOTE),
+      candidate("Tarunaben Patre", "INC", CONGRESS_NOTE),
+      candidate("Sanjaybhai Gadhvi", "INC", CONGRESS_NOTE),
+      candidate("Apurva Patel", "INC", CONGRESS_NOTE),
+    ],
+  },
+  45: {
+    candidateStatus: "party_announced",
+    candidateSummary: "Congress published a visible Ward 45 panel in the accessible list.",
+    candidates: [
+      candidate("Chauhan Kusumben Kanubhai", "INC", CONGRESS_NOTE),
+      candidate("Ranjanben Jagdish Purohit", "INC", CONGRESS_NOTE),
+      candidate("Mehul Trilokbhai Prajapati", "INC", CONGRESS_NOTE),
+      candidate("Harsh Dilipray Yagnik", "INC", CONGRESS_NOTE),
+    ],
+  },
+});
 
 export const AHMEDABAD_WARDS_2026 = baseWards.map((entry) => ({
   ...entry,
@@ -237,7 +636,7 @@ export const AHMEDABAD_WARDS_2026 = baseWards.map((entry) => ({
 export const AHMEDABAD_ELECTION_2026 = {
   year: 2026,
   status: "candidate_updates",
-  lastUpdated: "2026-04-10T18:00:00+05:30",
+  lastUpdated: "2026-04-12T16:10:00+05:30",
   election_date: "2026-04-26",
   result_date: "2026-04-28",
   nomination_open: "2026-04-06",
@@ -249,12 +648,12 @@ export const AHMEDABAD_ELECTION_2026 = {
   seats_total: 192,
   polling_hours: "7:00 AM to 6:00 PM",
   candidateTracker: {
-    lastReviewed: "2026-04-10",
+    lastReviewed: "2026-04-12",
     officialFinalWards: 0,
-    partyAnnouncedWards: Object.values(candidateInfoByWard).length,
-    namedEntries: 4,
+    partyAnnouncedWards: AHMEDABAD_WARDS_2026.filter((wardEntry) => wardEntry.candidateStatus === "party_announced").length,
+    namedEntries: AHMEDABAD_WARDS_2026.reduce((sum, wardEntry) => sum + wardEntry.candidates.length, 0),
     statusNote:
-      "MyCityPulse currently shows a partial candidate tracker. Some ward-level Congress entries are party-announced; official final ward-wise candidate lists are still being verified.",
+      "MyCityPulse now shows a much broader Ahmedabad tracker using the current ward-wise Congress list plus BJP ward panels we could independently verify from April 10 reporting. Official final ward-wise lists still need post-scrutiny confirmation.",
     legend: [
       { key: "official_final", label: "Official final list", tone: "verified" },
       { key: "party_announced", label: "Party-announced", tone: "partial" },
@@ -282,8 +681,18 @@ export const AHMEDABAD_ELECTION_2026 = {
     },
     {
       label: "Ahmedabad Mirror candidate report",
-      note: "Congress first list, ward coverage, and re-nominated Ahmedabad names",
+      note: "Congress first list plus BJP ward panels reported on April 10, 2026",
       url: "https://www.ahmedabadmirror.com/gujarat-civic-polls/81910963.html",
+    },
+    {
+      label: "Ahmedabad Congress candidate list",
+      note: "Ward-wise Congress candidate names published during the April 2026 nomination phase",
+      url: "https://voterlist.co.in/congress-candidate-list-for-vadodra-ahmedabad-municipal-election-2026/",
+    },
+    {
+      label: "Ahmedabad Mirror BJP panel report",
+      note: "BJP ward panels reported as selected candidates for AMC wards",
+      url: "https://www.ahmedabadmirror.com/bjp-calls-candidates-for-ahmedabad-municipal-polls-list-announced/81911300.html",
     },
     {
       label: "TOI on Shehzad Khan Pathan",

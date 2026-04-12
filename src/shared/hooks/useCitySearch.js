@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { searchCities } from "../../domain/cities/search.js";
 
 export default function useCitySearch({
@@ -8,7 +8,8 @@ export default function useCitySearch({
   limit = 6,
   minQueryLength = 2,
 }) {
-  const [activeIndex, setActiveIndex] = useState(-1);
+  const [rawActiveIndex, setRawActiveIndex] = useState(-1);
+  const [activeSessionKey, setActiveSessionKey] = useState("");
   const excludedNamesKey = useMemo(
     () => [...excludeCityNames].sort().join("|"),
     [excludeCityNames],
@@ -24,26 +25,35 @@ export default function useCitySearch({
       (city) => !excludeCityNames.includes(city.city),
     );
   }, [cities, excludeCityNames, limit, minQueryLength, query]);
-
-  useEffect(() => {
+  const searchSessionKey = `${query.trim()}|${excludedNamesKey}|${limit}|${minQueryLength}`;
+  const activeIndex = useMemo(() => {
     if (results.length === 0) {
-      setActiveIndex(-1);
-      return;
+      return -1;
     }
 
-    setActiveIndex((index) => {
-      if (index < 0) return 0;
-      if (index >= results.length) return results.length - 1;
-      return index;
-    });
-  }, [results]);
+    if (activeSessionKey !== searchSessionKey) {
+      return 0;
+    }
 
-  useEffect(() => {
-    setActiveIndex(results.length > 0 ? 0 : -1);
-  }, [query, excludedNamesKey]);
+    if (rawActiveIndex < 0) {
+      return -1;
+    }
+
+    if (rawActiveIndex >= results.length) {
+      return results.length - 1;
+    }
+
+    return rawActiveIndex;
+  }, [activeSessionKey, rawActiveIndex, results.length, searchSessionKey]);
+
+  const setActiveIndex = (value) => {
+    setActiveSessionKey(searchSessionKey);
+    setRawActiveIndex(value);
+  };
 
   const resetSearch = () => {
-    setActiveIndex(-1);
+    setActiveSessionKey(searchSessionKey);
+    setRawActiveIndex(-1);
   };
 
   const handleKeyDown = (event, onSelect) => {

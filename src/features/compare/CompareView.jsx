@@ -137,18 +137,17 @@ export default function CompareView({
   };
 
   const cols = cities.length;
+  const compareGridTemplate =
+    cols >= 3 ? "repeat(3, minmax(0, 1fr))" : `repeat(${cols}, minmax(0, 1fr)) minmax(220px, 1fr)`;
 
   return (
-    <div style={{ background: "#FAF8F4", minHeight: "100vh", padding: "40px 32px 80px" }}>
+    <div style={{ background: "#FAF8F4", minHeight: "100vh", padding: "40px clamp(16px, 4vw, 32px) 80px" }}>
       <div style={{ maxWidth: 980, margin: "0 auto" }}>
         <div
+          className="stack-header"
           style={{
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
             marginBottom: 32,
-            flexWrap: "wrap",
-            gap: 16,
+            alignItems: "flex-start",
           }}
         >
           <div>
@@ -196,9 +195,10 @@ export default function CompareView({
         </div>
 
         <div
+          className="compare-card-grid"
           style={{
             display: "grid",
-            gridTemplateColumns: `repeat(${cols}, 1fr)${cols < 3 ? " 180px" : ""}`,
+            gridTemplateColumns: compareGridTemplate,
             gap: 14,
             marginBottom: 24,
           }}
@@ -289,6 +289,7 @@ export default function CompareView({
         </div>
 
         <div
+          className="compare-table-scroll"
           style={{
             background: "#fff",
             borderRadius: 14,
@@ -296,7 +297,8 @@ export default function CompareView({
             boxShadow: "0 1px 6px rgba(0,0,0,0.06)",
           }}
         >
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <div style={{ overflowX: "auto" }}>
+            <table className="compare-table" style={{ width: "100%", minWidth: 640, borderCollapse: "collapse" }}>
             <colgroup>
               <col style={{ width: "22%" }} />
               {cities.map((city) => (
@@ -419,7 +421,8 @@ export default function CompareView({
                 );
               })}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
 
         <p style={{ fontSize: 11, color: "#ccc", marginTop: 14, lineHeight: 1.6 }}>

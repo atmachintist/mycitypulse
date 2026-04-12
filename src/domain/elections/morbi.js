@@ -15,9 +15,9 @@ export const MORBI_ELECTION_2026 = createGujaratElection({
   status: "ward_directory",
   wards: MORBI_WARDS_2026,
   seatsTotal: 52,
-  lastUpdated: "2026-04-11T13:05:00+05:30",
+  lastUpdated: "2026-04-12T16:20:00+05:30",
   scopeNote:
-    "Morbi's election desk now includes the official 13-ward corporation structure and election timeline. Ward-wise 2026 candidate names are still awaiting verification before MyCityPulse publishes them.",
+    "Morbi's election desk now reflects the closed nomination phase as of April 11, 2026. The 13-ward corporation structure is live, while ward-wise candidate names still await verification before publication.",
   sources: [
     {
       label: "Morbi Municipal Corporation",

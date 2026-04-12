@@ -14,9 +14,9 @@ export const JUNAGADH_ELECTION_2026 = createGujaratElection({
   status: "ward_directory",
   wards: JUNAGADH_WARDS_2026,
   seatsTotal: 60,
-  lastUpdated: "2026-04-11T13:05:00+05:30",
+  lastUpdated: "2026-04-12T16:20:00+05:30",
   scopeNote:
-    "Junagadh's election desk now carries the official ward count and election timeline. Ward-wise 2026 candidate names are still awaiting verification before MyCityPulse publishes them.",
+    "Junagadh's election desk now reflects the closed nomination phase as of April 11, 2026. It carries the ward count and election timeline, while ward-wise candidate names still await verification before publication.",
   sources: [
     {
       label: "Junagadh Municipal Corporation introduction",

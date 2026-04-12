@@ -14,9 +14,9 @@ export const JAMNAGAR_ELECTION_2026 = createGujaratElection({
   status: "ward_directory",
   wards: JAMNAGAR_WARDS_2026,
   seatsTotal: 64,
-  lastUpdated: "2026-04-11T13:05:00+05:30",
+  lastUpdated: "2026-04-12T16:20:00+05:30",
   scopeNote:
-    "Jamnagar's election desk now publishes the ward framework and election timeline. Ward-wise 2026 candidate names are still being verified before MyCityPulse will attach names to specific wards.",
+    "Jamnagar's election desk now reflects the closed nomination phase as of April 11, 2026. The ward framework is live, but ward-wise candidate names are still being verified before MyCityPulse will attach names to specific wards.",
   sources: [
     {
       label: "Jamnagar Municipal Corporation member pages",

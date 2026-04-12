@@ -87,6 +87,62 @@
   line-height: 1.6;
 }
 
+.elections-priority-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 16px;
+}
+
+.priority-card {
+  padding: 14px;
+  border: 1px solid #ece4d6;
+  border-radius: 8px;
+  background: #fcfaf6;
+}
+
+.priority-card span {
+  display: block;
+  margin-bottom: 6px;
+  color: #8a7d69;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.priority-card strong {
+  display: block;
+  color: #1f1f1f;
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.priority-card p {
+  margin: 6px 0 0;
+  color: #675f53;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.election-quick-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.quick-link {
+  border: 1px solid #e0d5c6;
+  border-radius: 8px;
+  background: #fff;
+  color: #6e4a22;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
 .pledge-section {
   display: flex;
   flex-direction: column;
@@ -576,8 +632,24 @@
   border: 1px solid #efefef;
 }
 
+.ward-results-meta {
+  margin: 0 0 10px;
+  color: #7a7469;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ward-match-list {
+  display: grid;
+  gap: 10px;
+}
+
 .ward-found {
   color: #333;
+  padding: 12px;
+  border: 1px solid #ece6da;
+  border-radius: 8px;
+  background: #fff;
 }
 
 .ward-found p {
@@ -629,6 +701,28 @@
   color: #666;
   font-size: 13px;
   line-height: 1.6;
+}
+
+.coverage-progress {
+  width: 100%;
+  height: 10px;
+  margin: 0 0 8px;
+  border-radius: 999px;
+  background: #ece6da;
+  overflow: hidden;
+}
+
+.coverage-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #1f6f5f 0%, #c76122 100%);
+  border-radius: 999px;
+}
+
+.coverage-progress-copy {
+  margin: 0 0 12px;
+  color: #6d6559;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .candidate-tracker-help {
@@ -890,6 +984,38 @@
   background: #e0e0e0;
 }
 
+@media (max-width: 768px) {
+  .elections-card {
+    padding: 18px;
+  }
+
+  .elections-actions,
+  .location-actions,
+  .digipin-form,
+  .section-heading {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .action-btn,
+  .location-btn,
+  .digipin-submit,
+  .inline-save-btn,
+  .text-action {
+    width: 100%;
+    text-align: center;
+  }
+
+  .candidate-metrics,
+  .elections-priority-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .source-item {
+    padding: 12px 14px;
+  }
+}
+
 @media (max-width: 600px) {
   .elections-card {
     padding: 16px;
@@ -935,6 +1061,10 @@
   }
 
   .candidate-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .elections-priority-strip {
     grid-template-columns: 1fr;
   }
 }

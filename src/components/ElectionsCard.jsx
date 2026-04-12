@@ -1,6 +1,7 @@
 import React, { Suspense, lazy, useEffect, useState } from "react";
 import { formatDigipin, getDigiPin, getLatLngFromDigiPin } from "../domain/location/digipin.js";
 import { getDigipinCityMismatch } from "../domain/location/cityProximity.js";
+import { buildMailtoHref, openMailtoDraft } from "../lib/contact.js";
 import "./ElectionsCard.css";
 
 const CivicSurvey = lazy(() => import("./CivicSurvey"));
@@ -63,6 +64,24 @@ function getDigipinErrorMessage(error) {
   }
 
   return "We could not save this DIGIPIN right now. Please re-check the code or use your current location instead.";
+}
+
+function getCandidateCounts(wards = []) {
+  return wards.reduce(
+    (totals, ward) => {
+      if (ward.candidateStatus === "official_final") {
+        totals.officialFinalWards += 1;
+      }
+
+      if (ward.candidateStatus === "party_announced") {
+        totals.partyAnnouncedWards += 1;
+      }
+
+      totals.namedEntries += Array.isArray(ward.candidates) ? ward.candidates.length : 0;
+      return totals;
+    },
+    { officialFinalWards: 0, partyAnnouncedWards: 0, namedEntries: 0 },
+  );
 }
 
 export default function ElectionsCard({ election, cityName }) {
@@ -130,11 +149,47 @@ export default function ElectionsCard({ election, cityName }) {
       ward.zone.toLowerCase().includes(query)
     );
   });
+  const wardMatches = searchWard.trim()
+    ? wards.filter((ward) => {
+      const query = searchWard.toLowerCase().trim();
+
+      return (
+        ward.number.toString() === searchWard.trim() ||
+        ward.name.toLowerCase().includes(query) ||
+        ward.zone.toLowerCase().includes(query)
+      );
+    }).slice(0, 8)
+    : [];
   const savedWard = wards.find((ward) => ward.number === locationProfile?.wardNumber) || null;
   const wardCount = wards.length || election.wards_total || 0;
-  const candidateTracker = election.candidateTracker || null;
+  const derivedCandidateCounts = getCandidateCounts(wards);
+  const candidateTracker = election.candidateTracker
+    ? {
+      ...election.candidateTracker,
+      officialFinalWards: election.candidateTracker.officialFinalWards ?? derivedCandidateCounts.officialFinalWards,
+      partyAnnouncedWards: election.candidateTracker.partyAnnouncedWards ?? derivedCandidateCounts.partyAnnouncedWards,
+      namedEntries: election.candidateTracker.namedEntries ?? derivedCandidateCounts.namedEntries,
+    }
+    : null;
   const dataUpdatedAt = election.lastUpdated || candidateTracker?.lastReviewed || null;
+  const trackedWardCount = candidateTracker
+    ? candidateTracker.officialFinalWards + candidateTracker.partyAnnouncedWards
+    : 0;
+  const coveragePercent = wardCount > 0 ? Math.round((trackedWardCount / wardCount) * 100) : 0;
+  const nextDeadline = election.timeline?.find((event) => new Date(event.date) >= new Date()) || null;
   const digipinHelpText = `Use your current location or paste a DIGIPIN you already know. MyCityPulse saves it only on this device and still asks you to confirm your ${cityLabel} ward manually.`;
+  const electionFeedbackHref = buildMailtoHref({
+    subject: `${cityName} election update or correction`,
+    lines: [
+      "Hi MyCityPulse,",
+      "",
+      `I want to share an election update or correction for ${cityName}.`,
+      "Ward number:",
+      "Candidate or issue:",
+      "Source link:",
+      "What should be updated:",
+    ],
+  });
 
   const persistLocationProfile = (nextProfile) => {
     if (typeof window !== "undefined") {
@@ -258,7 +313,7 @@ export default function ElectionsCard({ election, cityName }) {
           saveLocationProfile({ digipin, latitude, longitude });
           updateLocationWarning(latitude, longitude);
           setLocationStatus(`Location found and converted into a DIGIPIN. Confirm your ${cityLabel} ward below to finish the civic profile.`);
-        } catch (error) {
+        } catch {
           setLocationError("We found your location, but could not convert it into a DIGIPIN right now. You can still enter one manually.");
         } finally {
           setIsLocating(false);
@@ -376,18 +431,57 @@ export default function ElectionsCard({ election, cityName }) {
 
         {election.scopeNote && <p className="coverage-note">{election.scopeNote}</p>}
 
+        <div className="elections-priority-strip">
+          <div className="priority-card">
+            <span>Next deadline</span>
+            <strong>{nextDeadline ? nextDeadline.label : "Polling window underway"}</strong>
+            <p>{nextDeadline ? formatDate(nextDeadline.date) : `Voting was on ${formatDate(election.election_date)}`}</p>
+          </div>
+          <div className="priority-card">
+            <span>Candidate coverage</span>
+            <strong>{coveragePercent}% of wards tagged</strong>
+            <p>
+              {trackedWardCount} of {wardCount} wards currently show either verified names or party-announced status.
+            </p>
+          </div>
+          <div className="priority-card">
+            <span>Your saved ward</span>
+            <strong>{savedWard ? `Ward ${savedWard.number}` : "Not saved yet"}</strong>
+            <p>{savedWard ? savedWard.name : `Save your DIGIPIN, then confirm your ${cityLabel} ward.`}</p>
+          </div>
+        </div>
+
+        <div className="election-quick-links" aria-label="Election shortcuts">
+          <button className="quick-link" type="button" onClick={() => document.getElementById("saved-ward-select")?.focus()}>
+            Save my ward
+          </button>
+          <button className="quick-link" type="button" onClick={() => document.getElementById("ward-search")?.focus()}>
+            Search ward directory
+          </button>
+          {candidateTracker && (
+            <button className="quick-link" type="button" onClick={() => document.getElementById("candidate-tracker")?.scrollIntoView({ behavior: "smooth", block: "start" })}>
+              See candidate coverage
+            </button>
+          )}
+          {Array.isArray(election.sources) && election.sources.length > 0 && (
+            <button className="quick-link" type="button" onClick={() => document.getElementById("election-sources")?.scrollIntoView({ behavior: "smooth", block: "start" })}>
+              Open sources
+            </button>
+          )}
+        </div>
+
         <div className="pledge-section">
           {!hasVoted ? (
             <>
               <button className="pledge-btn" onClick={handlePledgeVote} aria-label="Pledge to vote">
                 {"\u270B I Will Vote"}
               </button>
-              <p className="pledge-count">{pledgeCount.toLocaleString()} people have pledged</p>
+              <p className="pledge-count">{pledgeCount.toLocaleString()} pledge(s) saved in this browser</p>
             </>
           ) : (
             <div className="pledge-confirmed">
-              <p>{"\u2705 Thank you for pledging to vote."}</p>
-              <p className="pledge-count">{pledgeCount.toLocaleString()} people have pledged</p>
+              <p>{"\u2705 Your vote pledge is saved on this device."}</p>
+              <p className="pledge-count">{pledgeCount.toLocaleString()} pledge(s) saved in this browser</p>
             </div>
           )}
         </div>
@@ -589,40 +683,49 @@ export default function ElectionsCard({ election, cityName }) {
 
         {searchWard && (
           <div className="ward-results">
-            {foundWard ? (
-              <div className="ward-found">
-                <p className="ward-result-title">
-                  <strong>
-                    Ward {foundWard.number}: {foundWard.name}
-                  </strong>
+            {wardMatches.length > 0 ? (
+              <>
+                <p className="ward-results-meta">
+                  {wardMatches.length === 1 ? "1 ward match" : `${wardMatches.length} ward matches`}
                 </p>
-                <p className="ward-result-meta">{foundWard.zone} Zone</p>
-                <p className="ward-result-address">{foundWard.officeAddress}</p>
-                <div className="candidate-chip-row">
-                  <span className={`candidate-chip ${getCandidateTone(foundWard.candidateStatus)}`}>
-                    {getCandidateLabel(foundWard.candidateStatus)}
-                  </span>
-                </div>
-                <p className="candidate-summary">{foundWard.candidateSummary}</p>
-                {foundWard.candidates.length > 0 && (
-                  <div className="candidate-list">
-                    {foundWard.candidates.map((candidate) => (
-                      <div key={`${foundWard.number}-${candidate.name}`} className="candidate-card">
-                        <strong>{candidate.name}</strong>
-                        <span>{candidate.party}</span>
-                        {candidate.note && <p>{candidate.note}</p>}
+                <div className="ward-match-list">
+                  {wardMatches.map((ward) => (
+                    <div key={ward.number} className="ward-found">
+                      <p className="ward-result-title">
+                        <strong>
+                          Ward {ward.number}: {ward.name}
+                        </strong>
+                      </p>
+                      <p className="ward-result-meta">{ward.zone} Zone</p>
+                      <p className="ward-result-address">{ward.officeAddress}</p>
+                      <div className="candidate-chip-row">
+                        <span className={`candidate-chip ${getCandidateTone(ward.candidateStatus)}`}>
+                          {getCandidateLabel(ward.candidateStatus)}
+                        </span>
                       </div>
-                    ))}
-                  </div>
-                )}
-                <button
-                  className="inline-save-btn"
-                  type="button"
-                  onClick={() => handleWardSelection(foundWard.number, `Ward ${foundWard.number} added to your civic profile.`)}
-                >
-                  Use this ward in my profile
-                </button>
-              </div>
+                      <p className="candidate-summary">{ward.candidateSummary}</p>
+                      {ward.candidates.length > 0 && (
+                        <div className="candidate-list">
+                          {ward.candidates.map((candidate) => (
+                            <div key={`${ward.number}-${candidate.name}`} className="candidate-card">
+                              <strong>{candidate.name}</strong>
+                              <span>{candidate.party}</span>
+                              {candidate.note && <p>{candidate.note}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <button
+                        className="inline-save-btn"
+                        type="button"
+                        onClick={() => handleWardSelection(ward.number, `Ward ${ward.number} added to your civic profile.`)}
+                      >
+                        Use this ward in my profile
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </>
               ) : (
                 <p className="no-result">
                 No ward match yet. Try a ward number, part of the ward name, or the zone shown in this city's official ward directory.
@@ -633,7 +736,7 @@ export default function ElectionsCard({ election, cityName }) {
       </div>
 
       {candidateTracker && (
-        <div className="candidate-tracker">
+        <div className="candidate-tracker" id="candidate-tracker">
           <div className="section-heading compact">
             <div>
               <h4>Candidate tracker</h4>
@@ -646,6 +749,32 @@ export default function ElectionsCard({ election, cityName }) {
             "Official final" means MyCityPulse has seen a formal finalized list. "Party-announced" means a party has named someone, but final scrutiny or withdrawal status may still change. "Not verified yet" means we are not naming a candidate on the site yet.
           </p>
           <p className="candidate-tracker-note">{candidateTracker.statusNote}</p>
+          <div className="coverage-progress" aria-label="Candidate coverage progress">
+            <div className="coverage-progress-bar" style={{ width: `${coveragePercent}%` }} />
+          </div>
+          <p className="coverage-progress-copy">
+            {coveragePercent}% of listed wards currently carry an explicit candidate-status label.
+          </p>
+          <button
+            className="text-action"
+            type="button"
+            onClick={() =>
+              openMailtoDraft({
+                subject: `${cityName} election update or correction`,
+                lines: [
+                  "Hi MyCityPulse,",
+                  "",
+                  `I want to share an election update or correction for ${cityName}.`,
+                  "Ward number:",
+                  "Candidate or issue:",
+                  "Source link:",
+                  "What should be updated:",
+                ],
+              })
+            }
+          >
+            Send an election correction -&gt;
+          </button>
           <div className="candidate-metrics">
             <div className="candidate-metric">
               <strong>{candidateTracker.namedEntries}</strong>
@@ -671,7 +800,7 @@ export default function ElectionsCard({ election, cityName }) {
       )}
 
       {Array.isArray(election.sources) && election.sources.length > 0 && (
-        <div className="elections-sources">
+        <div className="elections-sources" id="election-sources">
           <div className="section-heading compact">
             <div>
               <h4>Sources behind this section</h4>

@@ -15,9 +15,9 @@ export const PORBANDAR_ELECTION_2026 = createGujaratElection({
   status: "ward_directory",
   wards: PORBANDAR_WARDS_2026,
   seatsTotal: 44,
-  lastUpdated: "2026-04-11T13:05:00+05:30",
+  lastUpdated: "2026-04-12T16:20:00+05:30",
   scopeNote:
-    "Porbandar's election desk now includes the inherited Porbandar-Chhaya municipality ward structure used as a citizen-facing starting point. Ward-wise 2026 candidate names are still awaiting verification before MyCityPulse publishes them.",
+    "Porbandar's election desk now reflects the closed nomination phase as of April 11, 2026. The inherited Porbandar-Chhaya ward structure remains the citizen-facing starting point while ward-wise candidate names still await verification before publication.",
   sources: [
     {
       label: "Porbandar municipality district page",
