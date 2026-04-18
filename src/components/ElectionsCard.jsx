@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useEffect, useState } from "react";
 import { formatDigipin, getDigiPin, getLatLngFromDigiPin } from "../domain/location/digipin.js";
 import { getDigipinCityMismatch } from "../domain/location/cityProximity.js";
-import { detectWardFromCoordinates } from "../domain/location/wardDetection.js";
+import { detectWardFromCoordinates, getDetectionConfidence, prepareDetectionResult } from "../domain/location/wardDetection.js";
 import { buildMailtoHref, openMailtoDraft } from "../lib/contact.js";
 import "./ElectionsCard.css";
 
@@ -37,30 +37,12 @@ function readStoredProfile(key) {
 }
 
 function formatDate(date, options = {}) {
-  return parseElectionDate(date).toLocaleDateString("en-IN", {
+  return new Date(date).toLocaleDateString("en-IN", {
     month: "short",
     day: "numeric",
     year: "numeric",
     ...options,
   });
-}
-
-function parseElectionDate(value) {
-  if (value instanceof Date) {
-    return value;
-  }
-
-  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    const [year, month, day] = value.split("-").map(Number);
-    return new Date(year, month - 1, day, 12, 0, 0, 0);
-  }
-
-  return new Date(value);
-}
-
-function getStartOfDay(value) {
-  const date = parseElectionDate(value);
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
 function getCandidateTone(status) {
@@ -82,7 +64,7 @@ function getDigipinErrorMessage(error) {
     return "This DIGIPIN does not look valid yet. Check the letters, numbers, and separators, then try again.";
   }
 
-  return "We could not save this DIGIPIN right now. Please re-check the code or use latitude and longitude instead.";
+  return "We could not save this DIGIPIN right now. Please re-check the code or use your current location instead.";
 }
 
 function getCandidateCounts(wards = []) {
@@ -119,13 +101,6 @@ export default function ElectionsCard({ election, cityName }) {
   const [showSurvey, setShowSurvey] = useState(false);
   const [locationProfile, setLocationProfile] = useState(() => readStoredProfile(locationProfileKey));
   const [digipinInput, setDigipinInput] = useState(() => readStoredProfile(locationProfileKey)?.digipin || "");
-  const [coordinateInput, setCoordinateInput] = useState(() => {
-    const storedProfile = readStoredProfile(locationProfileKey);
-    return {
-      latitude: storedProfile?.latitude ? String(storedProfile.latitude) : "",
-      longitude: storedProfile?.longitude ? String(storedProfile.longitude) : "",
-    };
-  });
   const [selectedWardNumber, setSelectedWardNumber] = useState(() => {
     const storedProfile = readStoredProfile(locationProfileKey);
     return storedProfile?.wardNumber ? String(storedProfile.wardNumber) : "";
@@ -135,7 +110,6 @@ export default function ElectionsCard({ election, cityName }) {
   const [locationWarning, setLocationWarning] = useState("");
   const [isLocating, setIsLocating] = useState(false);
   const [detectedWardVerification, setDetectedWardVerification] = useState(null);
-  const [wardCorrectionNumber, setWardCorrectionNumber] = useState("");
 
   useEffect(() => {
     const updateCountdown = () => {
@@ -204,11 +178,8 @@ export default function ElectionsCard({ election, cityName }) {
     ? candidateTracker.officialFinalWards + candidateTracker.partyAnnouncedWards
     : 0;
   const coveragePercent = wardCount > 0 ? Math.round((trackedWardCount / wardCount) * 100) : 0;
-  const today = getStartOfDay(new Date());
-  const timeline = Array.isArray(election.timeline) ? election.timeline : [];
-  const activeTimelineIndex = timeline.findIndex((event) => getStartOfDay(event.date) >= today);
-  const nextDeadline = activeTimelineIndex >= 0 ? timeline[activeTimelineIndex] : null;
-  const digipinHelpText = `Use your current location or enter latitude and longitude. MyCityPulse saves the civic profile only on this device. DIGIPIN is kept as a derived reference, not the primary location framework.`;
+  const nextDeadline = election.timeline?.find((event) => new Date(event.date) >= new Date()) || null;
+  const digipinHelpText = `Use your current location or paste a DIGIPIN you already know. MyCityPulse saves it only on this device and still asks you to confirm your ${cityLabel} ward manually.`;
   const electionFeedbackHref = buildMailtoHref({
     subject: `${cityName} election update or correction`,
     lines: [
@@ -251,7 +222,7 @@ export default function ElectionsCard({ election, cityName }) {
 
     if (mismatch) {
       setLocationWarning(
-        `These coordinates look closer to ${mismatch.detectedCity} than ${mismatch.expectedCity}. Double-check that you are using the right city section before saving your ward.`,
+        `This DIGIPIN looks closer to ${mismatch.detectedCity} than ${mismatch.expectedCity}. Double-check that you are using the right city section before saving your ward.`,
       );
       return mismatch;
     }
@@ -267,61 +238,10 @@ export default function ElectionsCard({ election, cityName }) {
 
     setLocationProfile(null);
     setDigipinInput("");
-    setCoordinateInput({ latitude: "", longitude: "" });
     setSelectedWardNumber("");
     setLocationStatus("Saved civic profile cleared from this device.");
     setLocationError("");
     setLocationWarning("");
-    setWardCorrectionNumber("");
-  };
-
-  const parseCoordinates = () => {
-    const latitude = Number.parseFloat(coordinateInput.latitude);
-    const longitude = Number.parseFloat(coordinateInput.longitude);
-
-    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-      throw new Error("Please enter valid latitude and longitude.");
-    }
-
-    if (latitude < -90 || latitude > 90) {
-      throw new Error("Latitude must be between -90 and 90.");
-    }
-
-    if (longitude < -180 || longitude > 180) {
-      throw new Error("Longitude must be between -180 and 180.");
-    }
-
-    return {
-      latitude: Number(latitude.toFixed(6)),
-      longitude: Number(longitude.toFixed(6)),
-    };
-  };
-
-  const runWardDetection = (latitude, longitude, digipin = "") => {
-    const detection = detectWardFromCoordinates(cityName, latitude, longitude, wards);
-
-    if (detection) {
-      setWardCorrectionNumber(String(detection.ward.number));
-      setDetectedWardVerification({
-        ...detection,
-        latitude,
-        longitude,
-        digipin,
-      });
-      setLocationStatus(`Location saved. Please verify the suggested ward for ${cityLabel}.`);
-      return;
-    }
-
-    setWardCorrectionNumber("");
-    setDetectedWardVerification({
-      ward: null,
-      latitude,
-      longitude,
-      digipin,
-      confidence: null,
-      warning: "We could not suggest a ward from these coordinates. Please choose it manually below.",
-    });
-    setLocationStatus(`Coordinates saved. Choose your ${cityLabel} ward manually below.`);
   };
 
   const handlePledgeVote = () => {
@@ -372,9 +292,9 @@ export default function ElectionsCard({ election, cityName }) {
     }
   };
 
-  const handleUseMyLocation = () => {
-    if (!navigator.geolocation) {
-      setLocationError("Your browser cannot share location here. Enter coordinates manually if you want to verify a ward.");
+    const handleUseMyLocation = () => {
+      if (!navigator.geolocation) {
+      setLocationError("Your browser cannot share location here. Enter a DIGIPIN manually if you already have one.");
       setLocationStatus("");
       return;
     }
@@ -393,15 +313,28 @@ export default function ElectionsCard({ election, cityName }) {
           const digipin = getDigiPin(latitude, longitude);
 
           setDigipinInput(digipin);
-          setCoordinateInput({
-            latitude: String(latitude),
-            longitude: String(longitude),
-          });
           saveLocationProfile({ digipin, latitude, longitude });
           updateLocationWarning(latitude, longitude);
-          runWardDetection(latitude, longitude, digipin);
+
+          // Auto-detect ward from location
+          const detectedWard = detectWardFromCoordinates(cityName, latitude, longitude, wards);
+          if (detectedWard) {
+            const confidence = getDetectionConfidence(
+              Math.sqrt(Math.pow(latitude - latitude, 2) + Math.pow(longitude - longitude, 2)) * 111 // rough km conversion
+            );
+            setDetectedWardVerification({
+              ward: detectedWard,
+              latitude,
+              longitude,
+              digipin,
+              confidence: Math.min(95, Math.max(50, confidence)),
+            });
+            setLocationStatus(`Location found! Ward ${detectedWard.number} detected. Please verify below.`);
+          } else {
+            setLocationStatus(`Location found and converted into a DIGIPIN. Confirm your ${cityLabel} ward below to finish the civic profile.`);
+          }
         } catch {
-          setLocationError("We found your location, but could not save it right now. Try again or enter coordinates manually.");
+          setLocationError("We found your location, but could not convert it into a DIGIPIN right now. You can still enter one manually.");
         } finally {
           setIsLocating(false);
         }
@@ -409,7 +342,7 @@ export default function ElectionsCard({ election, cityName }) {
       (error) => {
         const message =
           error.code === 1
-            ? "Location permission is blocked. Allow location access in your browser settings, or enter coordinates manually."
+            ? "Location permission is blocked. Allow location access in your browser settings, or enter a DIGIPIN manually."
             : "We could not read your location right now. Check browser permissions, then try again.";
         setLocationError(message);
         setLocationStatus("");
@@ -417,24 +350,6 @@ export default function ElectionsCard({ election, cityName }) {
       },
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 },
     );
-  };
-
-  const handleCoordinateSubmit = (event) => {
-    event.preventDefault();
-
-    try {
-      const { latitude, longitude } = parseCoordinates();
-      const digipin = getDigiPin(latitude, longitude);
-
-      setDigipinInput(digipin);
-      saveLocationProfile({ digipin, latitude, longitude });
-      updateLocationWarning(latitude, longitude);
-      setLocationError("");
-      runWardDetection(latitude, longitude, digipin);
-    } catch (error) {
-      setLocationError(error.message || "We could not use those coordinates right now.");
-      setLocationStatus("");
-    }
   };
 
   const handleDigipinSubmit = (event) => {
@@ -445,10 +360,6 @@ export default function ElectionsCard({ election, cityName }) {
       const decoded = getLatLngFromDigiPin(formatted);
 
       setDigipinInput(formatted);
-      setCoordinateInput({
-        latitude: String(decoded.latitude),
-        longitude: String(decoded.longitude),
-      });
       saveLocationProfile({
         digipin: formatted,
         latitude: decoded.latitude,
@@ -456,7 +367,7 @@ export default function ElectionsCard({ election, cityName }) {
       });
       updateLocationWarning(decoded.latitude, decoded.longitude);
       setLocationError("");
-      runWardDetection(decoded.latitude, decoded.longitude, formatted);
+      setLocationStatus(`DIGIPIN saved on this device. Confirm your ${cityLabel} ward to finish your civic profile.`);
     } catch (error) {
       setLocationError(getDigipinErrorMessage(error));
       setLocationStatus("");
@@ -498,21 +409,17 @@ export default function ElectionsCard({ election, cityName }) {
   };
 
   const handleConfirmDetectedWard = () => {
-    const nextWardNumber = wardCorrectionNumber || detectedWardVerification?.ward?.number;
-
-    if (nextWardNumber) {
+    if (detectedWardVerification?.ward) {
       handleWardSelection(
-        nextWardNumber,
-        `Ward ${nextWardNumber} confirmed and saved to your civic profile.`
+        detectedWardVerification.ward.number,
+        `Ward ${detectedWardVerification.ward.number} confirmed and saved to your civic profile.`
       );
       setDetectedWardVerification(null);
-      setWardCorrectionNumber("");
     }
   };
 
   const handleReportDetectionError = () => {
     if (detectedWardVerification) {
-      const correctedWard = wards.find((ward) => ward.number === Number.parseInt(wardCorrectionNumber, 10)) || null;
       void openMailtoDraft({
         subject: `Ward Detection Error - ${cityName}`,
         lines: [
@@ -521,17 +428,13 @@ export default function ElectionsCard({ election, cityName }) {
           `I found an issue with ward detection in ${cityName}.`,
           `My coordinates: ${detectedWardVerification.latitude}, ${detectedWardVerification.longitude}`,
           `DigiPin: ${detectedWardVerification.digipin}`,
-          `Detected ward: ${detectedWardVerification.ward ? `Ward ${detectedWardVerification.ward.number} - ${detectedWardVerification.ward.name}` : "No ward suggested"}`,
-          `Actual ward: ${correctedWard ? `Ward ${correctedWard.number} - ${correctedWard.name}` : "[Please enter the correct ward number and name]"}`,
+          `Detected ward: Ward ${detectedWardVerification.ward.number} - ${detectedWardVerification.ward.name}`,
+          `Actual ward: [Please enter the correct ward number and name]`,
           '',
           'Additional details about why this detection was incorrect:',
         ],
       });
-      if (correctedWard) {
-        handleWardSelection(correctedWard.number, `Ward ${correctedWard.number} saved. Thanks for flagging the mismatch.`);
-      }
       setDetectedWardVerification(null);
-      setWardCorrectionNumber("");
     }
   };
 
@@ -594,7 +497,7 @@ export default function ElectionsCard({ election, cityName }) {
           <div className="priority-card">
             <span>Your saved ward</span>
             <strong>{savedWard ? `Ward ${savedWard.number}` : "Not saved yet"}</strong>
-            <p>{savedWard ? savedWard.name : `Save your coordinates, then confirm your ${cityLabel} ward.`}</p>
+            <p>{savedWard ? savedWard.name : `Save your DIGIPIN, then confirm your ${cityLabel} ward.`}</p>
           </div>
         </div>
 
@@ -699,7 +602,7 @@ export default function ElectionsCard({ election, cityName }) {
           <div className="section-heading">
             <div>
               <h4>My civic profile</h4>
-              <p>Save latitude and longitude, then confirm your ward on this device.</p>
+              <p>Save your DIGIPIN and your confirmed ward on this device.</p>
             </div>
             {locationProfile && (
               <button className="text-action" onClick={clearLocationProfile}>
@@ -708,14 +611,7 @@ export default function ElectionsCard({ election, cityName }) {
             )}
           </div>
 
-          {election.locationNote && (
-            <p className="location-note">
-              {election.locationNote
-                .replaceAll("DIGIPIN", "coordinates")
-                .replace("Save your coordinates, then confirm your", "Save your coordinates, then confirm your")
-                .replace("ward yourself.", "ward yourself or verify the suggestion here.")}
-            </p>
-          )}
+          {election.locationNote && <p className="location-note">{election.locationNote}</p>}
           <p className="digipin-help">{digipinHelpText}</p>
 
           <div className="location-actions">
@@ -727,41 +623,8 @@ export default function ElectionsCard({ election, cityName }) {
             >
               {isLocating ? "Finding location..." : "Use my location"}
             </button>
-            <span className="location-actions-copy">or verify any point with latitude and longitude</span>
+            <span className="location-actions-copy">or save a DIGIPIN you already know</span>
           </div>
-
-          <form className="coordinate-form" onSubmit={handleCoordinateSubmit}>
-            <input
-              type="text"
-              inputMode="decimal"
-              value={coordinateInput.latitude}
-              onChange={(event) => {
-                setCoordinateInput((current) => ({ ...current, latitude: event.target.value }));
-                setLocationError("");
-                setLocationStatus("");
-              }}
-              placeholder="Latitude"
-              className="digipin-input coordinate-input"
-              aria-label="Latitude"
-            />
-            <input
-              type="text"
-              inputMode="decimal"
-              value={coordinateInput.longitude}
-              onChange={(event) => {
-                setCoordinateInput((current) => ({ ...current, longitude: event.target.value }));
-                setLocationError("");
-                setLocationStatus("");
-              }}
-              placeholder="Longitude"
-              className="digipin-input coordinate-input"
-              aria-label="Longitude"
-            />
-            <button type="submit" className="digipin-submit">
-              Verify coordinates
-            </button>
-          </form>
-          <p className="digipin-field-help">Example: 23.0225 and 72.5714. Use this when you want to check a specific location instead of your live position.</p>
 
           <form className="digipin-form" onSubmit={handleDigipinSubmit}>
             <input
@@ -778,10 +641,10 @@ export default function ElectionsCard({ election, cityName }) {
               aria-label="Enter your DIGIPIN"
             />
             <button type="submit" className="digipin-submit">
-              Derive from DIGIPIN
+              Save DIGIPIN
             </button>
           </form>
-          <p className="digipin-field-help">Already have a DIGIPIN? Paste it here and MyCityPulse will convert it into coordinates before matching a ward.</p>
+          <p className="digipin-field-help">Example format: ABC-123-4DEF. If you do not know your DIGIPIN yet, use your current location instead.</p>
 
           {locationError && <p className="location-feedback error">{locationError}</p>}
           {locationWarning && <p className="location-feedback warning">{locationWarning}</p>}
@@ -790,53 +653,29 @@ export default function ElectionsCard({ election, cityName }) {
           {detectedWardVerification && (
             <div className="ward-verification-box">
               <div className="verification-header">
-                <span className="verification-icon">&#10003;</span>
-                <h5>Verify ward for this location</h5>
+                <span className="verification-icon">✓</span>
+                <h5>Ward Detected</h5>
               </div>
-              {detectedWardVerification.ward ? (
-                <>
-                  <p className="detected-ward-info">
-                    Suggested ward: Ward {detectedWardVerification.ward.number}: {detectedWardVerification.ward.name}
-                  </p>
-                  <p className="confidence-info">
-                    {detectedWardVerification.confidence ? `Detection confidence: ${detectedWardVerification.confidence}%` : "Confidence is limited for this location, so please verify manually."}
-                  </p>
-                </>
-              ) : (
-                <p className="confidence-info">{detectedWardVerification.warning}</p>
-              )}
-              <label className="ward-select-label" htmlFor="detected-ward-correction">
-                Correct ward for this location
-              </label>
-              <select
-                id="detected-ward-correction"
-                className="ward-select"
-                value={wardCorrectionNumber}
-                onChange={(event) => setWardCorrectionNumber(event.target.value)}
-              >
-                <option value="">Select a ward</option>
-                {wards.map((ward) => (
-                  <option key={`verify-${ward.number}`} value={ward.number}>
-                    Ward {ward.number}: {ward.name}
-                  </option>
-                ))}
-              </select>
+              <p className="detected-ward-info">
+                Ward {detectedWardVerification.ward.number}: {detectedWardVerification.ward.name}
+              </p>
+              <p className="confidence-info">
+                Detection confidence: {detectedWardVerification.confidence}%
+              </p>
               <div className="verification-button-group">
                 <button
                   type="button"
                   className="verify-confirm-btn"
                   onClick={handleConfirmDetectedWard}
-                  disabled={!wardCorrectionNumber}
                 >
-                  Confirm and save
+                  ✓ Confirm & Save
                 </button>
                 <button
                   type="button"
                   className="verify-error-btn"
                   onClick={handleReportDetectionError}
-                  disabled={!wardCorrectionNumber}
                 >
-                  Save and report mismatch
+                  ✗ Report Error
                 </button>
               </div>
             </div>
@@ -868,7 +707,7 @@ export default function ElectionsCard({ election, cityName }) {
               </div>
               {locationProfile.latitude && locationProfile.longitude && (
                 <p className="profile-coordinates">
-                  Saved coordinates: {locationProfile.latitude}, {locationProfile.longitude}
+                  Approximate coordinates from DIGIPIN: {locationProfile.latitude}, {locationProfile.longitude}
                 </p>
               )}
               {savedWard && (
@@ -1104,6 +943,25 @@ export default function ElectionsCard({ election, cityName }) {
             </button>
             <h2>{"\uD83D\uDCCB Election Timeline"}</h2>
             <div className="timeline">
-              {timeline.map((event, index) => {
-                const eventDay = getStartOfDay(event.date);
-                const isActive = ac
+              {election.timeline.map((event, index) => (
+                <div key={index} className={`timeline-item ${event.urgent ? "urgent" : ""}`}>
+                  <span className="timeline-icon" aria-hidden="true">
+                    {event.icon}
+                  </span>
+                  <div className="timeline-content">
+                    <strong>{event.label}</strong>
+                    <p>{formatDate(event.date)}</p>
+                  </div>
+                  {event.urgent && <span className="urgent-badge">ACTIVE</span>}
+                </div>
+              ))}
+            </div>
+            <button className="close-btn" onClick={() => setShowTimeline(false)}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -15,12 +15,6 @@ import { submitCocreatorInterest } from "./lib/submissions.js";
 import useCitySearch from "./shared/hooks/useCitySearch.js";
 import { parseUrl, updateUrlForCity, findCityByUrlSlug, updateUrlForCompare, updateUrlToHome } from "./lib/routing.js";
 import HowItWorks from "./components/HowItWorks.jsx";
-import { loadElectionData } from "./domain/elections/loadElectionData.js";
-import {
-  CURRENT_GUJARAT_MUNICIPAL_ELECTION_CITIES_2026,
-  GUJARAT_ELECTION_CITY_ROSTER_2026,
-  NO_CURRENT_ELECTION_CITY_NOTES_2026,
-} from "./domain/elections/gujaratElectionConfig.js";
 
 const CityPage = lazy(() => import("./features/city/CityPage.jsx"));
 const CompareView = lazy(() => import("./features/compare/CompareView.jsx"));
@@ -112,45 +106,23 @@ const DATASET_SCOPE = {
   electionTrackerCount: cities.filter((city) => city.hasElections).length,
 };
 
-const GUJARAT_ELECTION_CITY_OBJECTS = GUJARAT_ELECTION_CITY_ROSTER_2026
-  .map((name) => cities.find((city) => city.city === name))
-  .filter(Boolean);
-
-function buildElectionCoverageSummary(election) {
-  const wards = Array.isArray(election?.wards) ? election.wards : [];
-  const totalWards = wards.length || election?.wards_total || 0;
-  const listedWards = wards.filter((ward) => ward.number && ward.name && ward.officeAddress).length;
-  const namedWards = wards.filter((ward) => Array.isArray(ward.candidates) && ward.candidates.length > 0).length;
-  const trackedWards = wards.filter(
-    (ward) => ward.candidateStatus === "party_announced" || ward.candidateStatus === "official_final",
-  ).length;
-  const finalWards = wards.filter((ward) => ward.candidateStatus === "official_final").length;
-  const namedCandidates = wards.reduce(
-    (sum, ward) => sum + (Array.isArray(ward.candidates) ? ward.candidates.length : 0),
-    0,
-  );
-
-  return {
-    totalWards,
-    listedWards,
-    namedWards,
-    trackedWards,
-    finalWards,
-    namedCandidates,
-    listedPercent: totalWards > 0 ? Math.round((listedWards / totalWards) * 100) : 0,
-    coveragePercent: totalWards > 0 ? Math.round((trackedWards / totalWards) * 100) : 0,
-    namedPercent: totalWards > 0 ? Math.round((namedWards / totalWards) * 100) : 0,
-    reviewedAt: election?.candidateTracker?.lastReviewed || election?.lastUpdated || null,
-  };
-}
-
-function formatElectionMetricValue(value, fallback = "Pending") {
-  return value > 0 ? value : fallback;
-}
-
-function formatElectionPercentValue(value, fallback = "Pending") {
-  return value > 0 ? `${value}%` : fallback;
-}
+const GUJARAT_ELECTION_CITIES = [
+  "Ahmedabad",
+  "Surat",
+  "Vadodara",
+  "Rajkot",
+  "Bhavnagar",
+  "Jamnagar",
+  "Junagadh",
+  "Gandhinagar",
+  "Anand",
+  "Nadiad",
+  "Mehsana",
+  "Morbi",
+  "Surendranagar",
+  "Bharuch",
+  "Porbandar",
+];
 
 const INDIA_HOTSPOT_POSITIONS = {
   Delhi: { x: 148, y: 54 },
@@ -333,7 +305,6 @@ const GlobalStyles = () => (
     a { text-decoration: none; }
     button { font-family: inherit; cursor: pointer; }
     input, textarea, select { min-width: 0; }
-    img, svg, video, canvas { max-width: 100%; }
 
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(20px); }
@@ -603,8 +574,6 @@ const GlobalStyles = () => (
     .city-page-title {
       font-size: 48px;
       line-height: 1.1;
-      word-break: break-word;
-      overflow-wrap: anywhere;
     }
     .city-panel-title {
       font-size: 32px;
@@ -678,9 +647,6 @@ const GlobalStyles = () => (
     }
     .mobile-nav-row {
       display: none;
-    }
-    .mobile-nav-row .pill-btn {
-      flex-shrink: 0;
     }
     .app-shell {
       padding-top: 58px;
@@ -776,40 +742,8 @@ const GlobalStyles = () => (
       border-top: 1px solid rgba(255,255,255,0.1);
       padding: 12px 32px;
       display: flex; align-items: center; gap: 16px;
-      justify-content: space-between;
       box-shadow: 0 -4px 24px rgba(0,0,0,0.5);
       animation: slideUp 0.22s ease;
-    }
-
-    @media (max-width: 1024px) {
-      .page-section,
-      .page-section-tight {
-        padding-left: 24px;
-        padding-right: 24px;
-      }
-      .site-nav {
-        gap: 16px;
-        padding-left: 20px;
-        padding-right: 20px;
-      }
-      .site-nav-links {
-        gap: 18px;
-      }
-      .city-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      }
-      .thread-grid {
-        grid-template-columns: 1fr !important;
-      }
-      .city-page-title {
-        font-size: 44px;
-      }
-      .section-title {
-        font-size: 32px !important;
-      }
-      .join-copy-title {
-        font-size: 34px !important;
-      }
     }
 
     @media (max-width: 768px) {
@@ -885,21 +819,9 @@ const GlobalStyles = () => (
       .panel-nav-inner { padding: 0 16px; }
       .ward-table td, .ward-table th { padding: 9px 10px; }
       .compare-tray { padding: 10px 16px; flex-wrap: wrap; gap: 10px; }
-      .compare-tray > div:last-child {
-        width: 100%;
-      }
-      .compare-tray > div:last-child button {
-        flex: 1;
-      }
       .stack-header,
       .city-filters {
         gap: 12px;
-      }
-      .stack-header > * {
-        width: 100%;
-      }
-      .city-filters > * {
-        width: 100%;
       }
       .compare-card-grid {
         grid-template-columns: 1fr 1fr !important;
@@ -933,16 +855,6 @@ const GlobalStyles = () => (
         right: 20px !important;
         bottom: 24px !important;
       }
-      .city-info-card,
-      .city-split-card,
-      .city-empty-state {
-        padding-left: 20px !important;
-        padding-right: 20px !important;
-      }
-      .city-bottom-cta a {
-        width: 100%;
-        text-align: center;
-      }
       .city-issue-card {
         padding: 24px 20px 24px 0 !important;
       }
@@ -963,30 +875,6 @@ const GlobalStyles = () => (
       }
       .footer-copy {
         line-height: 1.7;
-      }
-    }
-    @media (max-width: 640px) {
-      .site-nav {
-        gap: 8px;
-      }
-      .compare-tray {
-        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-      }
-      .hero-headline {
-        font-size: 30px !important;
-        line-height: 1.2 !important;
-      }
-      .hero-sub {
-        font-size: 15px !important;
-      }
-      .section-title {
-        font-size: 27px !important;
-      }
-      .city-panel-title {
-        font-size: 25px !important;
-      }
-      .city-page-title {
-        font-size: 34px !important;
       }
     }
     @media (max-width: 375px) {
@@ -1043,24 +931,9 @@ const GlobalStyles = () => (
         left: 16px !important;
         right: 16px !important;
         bottom: 20px !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
       }
       .city-stats-grid {
         grid-template-columns: 1fr !important;
-      }
-      .city-stat-card {
-        padding: 14px 12px !important;
-      }
-      .city-hero-quote {
-        font-size: 18px !important;
-        padding-left: 16px !important;
-        margin-bottom: 28px !important;
-      }
-      .city-info-card,
-      .city-split-card,
-      .city-empty-state {
-        padding: 18px 16px !important;
       }
       .city-issue-card {
         flex-direction: column !important;
@@ -2574,110 +2447,267 @@ function AreaPrototypeHome({ onCitySelect }) {
   );
 }
 
-function GujaratElectionLanding({ onOpenElectionCity }) {
-  const [query, setQuery] = useState("");
-  const [summaries, setSummaries] = useState({});
-  const [brokenCardImages, setBrokenCardImages] = useState({});
+function HomePage({ onCitySelect, onCompare, compareList }) {
+  return (
+    <>
+      <AreaPrototypeHome onCitySelect={onCitySelect} />
+      <HowItWorks />
+      <TrustSection />
+      <StatsBanner />
+      <ElectionsHub onCitySelect={onCitySelect} />
+      <CityGrid onCitySelect={onCitySelect} onCompare={onCompare} compareList={compareList} />
+      <NationalPulse onCitySelect={onCitySelect} />
+      <JoinCTA />
+      <Footer />
+    </>
+  );
+}
+
+// â”€â”€â”€ App â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export default function App() {
+  const [selectedCity, setSelectedCity] = useState(null);
+  const [compareList, setCompareList]   = useState([]);
+  const [compareMode, setCompareMode]   = useState(false);
+  const [requestedCityPanel, setRequestedCityPanel] = useState(null);
 
   useEffect(() => {
-    let cancelled = false;
+    const title = selectedCity
+      ? `${selectedCity.city} | MyCityPulse`
+      : compareMode
+        ? "Compare Cities | MyCityPulse"
+        : "MyCityPulse | Clean Parks, Civic Issues, and Municipal Elections";
+    const description = selectedCity
+      ? `${selectedCity.city} city profile with civic stress, local issues, civic ecosystem, and election coverage where available.`
+      : compareMode
+        ? "Compare Indian cities across population, density, civic stress, and urban typology."
+        : "MyCityPulse helps people report litter, garbage, and public-space issues, find the right ward, and understand Indian cities through practical civic context.";
 
-    Promise.all(
-      GUJARAT_ELECTION_CITY_OBJECTS
-        .filter((city) => CURRENT_GUJARAT_MUNICIPAL_ELECTION_CITIES_2026.has(city.city))
-        .map(async (city) => {
-        try {
-          const election = await loadElectionData(city.city);
-          return [city.city, buildElectionCoverageSummary(election)];
-        } catch {
-          return [city.city, null];
-        }
-      }),
-    ).then((entries) => {
-      if (!cancelled) {
-        setSummaries(Object.fromEntries(entries));
+    document.title = title;
+
+    const ensureMeta = (name, attribute = "name") => {
+      let element = document.head.querySelector(`meta[${attribute}="${name}"]`);
+      if (!element) {
+        element = document.createElement("meta");
+        element.setAttribute(attribute, name);
+        document.head.appendChild(element);
       }
-    });
-
-    return () => {
-      cancelled = true;
+      return element;
     };
+
+    ensureMeta("description").setAttribute("content", description);
+    ensureMeta("og:title", "property").setAttribute("content", title);
+    ensureMeta("og:description", "property").setAttribute("content", description);
+    ensureMeta("twitter:title").setAttribute("content", title);
+    ensureMeta("twitter:description").setAttribute("content", description);
+  }, [compareMode, selectedCity]);
+
+  // Initialize state from URL on page load
+  useEffect(() => {
+    const { citySlug, panel, compareMode } = parseUrl();
+
+    if (compareMode) {
+      setCompareMode(true);
+      setSelectedCity(null);
+      setRequestedCityPanel(null);
+    } else if (citySlug) {
+      const matched = findCityByUrlSlug(citySlug, cities);
+      if (matched) {
+        setSelectedCity(matched);
+        setRequestedCityPanel(panel || null);
+        setCompareMode(false);
+      }
+    } else {
+      setSelectedCity(null);
+      setCompareMode(false);
+      setRequestedCityPanel(null);
+    }
   }, []);
 
-  const filteredCities = GUJARAT_ELECTION_CITY_OBJECTS.filter((city) =>
-    city.city.toLowerCase().includes(query.trim().toLowerCase()),
-  );
-  const loadedSummaries = Object.values(summaries).filter(Boolean);
-  const aggregate = loadedSummaries.reduce(
-    (totals, summary) => ({
-      totalWards: totals.totalWards + summary.totalWards,
-      listedWards: totals.listedWards + summary.listedWards,
-      trackedWards: totals.trackedWards + summary.trackedWards,
-      namedWards: totals.namedWards + summary.namedWards,
-      namedCandidates: totals.namedCandidates + summary.namedCandidates,
-    }),
-    { totalWards: 0, listedWards: 0, trackedWards: 0, namedWards: 0, namedCandidates: 0 },
-  );
+  // Listen for browser back/forward button clicks
+  useEffect(() => {
+    const handlePopState = () => {
+      const { citySlug, panel, compareMode } = parseUrl();
+
+      if (compareMode) {
+        setCompareMode(true);
+        setSelectedCity(null);
+        setRequestedCityPanel(null);
+      } else if (citySlug) {
+        const matched = findCityByUrlSlug(citySlug, cities);
+        if (matched) {
+          setSelectedCity(matched);
+          setRequestedCityPanel(panel || null);
+          setCompareMode(false);
+        }
+      } else {
+        setSelectedCity(null);
+        setCompareMode(false);
+        setRequestedCityPanel(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const handleCitySelect = (city) => {
+    setSelectedCity(city);
+    setCompareMode(false);
+    setRequestedCityPanel(null);
+    updateUrlForCity(city);
+    window.scrollTo(0, 0);
+  };
+  const handleBack = () => {
+    setSelectedCity(null);
+    setRequestedCityPanel(null);
+    updateUrlToHome();
+  };
+
+  const handleCompareToggle = (city) => {
+    setCompareList(prev =>
+      prev.find(c => c.city === city.city)
+        ? prev.filter(c => c.city !== city.city)
+        : prev.length < 2 ? [...prev, city] : prev
+    );
+  };
+
+  const handleOpenCompare = () => {
+    setCompareMode(true);
+    setSelectedCity(null);
+    updateUrlForCompare();
+    window.scrollTo(0, 0);
+  };
+
+  const handleCloseCompare = () => {
+    setCompareMode(false);
+    updateUrlToHome();
+  };
+
+  const handlePanelChange = (panelId) => {
+    if (selectedCity && panelId) {
+      updateUrlForCity(selectedCity, panelId);
+    }
+  };
+
+  const handleRemoveFromCompare = (cityName) => {
+    setCompareList(prev => prev.filter(c => c.city !== cityName));
+  };
+
+  const handleAddToCompare = (city) => {
+    setCompareList(prev => prev.length < 2 ? [...prev, city] : prev);
+  };
+
+  const scrollHomeSection = (sectionId) => {
+    window.setTimeout(() => {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }, 80);
+  };
+
+  const goHomeAndScroll = (sectionId) => {
+    setSelectedCity(null);
+    setCompareMode(false);
+    setRequestedCityPanel(null);
+    updateUrlToHome();
+    scrollHomeSection(sectionId);
+  };
+
+  const handleOpenIssues = () => {
+    if (selectedCity) {
+      setRequestedCityPanel("issues");
+      updateUrlForCity(selectedCity, "issues");
+      return;
+    }
+
+    if (compareMode) {
+      goHomeAndScroll("your-area");
+      return;
+    }
+
+    scrollHomeSection("your-area");
+  };
+
+  const handleOpenElections = () => {
+    if (selectedCity) {
+      setRequestedCityPanel("elections");
+      updateUrlForCity(selectedCity, "elections");
+      return;
+    }
+
+    if (compareMode) {
+      goHomeAndScroll("elections");
+      return;
+    }
+
+    scrollHomeSection("elections");
+  };
+
+  const handleOpenAllCities = () => {
+    if (selectedCity || compareMode) {
+      goHomeAndScroll("cities");
+      return;
+    }
+
+    scrollHomeSection("cities");
+  };
 
   return (
-    <section
-      id="elections"
-      className="gujarat-election-section"
-      style={{
-        background: "#f5efe6",
-        borderBottom: "1px solid #e8ddd0",
-        padding: "36px 24px 28px",
-      }}
-    >
-      <div className="gujarat-election-shell" style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gap: 24 }}>
-        <div
-          className="gujarat-election-hero-grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 1.15fr) minmax(280px, 0.85fr)",
-            gap: 18,
-            alignItems: "stretch",
-          }}
-        >
-          <div className="gujarat-election-copy-card" style={{ background: "#fff", border: "1px solid #eadfce", borderRadius: 8, padding: 24 }}>
-            <div style={{ fontSize: 11, fontWeight: 800, color: "#c76122", letterSpacing: "0.12em", marginBottom: 12 }}>
-              GUJARAT MUNICIPAL ELECTIONS 2026
-            </div>
-            <h1 className="gujarat-election-title" style={{ fontSize: 40, lineHeight: 1.05, margin: "0 0 12px", color: "#1a1a1a", fontFamily: "Georgia, serif" }}>
-              Find your city. Open your ward. See the candidate list.
-            </h1>
-            <p className="gujarat-election-body" style={{ margin: "0 0 18px", fontSize: 15, color: "#60584d", lineHeight: 1.7, maxWidth: 700 }}>
-              Built for citizens across a 15-city Gujarat roster during the April 26, 2026 civic polls. Within this roster, 12 cities are in the live municipal corporation poll set shown here with ward-level coverage. Junagadh, Gandhinagar, and Bharuch stay visible as context cards so the tracker does not imply a live corporation poll where there is none.
-            </p>
-            <div className="gujarat-election-metrics" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10, marginBottom: 18 }}>
-              <div style={{ background: "#fff8ef", border: "1px solid #f1d5b6", borderRadius: 8, padding: 14 }}>
-                <div style={{ fontSize: 28, fontWeight: 900, color: "#c76122", fontFamily: "Georgia, serif" }}>
-                  {GUJARAT_ELECTION_CITY_OBJECTS.length}
-                </div>
-                <div style={{ fontSize: 12, color: "#675e53", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                  Gujarat city desks
-                </div>
-              </div>
-              <div style={{ background: "#fff8ef", border: "1px solid #f1d5b6", borderRadius: 8, padding: 14 }}>
-                <div style={{ fontSize: 28, fontWeight: 900, color: "#c76122", fontFamily: "Georgia, serif" }}>
-                  {formatElectionMetricValue(aggregate.namedCandidates, "Pending")}
-                </div>
-                <div style={{ fontSize: 12, color: "#675e53", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                  verified names shown
-                </div>
-              </div>
-              <div style={{ background: "#fff8ef", border: "1px solid #f1d5b6", borderRadius: 8, padding: 14 }}>
-                <div style={{ fontSize: 28, fontWeight: 900, color: "#c76122", fontFamily: "Georgia, serif" }}>
-                  {LIVE_GUJARAT_WARD_EXPECTATIONS_2026 ? Object.keys(LIVE_GUJARATI_WARD_EXPECTATIONS_2026).reduce((sum, city) => sum + LIVE_GUJARATI_WARD_EXPECTATIONS_2026[city].seats, 0) : 0}
-                </div>
-                <div style={{ fontSize: 12, color: "#675e53", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                  Total Seats
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    );
-  }
+    <>
+      <GlobalStyles />
+      <Nav
+        onLogoClick={() => { handleBack(); setCompareMode(false); }}
+        onSearch={handleCitySelect}
+        onOpenIssues={handleOpenIssues}
+        onOpenElections={handleOpenElections}
+        onOpenAllCities={handleOpenAllCities}
+        showElectionsLink={!selectedCity || Boolean(selectedCity.hasElections)}
+      />
+      <div className="app-shell">
+        {compareMode
+          ? (
+            <Suspense fallback={<div style={{ padding: "48px 24px", textAlign: "center", color: "#666" }}>Loading compare view...</div>}>
+              <CompareView
+                allCities={cities}
+                cities={compareList}
+                onBack={handleCloseCompare}
+                onCitySelect={handleCitySelect}
+                onRemove={handleRemoveFromCompare}
+                onAdd={handleAddToCompare}
+              />
+            </Suspense>
+          )
+          : selectedCity
+            ? (
+              <Suspense fallback={<div style={{ padding: "48px 24px", textAlign: "center", color: "#666" }}>Loading city page...</div>}>
+                <CityPage
+                  key={selectedCity.city}
+                  city={selectedCity}
+                  onBack={handleBack}
+                  requestedPanel={requestedCityPanel}
+                  onPanelHandled={() => setRequestedCityPanel(null)}
+                  onPanelChange={handlePanelChange}
+                />
+              </Suspense>
+            )
+            : <HomePage
+                onCitySelect={handleCitySelect}
+                onCompare={handleCompareToggle}
+                compareList={compareList}
+              />
+        }
+      </div>
+      {!compareMode && !selectedCity && (
+        <CompareTray
+          cities={compareList}
+          onCompare={handleOpenCompare}
+          onRemove={handleRemoveFromCompare}
+          onClear={() => setCompareList([])}
+        />
+      )}
+    </>
+  );
 }

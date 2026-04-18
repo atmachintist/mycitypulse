@@ -14,9 +14,9 @@ export const SURENDRANAGAR_ELECTION_2026 = createGujaratElection({
   status: "ward_directory",
   wards: SURENDRANAGAR_WARDS_2026,
   seatsTotal: 52,
-  lastUpdated: "2026-04-13T18:45:00+05:30",
+  lastUpdated: "2026-04-12T16:20:00+05:30",
   scopeNote:
-    "Surendranagar's election desk now reflects the post-nomination phase as of April 13, 2026. Candidate announcements and filed nominations are in motion, while ward-wise candidate names still await verification before publication.",
+    "Surendranagar's election desk now reflects the closed nomination phase as of April 11, 2026. The ward map is live, while ward-wise candidate names still await verification before publication.",
   sources: [
     {
       label: "Surendranagar Municipal Corporation",

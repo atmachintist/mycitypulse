@@ -68,7 +68,7 @@ export function createGujaratElection({
       partyAnnouncedWards: 0,
       namedEntries: 0,
       statusNote:
-        `Party candidates are already being announced and nomination papers have been filed for ${cityName}, but MyCityPulse is still verifying the ward-to-candidate mapping before publishing names here.`,
+        `MyCityPulse has opened the ${cityName} election desk, but official ward-level candidate names are still being verified before publication here.`,
       legend: [
         { key: "official_final", label: "Official final list", tone: "verified" },
         { key: "party_announced", label: "Party-announced", tone: "partial" },
@@ -86,11 +86,6 @@ export function createGujaratElection({
         label: "Gujarat local body poll schedule",
         note: "State Election Commission announcement reported by Indian Express",
         url: "https://indianexpress.com/article/cities/ahmedabad/local-body-polls-on-april-26-results-on-april-28-gujarat-state-election-commission-10614279/",
-      },
-      {
-        label: "Gujarat civic poll nominations filed",
-        note: "TOI report after nominations closed on April 12, 2026",
-        url: "https://timesofindia.indiatimes.com/city/ahmedabad/gujarat-local-body-elections-32748-nominations-filed-for-9992-seats/articleshow/130198393.cms",
       },
       {
         label: "DIGIPIN technical document",

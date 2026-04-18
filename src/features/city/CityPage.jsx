@@ -3,108 +3,9 @@ import { CITY_ISSUES, CIVIC_ORGS, CITIES_WITH_DATA, WARD_CORPORATORS } from "../
 import { CITY_IMAGES, STRESS, TYPO_C, TYPO_LABEL, TYPO_PUBLIC_DESC, fmt } from "../../domain/cities/presentation.js";
 import { loadElectionData } from "../../domain/elections/loadElectionData.js";
 import { buildMailtoHref } from "../../lib/contact.js";
-import { submitIssueReport } from "../../lib/submissions.js";
 import WardsPanel from "./WardsPanel.jsx";
 
 const ElectionsCard = lazy(() => import("../../components/ElectionsCard"));
-
-function IssueReportBox({ city }) {
-  const [form, setForm] = useState({
-    issueType: "Pothole",
-    ward: "",
-    location: "",
-    description: "",
-    email: "",
-  });
-  const [submitState, setSubmitState] = useState("idle");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-
-  const handleChange = (key, value) => {
-    setForm((current) => ({ ...current, [key]: value }));
-    setMessage("");
-    setError("");
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    if (!form.location.trim() || !form.description.trim()) {
-      setError("Add the location and a short description so the report can be used.");
-      return;
-    }
-
-    setSubmitState("submitting");
-    setMessage("");
-    setError("");
-
-    try {
-      const result = await submitIssueReport({
-        city: city.city,
-        issueType: form.issueType,
-        ward: form.ward.trim(),
-        location: form.location.trim(),
-        description: form.description.trim(),
-        email: form.email.trim(),
-        timestamp: new Date().toISOString(),
-      });
-
-      setMessage(
-        result.delivery === "remote"
-          ? "Issue report sent to the MyCityPulse inbox."
-          : "Issue report saved locally on this device."
-      );
-      setForm((current) => ({
-        ...current,
-        ward: "",
-        location: "",
-        description: "",
-      }));
-    } catch {
-      setError("We could not save this issue report right now.");
-    } finally {
-      setSubmitState("idle");
-    }
-  };
-
-  return (
-    <div id="city-report-issue" style={{ marginTop: 32, background: "#faf8f4", borderRadius: 8, border: "1px solid #eadfce", padding: 20 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.08em", marginBottom: 8 }}>
-        REPORT A CIVIC ISSUE
-      </div>
-      <p style={{ fontSize: 14, color: "#655c50", lineHeight: 1.7, margin: "0 0 16px" }}>
-        Share potholes, garbage buildup, broken streetlights, drainage trouble, or other local issues in {city.city}.
-      </p>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
-        {["120 pts for a verified report", "80 pts when the ward is right", "Best with friends and family squads"].map((label) => (
-          <span key={label} style={{ fontSize: 11, fontWeight: 700, color: "#7d4b22", background: "#fff4ea", border: "1px solid #f0d2b9", borderRadius: 8, padding: "5px 8px" }}>
-            {label}
-          </span>
-        ))}
-      </div>
-      <form onSubmit={handleSubmit} style={{ display: "grid", gap: 12 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10 }}>
-          <select value={form.issueType} onChange={(event) => handleChange("issueType", event.target.value)} style={{ padding: "12px 14px", borderRadius: 8, border: "1px solid #dfd4c7", fontSize: 14 }}>
-            {["Pothole", "Garbage", "Water supply", "Streetlight", "Drainage", "Traffic", "Other"].map((option) => (
-              <option key={option} value={option}>{option}</option>
-            ))}
-          </select>
-          <input value={form.ward} onChange={(event) => handleChange("ward", event.target.value)} placeholder="Ward number or name" style={{ padding: "12px 14px", borderRadius: 8, border: "1px solid #dfd4c7", fontSize: 14 }} />
-        </div>
-        <input value={form.location} onChange={(event) => handleChange("location", event.target.value)} placeholder="Location or landmark" style={{ padding: "12px 14px", borderRadius: 8, border: "1px solid #dfd4c7", fontSize: 14 }} />
-        <textarea value={form.description} onChange={(event) => handleChange("description", event.target.value)} placeholder="What needs attention here?" rows={4} style={{ padding: "12px 14px", borderRadius: 8, border: "1px solid #dfd4c7", fontSize: 14, resize: "vertical" }} />
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
-          <input value={form.email} onChange={(event) => handleChange("email", event.target.value)} placeholder="Email for follow-up (optional)" style={{ padding: "12px 14px", borderRadius: 8, border: "1px solid #dfd4c7", fontSize: 14 }} />
-          <button type="submit" disabled={submitState === "submitting"} style={{ border: "none", background: "#E8660D", color: "#fff", padding: "12px 16px", borderRadius: 8, fontSize: 14, fontWeight: 700 }}>
-            {submitState === "submitting" ? "Sending..." : "Submit issue"}
-          </button>
-        </div>
-      </form>
-      {error && <p style={{ margin: "12px 0 0", fontSize: 13, color: "#b45b21" }}>{error}</p>}
-      {message && <p style={{ margin: "12px 0 0", fontSize: 13, color: "#2b8a48" }}>{message}</p>}
-    </div>
-  );
-}
 
 export default function CityPage({ city, onBack, requestedPanel = null, onPanelHandled, onPanelChange }) {
   const sc = STRESS[city.stress];
@@ -218,7 +119,7 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
   ];
 
   return (
-    <div className="city-page" style={{ background: "#FAF8F4", minHeight: "100vh" }}>
+    <div style={{ background: "#FAF8F4", minHeight: "100vh" }}>
       <div className="city-page-hero" style={{ height: "auto", position: "relative", overflow: "hidden", background: "#0D1117", paddingTop: 100, paddingBottom: 40 }}>
         {imgUrl && !imgErr ? (
           <img
@@ -254,7 +155,7 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
           ← All Cities
         </button>
 
-        <div className="city-page-hero-copy" style={{ position: "relative", zIndex: 5, maxWidth: 900, margin: "0 auto", padding: "0 32px" }}>
+        <div style={{ position: "relative", zIndex: 5, maxWidth: 900, margin: "0 auto", padding: "0 32px" }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
             <span
               title={`${city.stress} Stress - Indicates the level of civic and infrastructure pressures the city faces`}
@@ -327,7 +228,6 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
             {stats.map((stat) => (
               <div
                 key={stat.label}
-                className="city-stat-card"
                 style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)", borderRadius: 12, padding: "16px 12px", textAlign: "center", border: "1px solid rgba(255,255,255,0.1)" }}
               >
                 <div style={{ fontSize: 22, fontWeight: 900, color: "#fff", fontFamily: "Georgia, serif" }}>{stat.value}</div>
@@ -370,7 +270,6 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
             </div>
 
             <blockquote
-              className="city-hero-quote"
               style={{
                 fontSize: 22,
                 fontFamily: "Georgia, serif",
@@ -390,7 +289,7 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
               organisation, ward, and election coverage varies by city and should be read as a guided starting point, not an official civic record.
             </p>
 
-            <div className="city-info-card" style={{ background: "#fff", borderRadius: 14, padding: "18px 20px", marginBottom: 32, boxShadow: "0 1px 4px rgba(0,0,0,0.05)", borderLeft: "3px solid #E8660D" }}>
+            <div style={{ background: "#fff", borderRadius: 14, padding: "18px 20px", marginBottom: 32, boxShadow: "0 1px 4px rgba(0,0,0,0.05)", borderLeft: "3px solid #E8660D" }}>
               <div style={{ fontSize: 10, fontWeight: 700, color: "#E8660D", letterSpacing: "0.1em", marginBottom: 10 }}>WHAT'S ON THIS PAGE</div>
               <p style={{ fontSize: 14, color: "#666", lineHeight: 1.7, margin: "0 0 14px" }}>
                 Facts from public data plus our analysis. Use this to understand your city quickly and decide what to learn more about.
@@ -408,7 +307,7 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
             </div>
 
             <div className="city-dual-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 64 }}>
-              <div className="city-split-card" style={{ background: "#fff", borderRadius: 14, padding: 28, borderTop: `3px solid ${sc.color}`, boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
+              <div style={{ background: "#fff", borderRadius: 14, padding: 28, borderTop: `3px solid ${sc.color}`, boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: sc.color, letterSpacing: "0.12em", marginBottom: 10 }}>CIVIC STRESS</div>
                 <div style={{ fontSize: 24, fontWeight: 800, color: sc.color, fontFamily: "Georgia, serif", marginBottom: 6 }}>{city.stress}</div>
                 <div style={{ height: 6, background: "#f0ede8", borderRadius: 4, overflow: "hidden", marginBottom: 14 }}>
@@ -416,7 +315,7 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
                 </div>
                 <p style={{ fontSize: 13, color: "#666", lineHeight: 1.7 }}>{city.stress_reason}</p>
               </div>
-              <div className="city-split-card" style={{ background: "#fff", borderRadius: 14, padding: 28, borderTop: `3px solid ${typoColor}`, boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
+              <div style={{ background: "#fff", borderRadius: 14, padding: 28, borderTop: `3px solid ${typoColor}`, boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: typoColor, letterSpacing: "0.12em", marginBottom: 10 }}>CITY CATEGORY</div>
                 <div style={{ fontSize: 20, fontWeight: 800, color: typoColor, fontFamily: "Georgia, serif", marginBottom: 12 }}>
                   {TYPO_LABEL[city.urban_typology]}
@@ -436,11 +335,11 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
               Key problems in {city.city}
             </h2>
             <p style={{ fontSize: 15, color: "#888", marginBottom: 40, lineHeight: 1.6 }}>
-              The key problems in your city, plus a way to turn local reporting into a repeatable civic habit with people you know.
+              The key problems in your city. Explained clearly. Not a complaints feed or official tracker.
             </p>
 
             {!hasData ? (
-              <div className="city-empty-state" style={{ background: "#FAF8F4", borderRadius: 14, padding: "40px 32px", textAlign: "center", border: "2px dashed #e0ddd8" }}>
+              <div style={{ background: "#FAF8F4", borderRadius: 14, padding: "40px 32px", textAlign: "center", border: "2px dashed #e0ddd8" }}>
                 <div style={{ fontSize: 28, marginBottom: 12 }}>We're building</div>
                 <div style={{ fontSize: 16, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
                   We're building {city.city}'s issue profile.
@@ -453,58 +352,55 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
                 </a>
               </div>
             ) : (
-              <>
-                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                  {issues.map((issue, index) => (
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                {issues.map((issue, index) => (
                   <div
-                      key={index}
-                      className="city-issue-card"
-                      style={{
-                        background: "#FAF8F4",
-                        borderRadius: 14,
-                        padding: "28px 28px 28px 0",
-                        display: "flex",
-                        gap: 0,
-                        overflow: "hidden",
-                        boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-                      }}
-                    >
-                      <div style={{ width: 5, flexShrink: 0, background: issue.categoryColor, borderRadius: "14px 0 0 14px", marginRight: 28 }} />
-                      <div style={{ flex: 1 }}>
-                        <div className="city-issue-header" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: issue.categoryColor, background: `${issue.categoryColor}18`, padding: "3px 10px", borderRadius: 8 }}>
-                            {issue.tag}
-                          </span>
-                          <span
-                            style={{
-                              fontSize: 10,
-                              fontWeight: 700,
-                              letterSpacing: "0.06em",
-                              color: STRESS[issue.severity]?.color || "#888",
-                              background: `${STRESS[issue.severity]?.color || "#888"}15`,
-                              padding: "3px 8px",
-                              borderRadius: 6,
-                            }}
-                          >
-                            {issue.severity}
-                          </span>
-                        </div>
-                        <h3 style={{ fontSize: 18, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", lineHeight: 1.4, marginBottom: 12 }}>
-                          {issue.title}
-                        </h3>
-                        <p style={{ fontSize: 14, color: "#555", lineHeight: 1.75, marginBottom: 16 }}>{issue.body}</p>
-                        <div style={{ background: "#fff", borderRadius: 8, padding: "12px 16px", borderLeft: "3px solid #e0ddd8" }}>
-                          <span style={{ fontSize: 10, fontWeight: 700, color: "#aaa", letterSpacing: "0.08em", display: "block", marginBottom: 4 }}>
-                            WHAT'S BEING DONE
-                          </span>
-                          <p style={{ fontSize: 13, color: "#777", lineHeight: 1.6, margin: 0 }}>{issue.whatsBeing}</p>
-                        </div>
+                    key={index}
+                    className="city-issue-card"
+                    style={{
+                      background: "#FAF8F4",
+                      borderRadius: 14,
+                      padding: "28px 28px 28px 0",
+                      display: "flex",
+                      gap: 0,
+                      overflow: "hidden",
+                      boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+                    }}
+                  >
+                    <div style={{ width: 5, flexShrink: 0, background: issue.categoryColor, borderRadius: "14px 0 0 14px", marginRight: 28 }} />
+                    <div style={{ flex: 1 }}>
+                      <div className="city-issue-header" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: issue.categoryColor, background: `${issue.categoryColor}18`, padding: "3px 10px", borderRadius: 8 }}>
+                          {issue.tag}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            letterSpacing: "0.06em",
+                            color: STRESS[issue.severity]?.color || "#888",
+                            background: `${STRESS[issue.severity]?.color || "#888"}15`,
+                            padding: "3px 8px",
+                            borderRadius: 6,
+                          }}
+                        >
+                          {issue.severity}
+                        </span>
+                      </div>
+                      <h3 style={{ fontSize: 18, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", lineHeight: 1.4, marginBottom: 12 }}>
+                        {issue.title}
+                      </h3>
+                      <p style={{ fontSize: 14, color: "#555", lineHeight: 1.75, marginBottom: 16 }}>{issue.body}</p>
+                      <div style={{ background: "#fff", borderRadius: 8, padding: "12px 16px", borderLeft: "3px solid #e0ddd8" }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "#aaa", letterSpacing: "0.08em", display: "block", marginBottom: 4 }}>
+                          WHAT'S BEING DONE
+                        </span>
+                        <p style={{ fontSize: 13, color: "#777", lineHeight: 1.6, margin: 0 }}>{issue.whatsBeing}</p>
                       </div>
                     </div>
-                  ))}
-                </div>
-                <IssueReportBox city={city} />
-              </>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
@@ -617,7 +513,7 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
 
       {activePanel === "wards" && <WardsPanel city={city} />}
 
-      <div className="page-section city-bottom-cta" style={{ background: "#0D1117", paddingTop: 60, paddingBottom: 60 }}>
+      <div className="page-section" style={{ background: "#0D1117", paddingTop: 60, paddingBottom: 60 }}>
         <div style={{ maxWidth: 680, margin: "0 auto", textAlign: "center" }}>
           <div style={{ fontSize: 26, fontFamily: "Georgia, serif", fontWeight: 700, color: "#fff", marginBottom: 12 }}>
             Want to help improve {city.city}?
@@ -631,4 +527,17 @@ export default function CityPage({ city, onBack, requestedPanel = null, onPanelH
               background: "#E8660D",
               color: "#fff",
               padding: "13px 32px",
-              borderRadiu
+              borderRadius: 30,
+              fontSize: 14,
+              fontWeight: 700,
+              display: "inline-block",
+              letterSpacing: "0.02em",
+            }}
+          >
+              Get Involved -&gt;
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}

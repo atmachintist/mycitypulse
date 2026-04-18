@@ -144,7 +144,7 @@ export default function CompareView({
     <div style={{ background: "#FAF8F4", minHeight: "100vh", padding: "40px clamp(16px, 4vw, 32px) 80px" }}>
       <div style={{ maxWidth: 980, margin: "0 auto" }}>
         <div
-          className="stack-header compare-header"
+          className="stack-header"
           style={{
             marginBottom: 32,
             alignItems: "flex-start",
@@ -179,7 +179,6 @@ export default function CompareView({
           </div>
           <button
             onClick={onBack}
-            className="compare-back-btn"
             style={{
               background: "#fff",
               border: "1.5px solid #e0ddd8",
@@ -214,7 +213,7 @@ export default function CompareView({
           ))}
 
           {cols < 3 && (
-            <div className="compare-add-slot" style={{ position: "relative" }}>
+            <div style={{ position: "relative" }}>
               <div
                 style={{
                   border: "2px dashed #ddd",
@@ -428,4 +427,10 @@ export default function CompareView({
 
         <p style={{ fontSize: 11, color: "#ccc", marginTop: 14, lineHeight: 1.6 }}>
           &#9650; marks the stronger value where comparison is meaningful (lower rank number = higher
-          rank; lower stress = healthier city). Population, area, and densi
+          rank; lower stress = healthier city). Population, area, and density are shown without
+          judgment.
+        </p>
+      </div>
+    </div>
+  );
+}

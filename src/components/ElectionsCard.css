@@ -425,13 +425,6 @@
   margin-bottom: 10px;
 }
 
-.coordinate-form {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
 .digipin-input,
 .ward-input,
 .ward-select {
@@ -448,10 +441,6 @@
 .digipin-input {
   flex: 1;
   min-width: 240px;
-}
-
-.coordinate-input {
-  min-width: 0;
 }
 
 .digipin-submit {
@@ -531,7 +520,6 @@
 .verification-button-group {
   display: flex;
   gap: 8px;
-  margin-top: 12px;
 }
 
 .verify-confirm-btn,
@@ -566,13 +554,6 @@
 .verify-error-btn:hover {
   background: #ffcdd2;
   box-shadow: 0 2px 6px rgba(217, 83, 79, 0.2);
-}
-
-.verify-confirm-btn:disabled,
-.verify-error-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  box-shadow: none;
 }
 
 .ward-select-label {
@@ -877,19 +858,6 @@
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
 
-.elections-card,
-.candidate-card,
-.source-item,
-.ward-found,
-.profile-summary,
-.profile-ward-card,
-.location-note,
-.digipin-help,
-.digipin-field-help,
-.candidate-summary {
-  overflow-wrap: anywhere;
-}
-
 .source-item strong {
   display: block;
   margin-bottom: 4px;
@@ -1102,21 +1070,15 @@
 
   .elections-actions,
   .location-actions,
+  .digipin-form,
   .section-heading {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .digipin-form,
-  .coordinate-form {
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-
   .action-btn,
   .location-btn,
   .digipin-submit,
-  .coordinate-form .digipin-submit,
   .inline-save-btn,
   .text-action {
     width: 100%;
@@ -1138,18 +1100,12 @@
     padding: 16px;
   }
 
-  .elections-header {
-    align-items: flex-start;
-  }
-
   .elections-header h3 {
     font-size: 16px;
   }
 
   .elections-actions,
-  .digipin-form,
-  .coordinate-form,
-  .verification-button-group {
+  .digipin-form {
     flex-direction: column;
   }
 
@@ -1173,4 +1129,21 @@
     gap: 8px;
   }
 
- 
+  .social-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+
+  .section-heading {
+    flex-direction: column;
+  }
+
+  .candidate-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .elections-priority-strip {
+    grid-template-columns: 1fr;
+  }
+}

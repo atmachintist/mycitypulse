@@ -1,4 +1,4 @@
-const allowedTypes = new Set(["cocreator", "survey", "issue_report"]);
+const allowedTypes = new Set(["cocreator", "survey"]);
 
 function json(status, body) {
   return new Response(JSON.stringify(body), {
@@ -57,24 +57,6 @@ function buildSurveyEmail(payload) {
       <p><strong>Submitted at:</strong> ${payload.timestamp || "Unknown"}</p>
       <h3>Responses</h3>
       <ul>${responseRows || "<li>No responses submitted</li>"}</ul>
-      <pre>${escapeHtml(JSON.stringify(payload, null, 2))}</pre>
-    `,
-  };
-}
-
-function buildIssueReportEmail(payload) {
-  return {
-    subject: `New civic issue report: ${payload.city || "Unknown city"}`,
-    html: `
-      <h2>New Civic Issue Report</h2>
-      <p><strong>City:</strong> ${payload.city || "Not provided"}</p>
-      <p><strong>Issue type:</strong> ${payload.issueType || "Not provided"}</p>
-      <p><strong>Ward:</strong> ${payload.ward || "Not provided"}</p>
-      <p><strong>Location:</strong> ${payload.location || "Not provided"}</p>
-      <p><strong>Reporter email:</strong> ${payload.email || "Not provided"}</p>
-      <p><strong>Submitted at:</strong> ${payload.timestamp || "Unknown"}</p>
-      <p><strong>Description:</strong></p>
-      <p>${escapeHtml(payload.description || "No description shared")}</p>
       <pre>${escapeHtml(JSON.stringify(payload, null, 2))}</pre>
     `,
   };
@@ -153,9 +135,7 @@ export default async function handler(request) {
     const email =
       type === "cocreator"
         ? buildCocreatorEmail(payload)
-        : type === "survey"
-          ? buildSurveyEmail(payload)
-          : buildIssueReportEmail(payload);
+        : buildSurveyEmail(payload);
 
     const result = await sendViaResend({
       to,

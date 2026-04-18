@@ -552,48 +552,15 @@ Object.assign(candidateInfoByWard, {
       candidate("Avadh Ashikbhai Patel", "INC", CONGRESS_NOTE),
     ],
   },
-  21: {
-    candidateStatus: "party_announced",
-    candidateSummary: "Recent reporting identified BJP's Umedsing Yadav in Kuber Nagar, but MyCityPulse has not yet verified the full 2026 ward panel.",
-    candidates: [
-      candidate(
-        "Umedsing Yadav",
-        "BJP",
-        "Times of India reported on April 12, 2026 that BJP fielded Umedsing Yadav from Kubernagar ward.",
-      ),
-    ],
-  },
   22: {
     candidateStatus: "party_announced",
     candidateSummary: "Congress published one visible Ward 22 name in the accessible list.",
     candidates: [candidate("Premilaben Yashwant Yogi", "INC", CONGRESS_NOTE)],
   },
   32: {
-    candidateStatus: "party_announced",
-    candidateSummary: "Current reporting confirms Shehzad Khan Pathan for Congress and Jamnaben Vegda for AAP in Danilimda, though MyCityPulse has not yet verified the full four-seat ward panel.",
-    candidates: [
-      candidate(
-        "Shehzad Khan Pathan",
-        "INC",
-        "Times of India reported on April 12, 2026 that Shehzad Khan Pathan is contesting from Danilimda.",
-      ),
-      candidate(
-        "Jamnaben Vegda",
-        "AAP",
-        "Times of India reported on April 12, 2026 that Jamnaben Vegda is contesting from Danilimda on an AAP ticket.",
-      ),
-    ],
-  },
-  34: {
-    candidateStatus: "party_announced",
-    candidateSummary: "Recent reporting identified BJP's Maulik Patel in Isanpur, but MyCityPulse has not yet verified the full 2026 ward panel.",
-    candidates: [
-      candidate(
-        "Maulik Patel",
-        "BJP",
-        "Times of India reported on April 12, 2026 that BJP fielded Maulik Patel in Isanpur ward.",
-      ),
-    ],
+    candidateStatus: "awaiting_verification",
+    candidateSummary: "Older carry-forward reporting for Danilimda has been removed until a current 2026 ward list is verified.",
+    candidates: [],
   },
   40: {
     candidateStatus: "party_announced",
@@ -655,36 +622,13 @@ Object.assign(candidateInfoByWard, {
       candidate("Harsh Dilipray Yagnik", "INC", CONGRESS_NOTE),
     ],
   },
-  47: {
-    candidateStatus: "party_announced",
-    candidateSummary: "Recent reporting identified BJP's Kranti Maulik Ashok Bhatt in Paldi, but MyCityPulse has not yet verified the full 2026 ward panel.",
-    candidates: [
-      candidate(
-        "Kranti Maulik Ashok Bhatt (Kranti Koumil Gandhi)",
-        "BJP",
-        "Times of India reported on April 12, 2026 that BJP fielded Kranti Maulik Ashok Bhatt from Paldi ward.",
-      ),
-    ],
-  },
-  48: {
-    candidateStatus: "party_announced",
-    candidateSummary: "Withdrawal-day reporting confirms BJP's Bhagwati Bharwad was declared elected unopposed in Vasna, but MyCityPulse has not yet verified the rest of the ward panel.",
-    candidates: [
-      candidate(
-        "Bhagwati Bharwad",
-        "BJP",
-        "Times of India reported on April 16, 2026 that Bhagwati Bharwad was declared elected unopposed in Vasna ward.",
-      ),
-    ],
-  },
 });
 
 export const AHMEDABAD_WARDS_2026 = baseWards.map((entry) => ({
   ...entry,
   ...(candidateInfoByWard[entry.number] || {
-    candidateStatus: "party_announced",
-    candidateSummary:
-      "BJP's full Ahmedabad ward slate was announced on April 10, 2026, but MyCityPulse has not yet verified the individual candidate names for this ward.",
+    candidateStatus: "awaiting_verification",
+    candidateSummary: "No candidate names have been verified for this ward yet in MyCityPulse.",
     candidates: [],
   }),
 }));
@@ -692,7 +636,7 @@ export const AHMEDABAD_WARDS_2026 = baseWards.map((entry) => ({
 export const AHMEDABAD_ELECTION_2026 = {
   year: 2026,
   status: "candidate_updates",
-  lastUpdated: "2026-04-18T08:45:00+05:30",
+  lastUpdated: "2026-04-12T16:10:00+05:30",
   election_date: "2026-04-26",
   result_date: "2026-04-28",
   nomination_open: "2026-04-06",
@@ -704,12 +648,12 @@ export const AHMEDABAD_ELECTION_2026 = {
   seats_total: 192,
   polling_hours: "7:00 AM to 6:00 PM",
   candidateTracker: {
-    lastReviewed: "2026-04-18",
+    lastReviewed: "2026-04-12",
     officialFinalWards: 0,
     partyAnnouncedWards: AHMEDABAD_WARDS_2026.filter((wardEntry) => wardEntry.candidateStatus === "party_announced").length,
     namedEntries: AHMEDABAD_WARDS_2026.reduce((sum, wardEntry) => sum + wardEntry.candidates.length, 0),
     statusNote:
-      "MyCityPulse now treats all 48 Ahmedabad wards as live candidate-tracker wards because BJP's full AMC slate was announced on April 10, 2026. Individual names are shown where MyCityPulse has verified them from ward-wise Congress, BJP, and withdrawal-day reporting through April 16-18.",
+      "MyCityPulse now shows a much broader Ahmedabad tracker using the current ward-wise Congress list plus BJP ward panels we could independently verify from April 10 reporting. Official final ward-wise lists still need post-scrutiny confirmation.",
     legend: [
       { key: "official_final", label: "Official final list", tone: "verified" },
       { key: "party_announced", label: "Party-announced", tone: "partial" },
@@ -751,15 +695,19 @@ export const AHMEDABAD_ELECTION_2026 = {
       url: "https://www.ahmedabadmirror.com/bjp-calls-candidates-for-ahmedabad-municipal-polls-list-announced/81911300.html",
     },
     {
-      label: "DeshGujarat Ahmedabad BJP list",
-      note: "Report confirming BJP announced all 192 AMC candidates ward-wise on April 10, 2026",
-      url: "https://deshgujarat.com/2026/04/10/gujarat-bjp-declares-list-of-candidates-for-ahmedabad-municipal-corporation-amc-election/",
+      label: "TOI on Shehzad Khan Pathan",
+      note: "Earlier reporting identifying Pathan as Danilimda corporator",
+      url: "https://timesofindia.indiatimes.com/city/ahmedabad/cong-appoints-pathan-as-lop-in-amc/articleshow/88843033.cms",
     },
     {
-      label: "TOI Ahmedabad BJP full slate",
-      note: "TOI report confirming BJP declared all 192 AMC candidates by April 11, 2026",
-      url: "https://timesofindia.indiatimes.com/city/ahmedabad/civic-polls-bjp-repeats-only-32-sitting-councillors-in-ahmedabad/articleshow/130178920.cms",
+      label: "DIGIPIN technical document",
+      note: "India Post digital address infrastructure",
+      url: "https://www.indiapost.gov.in/Navigation_Documents/Static_Navigation/DIGIPIN%20Technical%20Document%20Final%20English.pdf",
     },
     {
-      label: "TOI Ahmedabad withdrawal update",
-      note: "Withdrawal-day changes includi
+      label: "Gujarat civic poll schedule",
+      note: "DD News report on the State Election Commission announcement",
+      url: "https://www.newsonair.gov.in/state-election-commission-officially-announces-schedule-for-upcoming-local-body-elections/",
+    },
+  ],
+};

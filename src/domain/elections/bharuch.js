@@ -20,9 +20,9 @@ export const BHARUCH_ELECTION_2026 = createGujaratElection({
   status: "ward_directory",
   wards: BHARUCH_WARDS_2026,
   seatsTotal: 44,
-  lastUpdated: "2026-04-13T18:45:00+05:30",
+  lastUpdated: "2026-04-12T16:20:00+05:30",
   scopeNote:
-    "Bharuch's election desk now reflects the post-nomination phase as of April 13, 2026. Candidate announcements and filed nominations are in motion, while ward-wise candidate names still await verification before publication.",
+    "Bharuch's election desk now reflects the closed nomination phase as of April 11, 2026. The inherited municipality ward structure remains the citizen-facing starting point while ward-wise candidate names still await verification before publication.",
   sources: [
     {
       label: "Bharuch Municipality wards",
