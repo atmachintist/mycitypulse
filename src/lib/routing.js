@@ -1,38 +1,51 @@
 /**
- * Routing utilities for URL-based navigation
- * Handles: cities, elections, issues, and compare views
+ * Routing utilities for URL-based navigation.
+ *
+ * Supported URLs:
+ *   /                              → home
+ *   /compare                       → compare view
+ *   /:citySlug                     → city page (default panel)
+ *   /:citySlug/:panel              → city page focused on a panel (elections, issues, wards, ecosystem, health)
+ *   /:citySlug/elections/ward/:n   → elections panel pre-selecting a specific ward
+ *
+ * The ward deep-link lets citizens share a WhatsApp-friendly URL like
+ *   https://www.mycitypulse.in/ahmedabad/elections/ward/12
+ * that opens the election view with ward 12 already focused.
  */
 
 /**
- * Parse the current URL and return routing state
- * @returns {Object} {city, panel, compareMode}
+ * Parse the current URL and return routing state.
+ * @returns {{citySlug: string|null, panel: string|null, wardNumber: number|null, compareMode: boolean}}
  */
 export function parseUrl() {
   const pathname = window.location.pathname;
   const parts = pathname.split('/').filter(p => p);
 
-  // No parts = home page
   if (parts.length === 0) {
-    return { city: null, panel: null, compareMode: false };
+    return { citySlug: null, panel: null, wardNumber: null, compareMode: false };
   }
 
-  // Special case: /compare
   if (parts[0] === 'compare') {
-    return { city: null, panel: null, compareMode: true };
+    return { citySlug: null, panel: null, wardNumber: null, compareMode: true };
   }
 
-  // First part is city
   const citySlug = parts[0];
-  const panel = parts[1] || null; // 'elections' or 'issues'
+  const panel = parts[1] || null;
 
-  return { citySlug, panel, compareMode: false };
+  // /:citySlug/elections/ward/:number
+  let wardNumber = null;
+  if (panel === 'elections' && parts[2] === 'ward' && parts[3]) {
+    const parsed = Number.parseInt(parts[3], 10);
+    if (Number.isFinite(parsed) && parsed > 0) {
+      wardNumber = parsed;
+    }
+  }
+
+  return { citySlug, panel, wardNumber, compareMode: false };
 }
 
 /**
- * Find city by URL slug
- * @param {string} slug - URL slug (e.g., "new-delhi")
- * @param {Array} cities - All available cities
- * @returns {Object|null} City object matching the slug
+ * Find city by URL slug.
  */
 export function findCityByUrlSlug(slug, cities) {
   if (!slug) return null;
@@ -44,30 +57,67 @@ export function findCityByUrlSlug(slug, cities) {
   ) || null;
 }
 
-/**
- * Update URL for city view
- * @param {Object} city - City object with .city property
- * @param {string|null} panel - Panel type: 'elections', 'issues', or null
- */
-export function updateUrlForCity(city, panel = null) {
-  if (!city) {
-    window.history.pushState(null, '', '/');
-  } else {
-    const urlSlug = city.city.toLowerCase().replace(/\s+/g, '-');
-    const url = panel ? `/${urlSlug}/${panel}` : `/${urlSlug}`;
-    window.history.pushState({ city: city.city, panel }, '', url);
-  }
+function citySlugFor(city) {
+  return city.city.toLowerCase().replace(/\s+/g, '-');
 }
 
 /**
- * Update URL for compare view
+ * Update URL for city view.
+ * @param {Object|null} city  City object with .city property, or null for home.
+ * @param {string|null} panel Panel id: 'elections', 'issues', etc.
+ * @param {number|null} wardNumber Optional ward number for the elections panel.
+ */
+export function updateUrlForCity(city, panel = null, wardNumber = null) {
+  if (!city) {
+    window.history.pushState(null, '', '/');
+    return;
+  }
+
+  const slug = citySlugFor(city);
+  let url = `/${slug}`;
+
+  if (panel) {
+    url += `/${panel}`;
+    if (panel === 'elections' && Number.isFinite(wardNumber) && wardNumber > 0) {
+      url += `/ward/${wardNumber}`;
+    }
+  }
+
+  window.history.pushState({ city: city.city, panel, wardNumber: wardNumber ?? null }, '', url);
+}
+
+/**
+ * Replace (not push) the URL for the active city/panel/ward — useful when a
+ * user saves a ward inline without wanting a new history entry per selection.
+ */
+export function replaceUrlForCity(city, panel = null, wardNumber = null) {
+  if (!city) {
+    window.history.replaceState(null, '', '/');
+    return;
+  }
+
+  const slug = citySlugFor(city);
+  let url = `/${slug}`;
+
+  if (panel) {
+    url += `/${panel}`;
+    if (panel === 'elections' && Number.isFinite(wardNumber) && wardNumber > 0) {
+      url += `/ward/${wardNumber}`;
+    }
+  }
+
+  window.history.replaceState({ city: city.city, panel, wardNumber: wardNumber ?? null }, '', url);
+}
+
+/**
+ * Update URL for compare view.
  */
 export function updateUrlForCompare() {
   window.history.pushState({ compareMode: true }, '', '/compare');
 }
 
 /**
- * Update URL to home page
+ * Update URL to home page.
  */
 export function updateUrlToHome() {
   window.history.pushState(null, '', '/');

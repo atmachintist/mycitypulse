@@ -1,5 +1,6 @@
 const COCREATOR_STORAGE_KEY = "mycitypulse_cocreator_interest";
 const SURVEY_STORAGE_KEY = "mycitypulse_survey_responses";
+const ISSUE_REPORT_STORAGE_KEY = "mycitypulse_issue_reports";
 const DEFAULT_FORMS_ENDPOINT = "/api/forms";
 
 function readStoredList(key) {
@@ -58,6 +59,18 @@ export async function submitSurveyResponse(payload) {
     return { delivery: "remote" };
   } catch {
     appendStoredList(SURVEY_STORAGE_KEY, payload);
+    return { delivery: "local" };
+  }
+}
+
+export async function submitIssueReport(payload) {
+  const endpoint = import.meta.env.VITE_ISSUE_REPORT_ENDPOINT?.trim() || DEFAULT_FORMS_ENDPOINT;
+
+  try {
+    await postJson(endpoint, { type: "issue_report", payload });
+    return { delivery: "remote" };
+  } catch {
+    appendStoredList(ISSUE_REPORT_STORAGE_KEY, payload);
     return { delivery: "local" };
   }
 }

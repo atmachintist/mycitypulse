@@ -95,16 +95,17 @@ const candidateInfoByWard = {
 export const RAJKOT_WARDS_2026 = baseWards.map((entry) => ({
   ...entry,
   ...(candidateInfoByWard[entry.number] || {
-    candidateStatus: "awaiting_verification",
-    candidateSummary: "No candidate names have been verified for this ward yet in MyCityPulse.",
+    candidateStatus: "party_announced",
+    candidateSummary:
+      "BJP's full Rajkot ward slate was announced on April 10, 2026, but MyCityPulse has not yet verified the individual candidate names for this ward.",
     candidates: [],
   }),
 }));
 
 export const RAJKOT_ELECTION_2026 = {
   year: 2026,
-  status: "ward_directory",
-  lastUpdated: "2026-04-11T12:20:00+05:30",
+  status: "candidate_updates",
+  lastUpdated: "2026-04-18T08:45:00+05:30",
   election_date: "2026-04-26",
   result_date: "2026-04-28",
   nomination_open: "2026-04-06",
@@ -116,12 +117,12 @@ export const RAJKOT_ELECTION_2026 = {
   seats_total: 72,
   polling_hours: "7:00 AM to 6:00 PM",
   candidateTracker: {
-    lastReviewed: "2026-04-11",
+    lastReviewed: "2026-04-18",
     officialFinalWards: 0,
-    partyAnnouncedWards: 6,
+    partyAnnouncedWards: RAJKOT_WARDS_2026.filter((wardEntry) => wardEntry.candidateStatus === "party_announced").length,
     namedEntries: 24,
     statusNote:
-      "MyCityPulse now shows BJP's announced candidates for Rajkot wards 1 to 6 from April 10 reporting. Other wards still remain unfilled here until we can verify more names.",
+      "MyCityPulse now treats all 18 Rajkot wards as live candidate-tracker wards because BJP's full 72-candidate slate was announced on April 10, 2026. Individual names are shown where MyCityPulse has verified them directly from accessible April 10 reporting.",
     legend: [
       { key: "official_final", label: "Official final list", tone: "verified" },
       { key: "party_announced", label: "Party-announced", tone: "partial" },
@@ -158,14 +159,9 @@ export const RAJKOT_ELECTION_2026 = {
       url: "https://gujarati.abplive.com/news/rajkot/72-bjp-candidates-declared-in-18-wards-of-rajkot-municipal-corporation-977024/amp",
     },
     {
-      label: "Gujarat local body poll schedule",
-      note: "NDTV report after the Gujarat SEC announcement",
-      url: "https://www.ndtv.com/india-news/gujarat-local-body-polls-on-april-26-votes-to-be-counted-on-april-28-11298953",
-    },
-    {
-      label: "DIGIPIN technical document",
-      note: "India Post digital address infrastructure",
-      url: "https://www.indiapost.gov.in/Navigation_Documents/Static_Navigation/DIGIPIN%20Technical%20Document%20Final%20English.pdf",
+      label: "DeshGujarat Rajkot BJP list",
+      note: "Report confirming BJP announced all 72 Rajkot candidates across 18 wards on April 10, 2026",
+      url: "https://deshgujarat.com/2026/04/10/bjp-declares-candidates-for-rajkot-municipal-corporation-election/",
     },
   ],
 };
