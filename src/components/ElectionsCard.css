@@ -425,6 +425,13 @@
   margin-bottom: 10px;
 }
 
+.coordinate-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
 .digipin-input,
 .ward-input,
 .ward-select {
@@ -441,6 +448,10 @@
 .digipin-input {
   flex: 1;
   min-width: 240px;
+}
+
+.coordinate-input {
+  min-width: 0;
 }
 
 .digipin-submit {
@@ -520,6 +531,7 @@
 .verification-button-group {
   display: flex;
   gap: 8px;
+  margin-top: 12px;
 }
 
 .verify-confirm-btn,
@@ -554,6 +566,13 @@
 .verify-error-btn:hover {
   background: #ffcdd2;
   box-shadow: 0 2px 6px rgba(217, 83, 79, 0.2);
+}
+
+.verify-confirm-btn:disabled,
+.verify-error-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 .ward-select-label {
@@ -700,6 +719,42 @@
   color: #777;
   font-size: 12px;
   line-height: 1.5;
+}
+
+.candidate-empty {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: #fafaf7;
+  border: 1px dashed #d8d2c6;
+  border-radius: 10px;
+}
+
+.candidate-empty-headline {
+  margin: 0 0 4px;
+  color: #1f1f1f;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.candidate-empty-detail {
+  margin: 0 0 10px;
+  color: #666;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.candidate-empty-cta {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1f6f5f;
+  text-decoration: none;
+}
+
+.candidate-empty-cta:hover {
+  text-decoration: underline;
 }
 
 .ward-results {
@@ -856,6 +911,19 @@
   background: #fcfbf8;
   color: inherit;
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.elections-card,
+.candidate-card,
+.source-item,
+.ward-found,
+.profile-summary,
+.profile-ward-card,
+.location-note,
+.digipin-help,
+.digipin-field-help,
+.candidate-summary {
+  overflow-wrap: anywhere;
 }
 
 .source-item strong {
@@ -1070,15 +1138,21 @@
 
   .elections-actions,
   .location-actions,
-  .digipin-form,
   .section-heading {
     flex-direction: column;
     align-items: stretch;
   }
 
+  .digipin-form,
+  .coordinate-form {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
   .action-btn,
   .location-btn,
   .digipin-submit,
+  .coordinate-form .digipin-submit,
   .inline-save-btn,
   .text-action {
     width: 100%;
@@ -1100,12 +1174,18 @@
     padding: 16px;
   }
 
+  .elections-header {
+    align-items: flex-start;
+  }
+
   .elections-header h3 {
     font-size: 16px;
   }
 
   .elections-actions,
-  .digipin-form {
+  .digipin-form,
+  .coordinate-form,
+  .verification-button-group {
     flex-direction: column;
   }
 
@@ -1129,21 +1209,4 @@
     gap: 8px;
   }
 
-  .social-btn {
-    width: 40px;
-    height: 40px;
-    font-size: 16px;
-  }
-
-  .section-heading {
-    flex-direction: column;
-  }
-
-  .candidate-metrics {
-    grid-template-columns: 1fr;
-  }
-
-  .elections-priority-strip {
-    grid-template-columns: 1fr;
-  }
-}
+ 

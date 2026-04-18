@@ -75,6 +75,33 @@ function getCandidateLabel(status) {
   return "Candidate names not verified yet";
 }
 
+const SEC_GUJARAT_CANDIDATE_URL = "https://sec-poll.gujarat.gov.in/";
+
+function CandidateEmptyState({ status }) {
+  const isAnnouncedButUnverified = status === "party_announced";
+  const headline = isAnnouncedButUnverified
+    ? "Names announced — awaiting MyCityPulse verification"
+    : "Awaiting candidate announcements";
+  const detail = isAnnouncedButUnverified
+    ? "Parties have announced candidates for this ward, but we have not confirmed the individual names yet."
+    : "Parties have not yet published ward-wise candidates here.";
+
+  return (
+    <div className="candidate-empty" role="note">
+      <p className="candidate-empty-headline">{headline}</p>
+      <p className="candidate-empty-detail">{detail}</p>
+      <a
+        className="candidate-empty-cta"
+        href={SEC_GUJARAT_CANDIDATE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Check on SEC Gujarat &rarr;
+      </a>
+    </div>
+  );
+}
+
 function getDigipinErrorMessage(error) {
   const message = error?.message || "";
 
@@ -882,17 +909,23 @@ export default function ElectionsCard({ election, cityName }) {
                       {getCandidateLabel(savedWard.candidateStatus)}
                     </span>
                   </div>
-                  <p className="candidate-summary">{savedWard.candidateSummary}</p>
-                  {savedWard.candidates.length > 0 && (
-                    <div className="candidate-list compact">
-                      {savedWard.candidates.map((candidate) => (
-                        <div key={`${savedWard.number}-${candidate.name}`} className="candidate-card">
-                          <strong>{candidate.name}</strong>
-                          <span>{candidate.party}</span>
-                          {candidate.note && <p>{candidate.note}</p>}
-                        </div>
-                      ))}
-                    </div>
+                  {savedWard.candidates.length > 0 ? (
+                    <>
+                      {savedWard.candidateSummary && (
+                        <p className="candidate-summary">{savedWard.candidateSummary}</p>
+                      )}
+                      <div className="candidate-list compact">
+                        {savedWard.candidates.map((candidate) => (
+                          <div key={`${savedWard.number}-${candidate.name}`} className="candidate-card">
+                            <strong>{candidate.name}</strong>
+                            <span>{candidate.party}</span>
+                            {candidate.note && <p>{candidate.note}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <CandidateEmptyState status={savedWard.candidateStatus} />
                   )}
                 </div>
               )}
@@ -945,17 +978,23 @@ export default function ElectionsCard({ election, cityName }) {
                           {getCandidateLabel(ward.candidateStatus)}
                         </span>
                       </div>
-                      <p className="candidate-summary">{ward.candidateSummary}</p>
-                      {ward.candidates.length > 0 && (
-                        <div className="candidate-list">
-                          {ward.candidates.map((candidate) => (
-                            <div key={`${ward.number}-${candidate.name}`} className="candidate-card">
-                              <strong>{candidate.name}</strong>
-                              <span>{candidate.party}</span>
-                              {candidate.note && <p>{candidate.note}</p>}
-                            </div>
-                          ))}
-                        </div>
+                      {ward.candidates.length > 0 ? (
+                        <>
+                          {ward.candidateSummary && (
+                            <p className="candidate-summary">{ward.candidateSummary}</p>
+                          )}
+                          <div className="candidate-list">
+                            {ward.candidates.map((candidate) => (
+                              <div key={`${ward.number}-${candidate.name}`} className="candidate-card">
+                                <strong>{candidate.name}</strong>
+                                <span>{candidate.party}</span>
+                                {candidate.note && <p>{candidate.note}</p>}
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      ) : (
+                        <CandidateEmptyState status={ward.candidateStatus} />
                       )}
                       <button
                         className="inline-save-btn"
