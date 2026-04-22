@@ -15,18 +15,25 @@
 
 /**
  * Parse the current URL and return routing state.
- * @returns {{citySlug: string|null, panel: string|null, wardNumber: number|null, compareMode: boolean}}
+ * @returns {{citySlug: string|null, panel: string|null, wardNumber: number|null, compareMode: boolean, storySlug: string|null, storyPage: number}}
  */
 export function parseUrl() {
   const pathname = window.location.pathname;
   const parts = pathname.split('/').filter(p => p);
 
   if (parts.length === 0) {
-    return { citySlug: null, panel: null, wardNumber: null, compareMode: false };
+    return { citySlug: null, panel: null, wardNumber: null, compareMode: false, storySlug: null, storyPage: 0 };
   }
 
   if (parts[0] === 'compare') {
-    return { citySlug: null, panel: null, wardNumber: null, compareMode: true };
+    return { citySlug: null, panel: null, wardNumber: null, compareMode: true, storySlug: null, storyPage: 0 };
+  }
+
+  // /stories/:storySlug  or  /stories/:storySlug/:pageIndex
+  if (parts[0] === 'stories') {
+    const storySlug = parts[1] || null;
+    const storyPage = parts[2] ? Math.max(0, parseInt(parts[2], 10) || 0) : 0;
+    return { citySlug: null, panel: null, wardNumber: null, compareMode: false, storySlug, storyPage };
   }
 
   const citySlug = parts[0];
@@ -41,7 +48,7 @@ export function parseUrl() {
     }
   }
 
-  return { citySlug, panel, wardNumber, compareMode: false };
+  return { citySlug, panel, wardNumber, compareMode: false, storySlug: null, storyPage: 0 };
 }
 
 /**
@@ -121,4 +128,14 @@ export function updateUrlForCompare() {
  */
 export function updateUrlToHome() {
   window.history.pushState(null, '', '/');
+}
+
+/**
+ * Update URL for a story page.
+ * @param {string} slug  Story slug, e.g. 'ahmedabad-portrait'.
+ * @param {number} page  0-indexed page number (omitted from URL when 0).
+ */
+export function updateUrlForStory(slug, page = 0) {
+  const url = page > 0 ? `/stories/${slug}/${page}` : `/stories/${slug}`;
+  window.history.pushState({ storySlug: slug, storyPage: page }, '', url);
 }

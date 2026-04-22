@@ -1,0 +1,116 @@
+.story-data {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 32px;
+  box-sizing: border-box;
+}
+
+.story-data__inner {
+  max-width: 560px;
+  width: 100%;
+}
+
+.story-data__headline {
+  font-size: clamp(13px, 2vw, 15px);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0 0 40px;
+}
+
+.story-data__chart {
+  margin-bottom: 32px;
+}
+
+.story-data__body {
+  font-size: clamp(15px, 2.5vw, 18px);
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+  max-width: 480px;
+}
+
+/* StressIndexDisplay */
+.story-stress__bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.story-stress__bar {
+  width: 36px;
+  border-radius: 4px 4px 0 0;
+  transition: background 0.3s;
+}
+
+.story-stress__level {
+  font-size: clamp(32px, 6vw, 52px);
+  font-weight: 700;
+  margin: 0 0 8px;
+  line-height: 1;
+}
+
+.story-stress__tagline {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+}
+
+/* TypologyCard */
+.story-typo__pill {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 20px;
+  letter-spacing: 0.04em;
+}
+
+.story-typo__desc {
+  font-size: clamp(18px, 3vw, 26px);
+  font-weight: 500;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+  max-width: 480px;
+}
+
+/* WardStats */
+.story-wardstats__label {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0 0 12px;
+}
+
+.story-wardstats__value {
+  font-size: clamp(60px, 12vw, 100px);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  margin: 0 0 12px;
+}
+
+.story-wardstats__unit {
+  font-size: 0.4em;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  vertical-align: bottom;
+  padding-bottom: 0.1em;
+}
+
+.story-wardstats__note {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0;
+  letter-spacing: 0.04em;
+}

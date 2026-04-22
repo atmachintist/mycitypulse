@@ -1,0 +1,55 @@
+{
+  "slug": "ahmedabad-portrait",
+  "city": "ahmedabad",
+  "title": "Ahmedabad: City at the Edge",
+  "publishedAt": "2026-04-23",
+  "shareImage": "https://commons.wikimedia.org/wiki/Special:FilePath/Adalaj_step_well.jpg",
+  "pages": [
+    {
+      "type": "cover",
+      "title": "Ahmedabad: City at the Edge",
+      "subtitle": "India's first UNESCO World Heritage City is racing against its own growth.",
+      "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Adalaj_step_well.jpg"
+    },
+    {
+      "type": "data",
+      "component": "StressIndexDisplay",
+      "props": { "city": "Ahmedabad", "level": "High" },
+      "headline": "Civic stress: High",
+      "body": "Dense old city core, industrial pollution, and a heat island effect converging on a city of 8.4 million."
+    },
+    {
+      "type": "data",
+      "component": "TypologyCard",
+      "props": { "typology": "Overnight City" },
+      "headline": "Urban typology: Overnight City",
+      "body": "Ahmedabad expanded rapidly in one generation. Infrastructure is still catching up with the growth it triggered."
+    },
+    {
+      "type": "data",
+      "component": "WardStats",
+      "props": {
+        "label": "Municipal wards",
+        "value": 48,
+        "unit": "wards",
+        "note": "Ahmedabad Municipal Corporation"
+      },
+      "headline": "48 wards. One city.",
+      "body": "Each ward is a constituency with a corporator accountable to its residents. Most people don't know who theirs is."
+    },
+    {
+      "type": "quote",
+      "text": "The old city has 600-year-old streets and 2024 traffic. Nobody designed this junction.",
+      "attribution": "Resident, Jamalpur ward"
+    },
+    {
+      "type": "cta",
+      "headline": "Who represents your ward?",
+      "body": "Find your corporator, check the election timeline, and verify candidate status for all 48 AMC wards.",
+      "action": {
+        "label": "Open Ahmedabad Elections Desk →",
+        "href": "/ahmedabad/elections"
+      }
+    }
+  ]
+}
