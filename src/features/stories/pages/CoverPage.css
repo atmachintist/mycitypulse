@@ -1,0 +1,67 @@
+.story-cover {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 0 80px 0;
+  overflow: hidden;
+}
+
+.story-cover__bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transform: scale(1.03);
+}
+
+.story-cover__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0.5) 50%,
+    rgba(0, 0, 0, 0.85) 100%
+  );
+}
+
+.story-cover__content {
+  position: relative;
+  padding: 0 32px;
+  max-width: 680px;
+}
+
+.story-cover__eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0 0 16px;
+}
+
+.story-cover__title {
+  font-size: clamp(28px, 6vw, 52px);
+  font-weight: 700;
+  line-height: 1.1;
+  color: #fff;
+  margin: 0 0 16px;
+}
+
+.story-cover__subtitle {
+  font-size: clamp(15px, 2.5vw, 19px);
+  font-weight: 400;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 32px;
+  max-width: 520px;
+}
+
+.story-cover__hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0;
+  letter-spacing: 0.04em;
+}

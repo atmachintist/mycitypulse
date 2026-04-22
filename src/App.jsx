@@ -1,6 +1,8 @@
 ﻿import { useState, useEffect, useRef } from "react";
 import { CITY_ISSUES, CIVIC_ORGS, WARD_CORPORATORS } from "./cityData.js";
+import { useLayoutEffect } from "react";
 import { lazy, Suspense } from "react";
+import "./App.css";
 import {
   CITY_IMAGES,
   STRESS,
@@ -10,8 +12,9 @@ import {
   fmt,
 } from "./domain/cities/presentation.js";
 import CompareTray from "./features/compare/CompareTray.jsx";
-import { buildMailtoHref, openMailtoDraft } from "./lib/contact.js";
+import { openMailtoDraft } from "./lib/contact.js";
 import { submitCocreatorInterest } from "./lib/submissions.js";
+import ContactDialog from "./components/ContactDialog.jsx";
 import useCitySearch from "./shared/hooks/useCitySearch.js";
 import { parseUrl, updateUrlForCity, findCityByUrlSlug, updateUrlForCompare, updateUrlToHome } from "./lib/routing.js";
 import HowItWorks from "./components/HowItWorks.jsx";
@@ -20,16 +23,15 @@ import {
   CURRENT_GUJARAT_MUNICIPAL_ELECTION_CITIES_2026,
   GUJARAT_ELECTION_CITY_ROSTER_2026,
   LIVE_GUJARAT_WARD_EXPECTATIONS_2026,
-  NO_CURRENT_ELECTION_CITY_NOTES_2026,
 } from "./domain/elections/gujaratElectionConfig.js";
 import {
   VERIFICATION_SOURCE,
   VERIFICATION_LABELS,
-  getOverallVerification,
 } from "./domain/elections/verification.js";
 
 const CityPage = lazy(() => import("./features/city/CityPage.jsx"));
 const CompareView = lazy(() => import("./features/compare/CompareView.jsx"));
+const StoryViewer = lazy(() => import("./features/stories/StoryViewer.jsx"));
 
 // â”€â”€â”€ City Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const cities = [
@@ -97,15 +99,17 @@ const cities = [
   { rank:50, city:"Gwalior",                  state:"Madhya Pradesh",  population:1153000,  area:289,   density:3990,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Ancient Pulse",          one_liner:"A fort city that controlled the heart of the subcontinent for centuries.",                                          stress:"Moderate", stress_reason:"Low density, moderate services; water scarcity and air quality concerns",          formerName:null,          aliases:[] },
   { rank:52, city:"Bhavnagar",                state:"Gujarat",         population:745000,   area:108,   density:6898,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Managed Growth City",    one_liner:"A port city where shipbreaking, trade, and civic growth all meet the Gulf.",                                      stress:"Elevated", stress_reason:"Industrial pressure, coastal exposure, and uneven urban services",                 formerName:null,          aliases:[], hasElections: true },
   { rank:53, city:"Jamnagar",                 state:"Gujarat",         population:668000,   area:75,    density:8907,  tier:"Large City",  density_descriptor:"Moderately Dense", urban_typology:"Managed Growth City",    one_liner:"Refinery wealth at the edge of a historic princely city.",                                                         stress:"Elevated", stress_reason:"Industrial emissions, coastal vulnerability, and growth around energy infrastructure", formerName:"Nawanagar",   aliases:["Nawanagar"], hasElections: true },
-  { rank:54, city:"Junagadh",                 state:"Gujarat",         population:430000,   area:160,   density:2687,  tier:"Large City",  density_descriptor:"Spacious",         urban_typology:"Ancient Pulse",          one_liner:"A historic city under Girnar, carrying layers of empire and pilgrimage.",                                         stress:"Moderate", stress_reason:"Moderate urban scale, but drainage and heritage pressures remain",                 formerName:null,          aliases:[], hasElections: true },
-  { rank:55, city:"Gandhinagar",              state:"Gujarat",         population:390000,   area:177,   density:2203,  tier:"Large City",  density_descriptor:"Spacious",         urban_typology:"Blueprint City",         one_liner:"A planned capital with wide sectors and a quieter civic rhythm than its neighbours.",                            stress:"Moderate", stress_reason:"Planned layout helps, though expansion pressure is rising on the edges",           formerName:null,          aliases:[], hasElections: true },
+  { rank:54, city:"Junagadh",                 state:"Gujarat",         population:430000,   area:160,   density:2687,  tier:"Large City",  density_descriptor:"Spacious",         urban_typology:"Ancient Pulse",          one_liner:"A historic city under Girnar, carrying layers of empire and pilgrimage.",                                         stress:"Moderate", stress_reason:"Moderate urban scale, but drainage and heritage pressures remain",                 formerName:null,          aliases:[], hasElections: false },
+  { rank:55, city:"Gandhinagar",              state:"Gujarat",         population:390000,   area:177,   density:2203,  tier:"Large City",  density_descriptor:"Spacious",         urban_typology:"Blueprint City",         one_liner:"A planned capital with wide sectors and a quieter civic rhythm than its neighbours.",                            stress:"Moderate", stress_reason:"Planned layout helps, though expansion pressure is rising on the edges",           formerName:null,          aliases:[], hasElections: false },
   { rank:56, city:"Anand",                    state:"Gujarat",         population:290000,   area:47,    density:6170,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Managed Growth City",    one_liner:"The milk capital's urban core is small, busy, and growing beyond its older footprint.",                          stress:"Moderate", stress_reason:"Steady growth, traffic pressure, and service capacity that needs to keep pace",     formerName:null,          aliases:[], hasElections: true },
+  { rank:56.5, city:"Gandhidham",             state:"Gujarat",         population:250000,   area:52,    density:4808,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Overnight City",         one_liner:"A Kutch port city built by displacement, logistics, and fast commercial expansion.",                              stress:"Elevated", stress_reason:"Port growth, freight movement, and infrastructure catch-up are all hitting at once", formerName:null,          aliases:["Kandla-Gandhidham"], hasElections: true },
   { rank:57, city:"Nadiad",                   state:"Gujarat",         population:225000,   area:32,    density:7031,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Ancient Pulse",          one_liner:"A dense central Gujarat city where older neighborhoods still shape daily movement.",                             stress:"Moderate", stress_reason:"Compact core, drainage pressure, and ageing civic assets",                         formerName:null,          aliases:[], hasElections: true },
   { rank:58, city:"Mehsana",                  state:"Gujarat",         population:220000,   area:32,    density:6875,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Managed Growth City",    one_liner:"An oil-and-dairy city balancing regional commerce with local service demands.",                                   stress:"Moderate", stress_reason:"Growth is manageable, but water and transport pressures are building",              formerName:"Mahesana",    aliases:["Mahesana"], hasElections: true },
   { rank:59, city:"Morbi",                    state:"Gujarat",         population:250000,   area:51,    density:4902,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Overnight City",         one_liner:"A ceramics powerhouse rebuilt after disaster and still expanding fast.",                                          stress:"Elevated", stress_reason:"Rapid industrial growth, infrastructure catch-up, and flood memory",                 formerName:null,          aliases:[], hasElections: true },
   { rank:60, city:"Surendranagar",            state:"Gujarat",         population:200000,   area:58,    density:3448,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Sleeping Giant",         one_liner:"A regional center whose civic profile is bigger than the national attention it gets.",                           stress:"Moderate", stress_reason:"Underinvestment relative to role, with heat and water stress to manage",            formerName:null,          aliases:["Surendranagar Dudhrej"], hasElections: true },
-  { rank:61, city:"Bharuch",                  state:"Gujarat",         population:190000,   area:42,    density:4524,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Ancient Pulse",          one_liner:"One of India's oldest port cities, now shaped by river, industry, and logistics.",                               stress:"Elevated", stress_reason:"Industrial corridor pressure, Narmada flood risk, and ageing civic systems",         formerName:"Broach",      aliases:["Broach"], hasElections: true },
+  { rank:61, city:"Bharuch",                  state:"Gujarat",         population:190000,   area:42,    density:4524,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Ancient Pulse",          one_liner:"One of India's oldest port cities, now shaped by river, industry, and logistics.",                               stress:"Elevated", stress_reason:"Industrial corridor pressure, Narmada flood risk, and ageing civic systems",         formerName:"Broach",      aliases:["Broach"], hasElections: false },
   { rank:62, city:"Porbandar",                state:"Gujarat",         population:152000,   area:35,    density:4343,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Border Effect City",     one_liner:"A coastal city where fishing, trade, and history all compete for space.",                                        stress:"Moderate", stress_reason:"Coastal exposure and service constraints, but still a manageable urban scale",       formerName:null,          aliases:[], hasElections: true },
+  { rank:62.5, city:"Vapi",                   state:"Gujarat",         population:235000,   area:37,    density:6351,  tier:"Large City",  density_descriptor:"Moderate",         urban_typology:"Overnight City",         one_liner:"An industrial border city where factories, freight, and housing pressure are all growing fast.",                stress:"Elevated", stress_reason:"Industrial emissions, migration pressure, and service capacity are all under strain", formerName:null,          aliases:[], hasElections: true },
   { rank:51, city:"Mira Bhayandar",           state:"Maharashtra",     population:907000,   area:79.4,  density:11425, tier:"Large City",  density_descriptor:"Moderately Dense", urban_typology:"Overnight City",         one_liner:"Mumbai's northern edge \u2014 where affordable housing met the sea.",                                                    stress:"High",     stress_reason:"Explosive growth without matching infrastructure, water supply dependence, connectivity gaps", formerName:null, aliases:["Mira Road","Bhayandar"] },
 ];
 
@@ -154,9 +158,6 @@ function formatElectionMetricValue(value, fallback = "Pending") {
   return value > 0 ? value : fallback;
 }
 
-function formatElectionPercentValue(value, fallback = "Pending") {
-  return value > 0 ? `${value}%` : fallback;
-}
 
 const INDIA_HOTSPOT_POSITIONS = {
   Delhi: { x: 148, y: 54 },
@@ -178,10 +179,15 @@ const GUJARAT_HOTSPOT_POSITIONS = {
   Rajkot: { x: 64, y: 96 },
   Bhavnagar: { x: 136, y: 144 },
   Jamnagar: { x: 34, y: 78 },
-  Junagadh: { x: 58, y: 132 },
-  Gandhinagar: { x: 120, y: 66 },
+  Navsari: { x: 92, y: 176 },
+  Vapi: { x: 92, y: 188 },
+  Gandhidham: { x: 28, y: 38 },
   Anand: { x: 140, y: 108 },
+  Nadiad: { x: 136, y: 100 },
+  Mehsana: { x: 108, y: 56 },
   Morbi: { x: 72, y: 72 },
+  Surendranagar: { x: 100, y: 84 },
+  Porbandar: { x: 24, y: 126 },
 };
 
 
@@ -1251,7 +1257,7 @@ function Hero({ onCitySelect }) {
   });
 
   return (
-    <section className="hero-shell" style={{ background: "#f8f4ec" }}>
+    <section className="hero-shell" style={{ background: "#131722", minHeight: "100vh", paddingTop: 112, paddingBottom: 56, justifyContent: "flex-start" }}>
       <img
         src={CITY_IMAGES.Delhi || CITY_IMAGES.Mumbai}
         alt="Indian city street"
@@ -1261,158 +1267,171 @@ function Hero({ onCitySelect }) {
           width: "100%",
           height: "100%",
           objectFit: "cover",
-          opacity: 0.18,
+          opacity: 0.3,
         }}
       />
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(248,244,236,0.78) 0%, rgba(248,244,236,0.96) 70%, #f8f4ec 100%)" }} />
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(19,23,34,0.5) 0%, rgba(19,23,34,0.78) 52%, rgba(244,239,232,0.98) 100%)" }} />
 
-      <div className="hero-inner">
-        <div className="hero-ticker" aria-label="MyCityPulse ticker">
+      <div className="hero-inner" style={{ width: "min(1120px, 100%)" }}>
+        <div className="hero-ticker" aria-label="MyCityPulse ticker" style={{ maxWidth: "100%", marginBottom: 22, background: "rgba(255,255,255,0.9)" }}>
           <div className="hero-ticker-track">
             {[...tickerItems, ...tickerItems].map((item, index) => (
               <div key={`${item}-${index}`} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 18px", whiteSpace: "nowrap" }}>
                 <span style={{ width: 7, height: 7, borderRadius: "50%", background: index % 2 === 0 ? "#E8660D" : "#1f6f5f", flexShrink: 0 }} />
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#4f4334" }}>{item}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#3f372f" }}>{item}</span>
               </div>
             ))}
           </div>
         </div>
-        <div className="hero-mobile-notice">
-          <div className="hero-mobile-notice-title">LIVE NOW</div>
-          <div className="hero-mobile-notice-copy">MyCityPulse now leads with public-space cleanup: spot a mess, find the ward, and turn local frustration into a usable civic report.</div>
-          <div className="hero-mobile-chip-row">
-            {tickerItems.slice(0, 4).map((item) => (
-              <div key={item} className="hero-mobile-chip">{item}</div>
-            ))}
-          </div>
-        </div>
-        {/* Single value prop headline */}
-        <h1 className="hero-headline" style={{
-          fontSize: 40, fontFamily: "Georgia, serif", fontWeight: 700,
-          color: "#1f1a14", lineHeight: 1.3, marginBottom: 40,
-          letterSpacing: "-0.02em", maxWidth: 600, margin: "0 auto 40px",
-        }}>
-          Clean parks and public spaces start here.
-        </h1>
-        <p style={{ maxWidth: 660, margin: "0 auto 28px", fontSize: 17, color: "#5f5549", lineHeight: 1.7 }}>
-          MyCityPulse helps people do something about litter, garbage buildup, and neglected public spaces. Start with your city, find the right ward, report the issue cleanly, and keep going deeper where civic context matters.
-        </p>
 
-        <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 10, marginBottom: 28 }}>
-          {[
-            "Public-space cleanup first",
-            "Ward and issue context in one place",
-            "Election desks still live",
-          ].map((item) => (
-            <span
-              key={item}
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                color: "#5f5549",
-                background: "rgba(255,255,255,0.8)",
-                border: "1px solid #eadfce",
-                borderRadius: 8,
-                padding: "7px 10px",
-              }}
-            >
-              {item}
-            </span>
-          ))}
-        </div>
-
-        {/* Search bar - primary CTA */}
-        <div ref={ref} className="hero-search-wrap" style={{ maxWidth: 620, marginBottom: 48 }}>
-          <div style={{ position: "relative" }}>
-            <input
-              id="hero-city-search"
-              name="heroCitySearch"
-              type="search"
-              autoComplete="new-password"
-              autoCorrect="off"
-              autoCapitalize="off"
-              spellCheck={false}
-              data-form-type="other"
-              data-lpignore="true"
-              readOnly={!isSearchReady}
-              value={q}
-              onChange={e => setQ(e.target.value)}
-              onKeyDown={(e) => handleKeyDown(e, selectCity)}
-              onFocus={e => {
-                setIsSearchReady(true);
-                e.target.style.borderColor = "rgba(232,102,13,0.6)";
-              }}
-              onMouseDown={() => setIsSearchReady(true)}
-              aria-label="Search cities"
-              placeholder="Search your city to report and track civic issues"
-              className="hero-search-input"
-              style={{
-                width: "100%", padding: "18px 56px 18px 24px",
-                background: "#fff", border: "1.5px solid #e0d5c6",
-                borderRadius: 8, color: "#1f1a14", fontSize: 16,
-                outline: "none",
-                transition: "border-color 0.2s",
-              }}
-              onBlur={e => {
-                e.target.style.borderColor = "#e0d5c6";
-              }}
-            />
-            <div className="hero-search-cta">
-              {"Explore \u2192"}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20, alignItems: "stretch" }}>
+          <div style={{ background: "rgba(17,21,31,0.76)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "32px clamp(20px, 4vw, 38px)", textAlign: "left", boxShadow: "0 28px 60px rgba(7,10,16,0.26)" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 11, fontWeight: 800, letterSpacing: "0.08em", color: "#ffd9bf", background: "rgba(201,94,31,0.14)", border: "1px solid rgba(201,94,31,0.32)", padding: "8px 10px", borderRadius: 8, marginBottom: 18 }}>
+              LIVE CIVIC DESK
             </div>
-          </div>
+            <h1 className="hero-headline" style={{ fontSize: "clamp(38px, 6vw, 68px)", fontFamily: "Georgia, serif", fontWeight: 700, color: "#fff", lineHeight: 0.98, letterSpacing: "-0.03em", margin: "0 0 16px" }}>
+              See your city.
+              <br />
+              Find the ward.
+              <br />
+              Act with context.
+            </h1>
+            <p style={{ maxWidth: 640, margin: "0 0 24px", fontSize: 17, color: "rgba(255,255,255,0.76)", lineHeight: 1.75 }}>
+              MyCityPulse is a civic interface for people trying to make sense of a city fast. Search a city, read the pressure, open the ward or election layer, and move from vague frustration to a cleaner next step.
+            </p>
 
-          {results.length > 0 && (
-            <div style={{
-              position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0,
-              background: "#fff", borderRadius: 8, boxShadow: "0 12px 40px rgba(74,59,40,0.14)",
-              border: "1px solid #eadfce", overflow: "hidden", zIndex: 300, textAlign: "left",
-            }}>
-              {results.map((c, index) => (
-                <button key={c.city} onClick={() => selectCity(c)} style={{
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                  width: "100%", padding: "12px 20px", background: activeIndex === index ? "#f7f2ea" : "none", border: "none",
-                  color: "#1f1a14", fontSize: 14, cursor: "pointer",
-                  borderBottom: "1px solid #f2eadf",
-                }}
-                onMouseEnter={() => setActiveIndex(index)}
-                >
-                  <div>
-                    <span style={{ fontWeight: 600 }}>{c.city}</span>
-                    <span style={{ color: "#8d8378", fontSize: 12, marginLeft: 8 }}>{c.state}</span>
-                  </div>
-                  <span style={{
-                    fontSize: 11, background: STRESS[c.stress].color + "22",
-                    color: STRESS[c.stress].color, padding: "3px 10px", borderRadius: 10, fontWeight: 700,
-                  }}>{c.stress}</span>
-                </button>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 24 }}>
+              {[
+                "Search first, not guess first",
+                "Ward context where available",
+                "Election verification still built in",
+              ].map((item) => (
+                <span key={item} style={{ fontSize: 12, fontWeight: 700, color: "#fff", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "8px 10px" }}>
+                  {item}
+                </span>
               ))}
             </div>
-          )}
-        </div>
 
-        {/* Quick city links */}
-        <div className="hero-quick-links" style={{ marginBottom: 0 }}>
-          {quickCities.map(name => {
-            const c = cities.find(x => x.city === name);
-            return (
-              <button key={name} onClick={() => onCitySelect(c)} style={{
-                background: "#fff", border: "1px solid #eadfce",
-                color: "#5b5247", padding: "8px 16px", borderRadius: 8,
-                fontSize: 13, cursor: "pointer", transition: "all 0.15s", fontWeight: 500,
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = "#f7f1e6"; e.currentTarget.style.color = "#1f1a14"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#5b5247"; }}
-              >
-                {name}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+            <div ref={ref} className="hero-search-wrap" style={{ maxWidth: 700, marginBottom: 18 }}>
+              <div style={{ position: "relative" }}>
+                <input
+                  id="hero-city-search"
+                  name="heroCitySearch"
+                  type="search"
+                  autoComplete="new-password"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
+                  data-form-type="other"
+                  data-lpignore="true"
+                  readOnly={!isSearchReady}
+                  value={q}
+                  onChange={e => setQ(e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(e, selectCity)}
+                  onFocus={e => {
+                    setIsSearchReady(true);
+                    e.target.style.borderColor = "rgba(232,102,13,0.6)";
+                  }}
+                  onMouseDown={() => setIsSearchReady(true)}
+                  aria-label="Search cities"
+                  placeholder="Search your city to open its civic desk"
+                  className="hero-search-input"
+                  style={{
+                    width: "100%", padding: "20px 160px 20px 20px",
+                    background: "rgba(255,255,255,0.96)", border: "1px solid rgba(255,255,255,0.16)",
+                    borderRadius: 8, color: "#1f1a14", fontSize: 16,
+                    outline: "none",
+                    transition: "border-color 0.2s",
+                  }}
+                  onBlur={e => {
+                    e.target.style.borderColor = "rgba(255,255,255,0.16)";
+                  }}
+                />
+                <div className="hero-search-cta" style={{ right: 10, background: "#E8660D", padding: "10px 16px", borderRadius: 8 }}>
+                  Open city desk
+                </div>
+              </div>
 
-      <div className="hero-scrollcue">
-        {"SCROLL TO EXPLORE \u2193"}
+              {results.length > 0 && (
+                <div style={{
+                  position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0,
+                  background: "#fff", borderRadius: 8, boxShadow: "0 12px 40px rgba(10,12,18,0.22)",
+                  border: "1px solid #eadfce", overflow: "hidden", zIndex: 300, textAlign: "left",
+                }}>
+                  {results.map((c, index) => (
+                    <button key={c.city} onClick={() => selectCity(c)} style={{
+                      display: "flex", alignItems: "center", justifyContent: "space-between",
+                      width: "100%", padding: "14px 18px", background: activeIndex === index ? "#f7f2ea" : "none", border: "none",
+                      color: "#1f1a14", fontSize: 14, cursor: "pointer",
+                      borderBottom: "1px solid #f2eadf",
+                    }}
+                    onMouseEnter={() => setActiveIndex(index)}
+                    >
+                      <div>
+                        <span style={{ fontWeight: 700 }}>{c.city}</span>
+                        <span style={{ color: "#8d8378", fontSize: 12, marginLeft: 8 }}>{c.state}</span>
+                      </div>
+                      <span style={{
+                        fontSize: 11, background: STRESS[c.stress].color + "22",
+                        color: STRESS[c.stress].color, padding: "4px 10px", borderRadius: 8, fontWeight: 800,
+                      }}>{c.stress}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="hero-quick-links" style={{ justifyContent: "flex-start", marginBottom: 0 }}>
+              {quickCities.map(name => {
+                const c = cities.find(x => x.city === name);
+                return (
+                  <button key={name} onClick={() => onCitySelect(c)} style={{
+                    background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)",
+                    color: "#fff", padding: "9px 14px", borderRadius: 8,
+                    fontSize: 13, cursor: "pointer", fontWeight: 600,
+                  }}>
+                    {name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gap: 14 }}>
+            <div style={{ background: "rgba(255,250,243,0.94)", border: "1px solid rgba(53,46,36,0.08)", borderRadius: 8, padding: 22, textAlign: "left" }}>
+              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.08em", color: "#c95e1f", marginBottom: 10 }}>STARTING POINT</div>
+              <div style={{ fontSize: 32, fontFamily: "Georgia, serif", lineHeight: 1.06, color: "#1f1a14", marginBottom: 10 }}>
+                One cleaner path through city confusion.
+              </div>
+              <div style={{ display: "grid", gap: 12 }}>
+                {[
+                  "Search the city you care about.",
+                  "Open issues, wards, or elections depending on the job.",
+                  "Use the desk as context before filing, comparing, or sharing.",
+                ].map((item) => (
+                  <div key={item} style={{ display: "grid", gridTemplateColumns: "10px 1fr", gap: 10, alignItems: "start" }}>
+                    <span style={{ width: 10, height: 10, borderRadius: 999, background: "#E8660D", marginTop: 6 }} />
+                    <span style={{ color: "#554b40", lineHeight: 1.65, fontSize: 14 }}>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ background: "rgba(20,25,35,0.9)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, padding: 22, textAlign: "left" }}>
+              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.08em", color: "#9fe0d5", marginBottom: 10 }}>LIVE PRIORITIES</div>
+              <div style={{ display: "grid", gap: 10 }}>
+                {tickerItems.slice(0, 4).map((item, index) => (
+                  <div key={item} style={{ display: "grid", gridTemplateColumns: "34px 1fr", gap: 12, alignItems: "start", padding: "10px 0", borderTop: index === 0 ? "none" : "1px solid rgba(255,255,255,0.08)" }}>
+                    <div style={{ width: 34, height: 34, borderRadius: 8, background: "rgba(255,255,255,0.08)", color: "#fff", display: "grid", placeItems: "center", fontWeight: 800, fontSize: 12 }}>
+                      {index + 1}
+                    </div>
+                    <div style={{ color: "rgba(255,255,255,0.78)", fontSize: 14, lineHeight: 1.6 }}>{item}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -1428,19 +1447,27 @@ function StatsBanner() {
     { value: `${DATASET_SCOPE.electionTrackerCount}`, label: "Election Desks Live" },
   ];
   return (
-    <div style={{ background: "#fffaf5", padding: "32px 32px", borderTop: "1px solid #eee2d3", borderBottom: "1px solid #eee2d3" }}>
-      <div style={{ maxWidth: 960, margin: "0 auto" }}>
-        <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 24, textAlign: "center" }}>
+    <div className="stats-strip" style={{ background: "#181610", padding: "40px 32px", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+      <div style={{ maxWidth: 1120, margin: "0 auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 18, alignItems: "end", flexWrap: "wrap", marginBottom: 22 }}>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.08em", color: "#f0b993", marginBottom: 10 }}>AT A GLANCE</div>
+            <h2 style={{ fontSize: "clamp(26px, 4vw, 42px)", fontFamily: "Georgia, serif", color: "#fff", margin: 0, lineHeight: 1.05 }}>
+              Coverage you can actually feel.
+            </h2>
+          </div>
+          <p style={{ maxWidth: 460, margin: 0, color: "rgba(255,255,255,0.68)", lineHeight: 1.7, fontSize: 14 }}>
+            The product now opens with a stronger sense of scope: how many city desks are live, how much civic reporting depth exists, and where the sharpest pressure sits.
+          </p>
+        </div>
+        <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 18 }}>
           {stats.map(s => (
-            <div key={s.label} style={{ background: "rgba(255,255,255,0.76)", border: "1px solid #eadfce", borderRadius: 8, padding: "18px 14px" }}>
-              <div style={{ fontSize: 32, fontWeight: 900, color: "#E8660D", fontFamily: "Georgia, serif", letterSpacing: "-0.03em" }}>{s.value}</div>
-              <div style={{ fontSize: 12, color: "#7d7266", marginTop: 4, letterSpacing: "0.06em", textTransform: "uppercase" }}>{s.label}</div>
+            <div key={s.label} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, padding: "20px 18px" }}>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.54)", marginBottom: 10, letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 800 }}>{s.label}</div>
+              <div style={{ fontSize: 38, fontWeight: 900, color: "#fff", fontFamily: "Georgia, serif", letterSpacing: "-0.03em" }}>{s.value}</div>
             </div>
           ))}
         </div>
-        <p style={{ marginTop: 20, color: "#6f6559", fontSize: 13, lineHeight: 1.7, textAlign: "center" }}>
-          Behind each number is a citizen trying to understand a place, find responsibility, and move from frustration to action with less guesswork.
-        </p>
       </div>
     </div>
   );
@@ -1452,56 +1479,65 @@ function ElectionsHub({ onCitySelect }) {
     .sort((left, right) => left.city.localeCompare(right.city));
 
   return (
-    <section id="elections" className="page-section-tight" style={{ background: "#fffaf5" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 12 }}>
-          MUNICIPAL ELECTIONS
-        </div>
-        <div className="stack-header" style={{ marginBottom: 24 }}>
-          <div style={{ maxWidth: 680 }}>
-            <h2 className="section-title" style={{ fontSize: 34, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 10 }}>
-              Election updates a citizen can actually use.
+    <section id="elections" className="page-section-tight" style={{ background: "#f2ede5", paddingTop: 64, paddingBottom: 64 }}>
+      <div style={{ maxWidth: 1120, margin: "0 auto" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 18, alignItems: "end", marginBottom: 24 }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 800, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 12 }}>
+              MUNICIPAL ELECTION DESKS
+            </div>
+            <h2 className="section-title" style={{ fontSize: 40, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 12, lineHeight: 1.05 }}>
+              Election coverage with less civic guesswork.
             </h2>
-            <p style={{ fontSize: 15, color: "#666", lineHeight: 1.7 }}>
-              When elections matter, people should not have to dig through scattered notices and half-confirmed chatter. These city pages pull together the timeline, ward lookup, and candidate status signals so citizens can see what is verified, what is only announced, and what still needs checking.
+            <p style={{ fontSize: 15, color: "#5f5549", lineHeight: 1.75, maxWidth: 760, margin: 0 }}>
+              These city desks pull the timeline, ward search, candidate status, and local verification tools into one place. The section should now feel more like a control room than a loose list of links.
             </p>
           </div>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: "#1a1a1a", background: "#fff4ea", border: "1px solid #ffd7b3", borderRadius: 8, padding: "7px 10px" }}>
-              {electionCities.length} cities with election desks
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#1a1a1a", background: "#fff", border: "1px solid #d9cdbd", borderRadius: 8, padding: "8px 10px" }}>
+              {electionCities.length} live election cities
             </span>
-            <span style={{ fontSize: 12, fontWeight: 700, color: "#1a1a1a", background: "#f6f2ea", border: "1px solid #e6dccf", borderRadius: 8, padding: "7px 10px" }}>
-              Gujarat civic polls on Apr 26, 2026
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#1a1a1a", background: "#fff7ef", border: "1px solid #f0d4b4", borderRadius: 8, padding: "8px 10px" }}>
+              Gujarat polls: April 26, 2026
             </span>
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
           {electionCities.map((city) => (
             <button
               key={city.city}
               onClick={() => onCitySelect(city)}
               style={{
                 textAlign: "left",
-                background: "#faf8f4",
-                border: "1px solid #ebe4d8",
+                background: "#fff",
+                border: "1px solid #ddd1c3",
                 borderRadius: 8,
-                padding: "16px 16px 14px",
+                padding: "20px 18px",
                 display: "grid",
-                gap: 8,
+                gap: 12,
+                boxShadow: "0 16px 34px rgba(31,26,20,0.06)",
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
-                <strong style={{ fontSize: 17, color: "#1a1a1a" }}>{city.city}</strong>
-                <span style={{ fontSize: 10, fontWeight: 800, color: "#E8660D", letterSpacing: "0.08em" }}>OPEN</span>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "start" }}>
+                <div>
+                  <strong style={{ fontSize: 22, color: "#1a1a1a", fontFamily: "Georgia, serif", display: "block", marginBottom: 4 }}>{city.city}</strong>
+                  <span style={{ fontSize: 13, color: "#7a746c" }}>{city.state}</span>
+                </div>
+                <span style={{ fontSize: 10, fontWeight: 800, color: "#E8660D", letterSpacing: "0.08em", background: "#fff4ea", borderRadius: 8, padding: "6px 8px" }}>OPEN</span>
               </div>
-              <div style={{ fontSize: 12, color: "#7a746c", lineHeight: 1.5 }}>{city.state}</div>
+              <div style={{ fontSize: 14, color: "#5f5549", lineHeight: 1.65 }}>
+                Open the election timeline, search a ward, and check how much of the candidate layer is verified.
+              </div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#5b554c", background: "#fff", border: "1px solid #e6dccf", borderRadius: 8, padding: "4px 8px" }}>
-                  Elections panel
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#5b554c", background: "#f6f1ea", borderRadius: 8, padding: "6px 8px" }}>
+                  Election panel
                 </span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#5b554c", background: "#fff", border: "1px solid #e6dccf", borderRadius: 8, padding: "4px 8px" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#5b554c", background: "#f6f1ea", borderRadius: 8, padding: "6px 8px" }}>
                   Ward lookup
+                </span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#5b554c", background: "#f6f1ea", borderRadius: 8, padding: "6px 8px" }}>
+                  Candidate status
                 </span>
               </div>
             </button>
@@ -1680,22 +1716,23 @@ function TrustSection() {
   ];
 
   return (
-    <section className="page-section" style={{ paddingTop: 56, paddingBottom: 56, background: "#fff", borderTop: "1px solid #ece1d3", borderBottom: "1px solid #ece1d3" }}>
+    <section className="page-section" style={{ paddingTop: 64, paddingBottom: 64, background: "#fffdf9", borderTop: "1px solid #ece1d3", borderBottom: "1px solid #ece1d3" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div style={{ maxWidth: 720, marginBottom: 28 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: "#E8660D", letterSpacing: "0.1em", marginBottom: 10 }}>START HERE</div>
-          <h2 className="section-title" style={{ fontSize: 34, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 12 }}>
-            Built from the citizen outward.
+          <h2 className="section-title" style={{ fontSize: 38, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 12, lineHeight: 1.05 }}>
+            Built like a civic desk, not a brochure.
           </h2>
           <p style={{ fontSize: 16, color: "#666", lineHeight: 1.7 }}>
             MyCityPulse is meant to meet people where city life actually gets felt: on the street, near the park, around the overflowing corner, inside the confusion of not knowing who is responsible. The job is to help citizens orient fast and act without losing the plot.
           </p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 18 }}>
+        <div className="trust-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 18 }}>
           {cards.map((card) => (
-            <div key={card.title} style={{ background: "#fffaf5", borderRadius: 8, padding: 24, boxShadow: "0 2px 12px rgba(31,26,20,0.04)", border: "1px solid #eadfce" }}>
-              <h3 style={{ fontSize: 18, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 10 }}>{card.title}</h3>
+            <div key={card.title} style={{ background: "#fff", borderRadius: 8, padding: 24, border: "1px solid #eadfce" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.08em", color: "#1f6f5f", marginBottom: 10 }}>PRINCIPLE</div>
+              <h3 style={{ fontSize: 22, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 10, lineHeight: 1.15 }}>{card.title}</h3>
               <p style={{ fontSize: 14, color: "#666", lineHeight: 1.7, margin: 0 }}>{card.body}</p>
             </div>
           ))}
@@ -1725,9 +1762,9 @@ function CityCard({ city, onSelect, onCompare, inCompare }) {
       onClick={() => onSelect(city)}
       style={{
         position: "relative",
-        height: 260,
+        height: 320,
         overflow: "hidden",
-        borderRadius: 14,
+        borderRadius: 8,
         cursor: "pointer",
         border: "none",
       }}
@@ -1793,24 +1830,22 @@ function CityCard({ city, onSelect, onCompare, inCompare }) {
       </div>
 
       {/* Bottom: city name, state, one-liner */}
-      <div style={{
-        position: "absolute", bottom: 0, left: 0, right: 0,
-        padding: "20px 16px 54px",
-      }}>
-        <div style={{ fontSize: 20, fontWeight: 900, color: "#fff", lineHeight: 1.15, letterSpacing: "-0.3px" }}>
+      <div className="city-card-copy">
+        <div className="city-card-meta">
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.72)" }}>{city.state}</span>
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.38)" }}>•</span>
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.72)" }}>{fmt(city.population)} people</span>
+        </div>
+        <div style={{ fontSize: 28, fontFamily: "Georgia, serif", fontWeight: 700, color: "#fff", lineHeight: 1.02, letterSpacing: "-0.02em" }}>
           {city.city}
         </div>
-        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 2, marginBottom: 8 }}>
-          {city.state} {"\u00B7"} {fmt(city.population)} people
-        </div>
         <p style={{
-          fontSize: 12, color: "rgba(255,255,255,0.82)", fontFamily: "Georgia, serif",
-          fontStyle: "italic", lineHeight: 1.45, margin: 0,
-          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+          fontSize: 13, color: "rgba(255,255,255,0.82)", lineHeight: 1.6, margin: "10px 0 0",
+          display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden",
         }}>
-          "{city.one_liner}"
+          {city.one_liner}
         </p>
-        <div style={{ marginTop: 12, fontSize: 11, fontWeight: 800, color: "rgba(255,255,255,0.92)", letterSpacing: "0.05em" }}>
+        <div style={{ marginTop: 16, fontSize: 11, fontWeight: 800, color: "rgba(255,255,255,0.92)", letterSpacing: "0.05em" }}>
           {actionLabel}
         </div>
       </div>
@@ -1835,6 +1870,7 @@ function CityGrid({ onCitySelect, onCompare, compareList }) {
   const [stressFilter, setStressFilter] = useState("All");
   const [q, setQ] = useState("");
   const [legendOpen, setLegendOpen] = useState(false);
+  const [showAllCities, setShowAllCities] = useState(false);
 
   const tiers = ["All", "Mega Metro", "Major City", "Large City"];
   const stresses = ["All", "Critical", "High", "Elevated", "Moderate", "Stable"];
@@ -1848,19 +1884,21 @@ function CityGrid({ onCitySelect, onCompare, compareList }) {
     }
     return true;
   });
+  const shouldLimitResults = !showAllCities && !q && tierFilter === "All" && stressFilter === "All";
+  const visibleCities = shouldLimitResults ? filtered.slice(0, 12) : filtered;
 
   return (
-    <section id="cities" className="page-section" style={{ background: "#fff" }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+      <section id="cities" className="page-section city-grid-section" style={{ background: "#fff" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         {/* Section header */}
         <div style={{ marginBottom: 40 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: "#E8660D", letterSpacing: "0.1em", marginBottom: 10 }}>EXPLORE</div>
-          <h2 className="section-title" style={{ fontSize: 36, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 12 }}>
-            Open a city and get oriented quickly.
-          </h2>
-          <p style={{ fontSize: 16, color: "#666", maxWidth: 500, lineHeight: 1.6 }}>
-            Search, filter, and open city pages built to reduce civic fog. Some are deeper than others today, but each one should help a citizen get somewhere faster than a generic search result page.
-          </p>
+            <h2 className="section-title" style={{ fontSize: 42, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1a1a1a", marginBottom: 12, lineHeight: 1.05 }}>
+              Open a city desk and get oriented fast.
+            </h2>
+            <p style={{ fontSize: 16, color: "#666", maxWidth: 500, lineHeight: 1.6 }}>
+              Search, filter, and open city pages built to reduce civic fog. Some are deeper than others today, but each one should help a citizen get somewhere faster than a generic search result page.
+            </p>
           <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
             {[
               "Start with the city you know",
@@ -1883,7 +1921,7 @@ function CityGrid({ onCitySelect, onCompare, compareList }) {
               </span>
             ))}
           </div>
-          <div style={{ marginTop: 16, background: "#fffaf5", borderRadius: 8, border: "1px solid #e8e5e0", padding: "16px 18px", maxWidth: 760 }}>
+            <div className="city-scope-card" style={{ marginTop: 16, background: "#fffaf5", borderRadius: 8, border: "1px solid #e8e5e0", padding: "18px 20px", maxWidth: 760 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#9a6b3d", letterSpacing: "0.08em", marginBottom: 8 }}>CURRENT SCOPE</div>
             <p style={{ margin: 0, fontSize: 14, color: "#666", lineHeight: 1.7 }}>
               MyCityPulse currently covers {DATASET_SCOPE.cityCount} city profiles across {DATASET_SCOPE.stateCount} states / UTs.
@@ -1931,15 +1969,20 @@ function CityGrid({ onCitySelect, onCompare, compareList }) {
         </div>
 
         {/* Filters */}
+        <div className="city-grid-toolbar">
+          <div className="city-grid-toolbar-top">
+            <span style={{ fontSize: 12, color: "#8f8478", fontWeight: 700 }}>
+              {shouldLimitResults ? `${visibleCities.length} of ${filtered.length} cities shown` : `${filtered.length} cities ready to open`}
+            </span>
+          </div>
+        <div className="city-grid-filters">
         <div className="city-filters">
           {/* Search */}
           <input
             value={q} onChange={e => setQ(e.target.value)}
             placeholder="Search by city or state"
-            style={{
-              padding: "7px 16px", border: "1.5px solid #e0ddd8", borderRadius: 24,
-              fontSize: 13, outline: "none", background: "#fff", minWidth: 160, flex: "1 1 220px",
-            }}
+            className="city-grid-search"
+            style={{ minWidth: 160, flex: "1 1 220px" }}
           />
           {/* Tier pills */}
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -1956,12 +1999,13 @@ function CityGrid({ onCitySelect, onCompare, compareList }) {
               </button>
             ))}
           </div>
-          <span style={{ fontSize: 12, color: "#8f8478", marginLeft: "auto", fontWeight: 700 }}>{filtered.length} cities ready to open</span>
+        </div>
+        </div>
         </div>
 
         {/* Grid */}
-        <div className="city-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
-          {filtered.map(c => (
+          <div className="city-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+          {visibleCities.map(c => (
             <CityCard
               key={c.city} city={c} onSelect={onCitySelect}
               onCompare={onCompare}
@@ -1969,6 +2013,17 @@ function CityGrid({ onCitySelect, onCompare, compareList }) {
             />
           ))}
         </div>
+        {shouldLimitResults && filtered.length > visibleCities.length && (
+          <div className="city-grid-more">
+            <button
+              type="button"
+              className="city-grid-more-btn"
+              onClick={() => setShowAllCities(true)}
+            >
+              Show all {filtered.length} cities
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -2108,13 +2163,13 @@ function JoinCTA() {
   };
 
   return (
-    <section id="join" className="page-section" style={{ background: "#fff7ef", paddingTop: 72, paddingBottom: 72, borderTop: "1px solid #ede2d4" }}>
+    <section id="join" className="page-section join-band" style={{ paddingTop: 72, paddingBottom: 72, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
       <div style={{ maxWidth: 680, margin: "0 auto", textAlign: "center" }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: "#E8660D", letterSpacing: "0.12em", marginBottom: 16 }}>BECOME A COCREATOR</div>
-        <h2 className="join-copy-title" style={{ fontSize: 38, fontFamily: "Georgia, serif", fontWeight: 700, color: "#1f1a14", lineHeight: 1.25, marginBottom: 16, letterSpacing: "-0.02em" }}>
+        <h2 className="join-copy-title" style={{ fontSize: 38, fontFamily: "Georgia, serif", fontWeight: 700, color: "#fff", lineHeight: 1.25, marginBottom: 16, letterSpacing: "-0.02em" }}>
           Help keep this useful for the people living it.
         </h2>
-        <p style={{ fontSize: 16, color: "#655c50", lineHeight: 1.7, maxWidth: 520, margin: "0 auto 36px" }}>
+        <p style={{ fontSize: 16, color: "rgba(255,255,255,0.72)", lineHeight: 1.7, maxWidth: 520, margin: "0 auto 36px" }}>
           Join the people helping MyCityPulse stay grounded in what citizens actually see, feel, and need. You can simply get updates, or help verify what is changing on the ground.
         </p>
 
@@ -2147,37 +2202,21 @@ function JoinCTA() {
             )}
           </div>
         ) : (
-          <div style={{
-            maxWidth: 620,
-            margin: "0 auto",
-            background: "#fff",
-            border: "1px solid #eadfce",
-            borderRadius: 8,
-            padding: "24px 20px",
-            textAlign: "left",
-          }}>
-            <div className="join-fields-grid">
+          <div className="join-card" style={{ maxWidth: 760, textAlign: "left" }}>
+            <div className="join-field-grid">
               <input
                 type="text"
                 value={fullName}
                 onChange={e => setFullName(e.target.value)}
                 placeholder="Your name"
-                style={{
-                  width: "100%", padding: "13px 18px",
-                  background: "#fff", border: "1.5px solid #e3d7c9",
-                  borderRadius: 8, color: "#1f1a14", fontSize: 14, outline: "none",
-                }}
+                className="join-field"
               />
               <input
                 type="text"
                 value={city}
                 onChange={e => setCity(e.target.value)}
                 placeholder="Your city"
-                style={{
-                  width: "100%", padding: "13px 18px",
-                  background: "#fff", border: "1.5px solid #e3d7c9",
-                  borderRadius: 8, color: "#1f1a14", fontSize: 14, outline: "none",
-                }}
+                className="join-field"
               />
             </div>
 
@@ -2186,18 +2225,14 @@ function JoinCTA() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="your@email.com"
-              style={{
-                width: "100%", padding: "13px 18px", marginBottom: 18,
-                background: "#fff", border: "1.5px solid #e3d7c9",
-                borderRadius: 8, color: "#1f1a14", fontSize: 14, outline: "none",
-              }}
+              className="join-field-wide"
             />
 
             <div style={{ marginBottom: 18 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#E8660D", letterSpacing: "0.08em", marginBottom: 10 }}>
                 HOW YOU’D LIKE TO HELP
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              <div className="join-chip-row">
                 {[
                   ["cityResearch", "City research"],
                   ["issueVerification", "Issue verification"],
@@ -2207,15 +2242,7 @@ function JoinCTA() {
                   <button
                     key={key}
                     onClick={() => toggleContribution(key)}
-                    style={{
-                      border: contributions[key] ? "1.5px solid #E8660D" : "1.5px solid #e3d7c9",
-                      background: contributions[key] ? "rgba(232,102,13,0.14)" : "#fff",
-                      color: contributions[key] ? "#8d3f12" : "#655c50",
-                      padding: "9px 14px",
-                      borderRadius: 999,
-                      fontSize: 13,
-                      fontWeight: 600,
-                    }}
+                    className={`join-toggle${contributions[key] ? " active" : ""}`}
                   >
                     {contributions[key] ? "\u2713 " : ""}{label}
                   </button>
@@ -2265,19 +2292,19 @@ function JoinCTA() {
               >
                 {submitState === "submitting" ? "Submitting..." : "Stay in touch \u2192"}
               </button>
-              <span style={{ fontSize: 12, color: "#8d8378" }}>
-                No account creation. Just a way to stay reachable, with clear permissions.
-              </span>
-            </div>
+                <span style={{ fontSize: 12, color: "#8d8378" }}>
+                  No account creation. Just a way to stay reachable, with clear permissions.
+                </span>
+              </div>
             <p style={{ fontSize: 12, color: "#92887c", lineHeight: 1.6, margin: "14px 0 0" }}>
               Without a configured form endpoint, this saves locally in the browser and offers email fallback. Add `VITE_COCREATOR_ENDPOINT` to turn this into a live signup path.
             </p>
           </div>
         )}
 
-        <p style={{ fontSize: 12, color: "#93897d", marginTop: 16 }}>
-          No spam. Just thoughtful updates, specific asks for help, and the permissions you chose.
-        </p>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.56)", marginTop: 16 }}>
+            No spam. Just thoughtful updates, specific asks for help, and the permissions you chose.
+          </p>
       </div>
     </section>
   );
@@ -2286,23 +2313,29 @@ function JoinCTA() {
 // â”€â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function Footer() {
   const year = new Date().getFullYear();
-  const contactHref = buildMailtoHref({
-    subject: "Hello from MyCityPulse",
-    lines: [
-      "Hi MyCityPulse,",
-      "",
-      "I’m reaching out from the website.",
-    ],
-  });
+  const [contactOpen, setContactOpen] = useState(false);
   return (
-    <footer style={{ background: "#f4eee4", padding: "28px clamp(16px, 4vw, 32px)", textAlign: "center", borderTop: "1px solid #e6dac9" }}>
+    <footer className="footer-band" style={{ padding: "28px clamp(16px, 4vw, 32px)", textAlign: "center", borderTop: "1px solid #e6dac9" }}>
       <div className="footer-copy">
         {"\u00A9"} {year} MyCityPulse {"\u00B7"} <span style={{ color: "#9a8f82" }}>mycitypulse.in</span>
         <span style={{ color: "#c0b4a7", margin: "0 8px" }}>{"\u00B7"}</span>
         Built from public sources, Wikimedia, and MyCityPulse editorial analysis, with coverage depth that still varies by city.
         <span style={{ color: "#c0b4a7", margin: "0 8px" }}>{"\u00B7"}</span>
-        <a href={contactHref} style={{ color: "#7f5a37" }}>Contact</a>
+        <button
+          type="button"
+          onClick={() => setContactOpen(true)}
+          style={{ color: "#7f5a37", background: "none", border: "none", padding: 0, font: "inherit", cursor: "pointer", textDecoration: "underline" }}
+        >
+          Contact
+        </button>
       </div>
+      <ContactDialog
+        open={contactOpen}
+        onClose={() => setContactOpen(false)}
+        title="Get in touch"
+        subject="Hello from MyCityPulse"
+        source="footer-contact"
+      />
     </footer>
   );
 }
@@ -2342,10 +2375,6 @@ function AreaPrototypeHome({ onCitySelect }) {
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
-
-  useEffect(() => {
-    setQuery(selectedArea.name);
-  }, [selectedArea.name]);
 
   const selectArea = (area) => {
     setSelectedAreaName(area.name);
@@ -2580,10 +2609,8 @@ function AreaPrototypeHome({ onCitySelect }) {
   );
 }
 
-function GujaratElectionLanding({ onOpenElectionCity }) {
-  const [query, setQuery] = useState("");
+function GujaratElectionLanding() {
   const [summaries, setSummaries] = useState({});
-  const [brokenCardImages, setBrokenCardImages] = useState({});
 
   useEffect(() => {
     let cancelled = false;
@@ -2610,9 +2637,6 @@ function GujaratElectionLanding({ onOpenElectionCity }) {
     };
   }, []);
 
-  const filteredCities = GUJARAT_ELECTION_CITY_OBJECTS.filter((city) =>
-    city.city.toLowerCase().includes(query.trim().toLowerCase()),
-  );
   const loadedSummaries = Object.values(summaries).filter(Boolean);
   const aggregate = loadedSummaries.reduce(
     (totals, summary) => ({
@@ -2653,7 +2677,7 @@ function GujaratElectionLanding({ onOpenElectionCity }) {
               Find your city. Open your ward. See the candidate list.
             </h1>
             <p className="gujarat-election-body" style={{ margin: "0 0 18px", fontSize: 15, color: "#60584d", lineHeight: 1.7, maxWidth: 700 }}>
-              Built for citizens across a 15-city Gujarat roster during the April 26, 2026 civic polls. Within this roster, 12 cities are in the live municipal corporation poll set shown here with ward-level coverage. Junagadh, Gandhinagar, and Bharuch stay visible as context cards so the tracker does not imply a live corporation poll where there is none.
+              Built for citizens across the 15 Gujarat municipal corporations going to polls on April 26, 2026. Party-announced names stay marked as probable until MyCityPulse can independently verify the final ward-wise candidate list.
             </p>
             <div className="gujarat-election-metrics" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10, marginBottom: 18 }}>
               <div style={{ background: "#fff8ef", border: "1px solid #f1d5b6", borderRadius: 8, padding: 14 }}>
@@ -2698,21 +2722,70 @@ function GujaratElectionLanding({ onOpenElectionCity }) {
 // mid-file. It wires URL routing (parseUrl / updateUrlForCity / popstate) so
 // shareable links like /ahmedabad/elections/ward/12 work for citizens on
 // WhatsApp.
+function HomeAccordionSection({ eyebrow, title, description, defaultOpen = false, children }) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <section className={`home-accordion${isOpen ? " open" : ""}`}>
+      <button
+        type="button"
+        className="home-accordion-toggle"
+        onClick={() => setIsOpen((current) => !current)}
+        aria-expanded={isOpen}
+      >
+        <div className="home-accordion-copy">
+          <span>{eyebrow}</span>
+          <strong>{title}</strong>
+          <small>{description}</small>
+        </div>
+        <span className="home-accordion-icon">{isOpen ? "−" : "+"}</span>
+      </button>
+      {isOpen && <div className="home-accordion-body">{children}</div>}
+    </section>
+  );
+}
+
 function HomePage({ onCitySelect, onCompareToggle, compareList }) {
   return (
     <>
       <Hero onCitySelect={onCitySelect} />
       <StatsBanner />
       <ElectionsHub onCitySelect={onCitySelect} />
-      <HowItWorks />
       <CityGrid
         onCitySelect={onCitySelect}
         onCompare={onCompareToggle}
         compareList={compareList}
       />
-      <NationalPulse onCitySelect={onCitySelect} />
-      <TrustSection />
-      <CitizenHotspots onCitySelect={onCitySelect} />
+      <div className="home-accordion-shell">
+        <HomeAccordionSection
+          eyebrow="How It Works"
+          title="See how to use MyCityPulse in under a minute"
+          description="Open this when you want the quick orientation instead of keeping it permanently on the page."
+        >
+          <HowItWorks />
+        </HomeAccordionSection>
+        <HomeAccordionSection
+          eyebrow="National Pulse"
+          title="Browse patterns across cities"
+          description="Open this when you want context beyond one city."
+        >
+          <NationalPulse onCitySelect={onCitySelect} />
+        </HomeAccordionSection>
+        <HomeAccordionSection
+          eyebrow="Trust"
+          title="See what kind of source this is"
+          description="Open this when you want to understand coverage limits and how the data is framed."
+        >
+          <TrustSection />
+        </HomeAccordionSection>
+        <HomeAccordionSection
+          eyebrow="Your Area"
+          title="Open neighborhood and area-level civic threads"
+          description="Open this when you want local signals without stretching the whole homepage."
+        >
+          <CitizenHotspots onCitySelect={onCitySelect} />
+        </HomeAccordionSection>
+      </div>
       <JoinCTA />
       <Footer />
     </>
@@ -2720,7 +2793,7 @@ function HomePage({ onCitySelect, onCompareToggle, compareList }) {
 }
 
 export default function App() {
-  const initialRoute = typeof window !== "undefined" ? parseUrl() : { citySlug: null, panel: null, wardNumber: null, compareMode: false };
+  const initialRoute = typeof window !== "undefined" ? parseUrl() : { citySlug: null, panel: null, wardNumber: null, compareMode: false, storySlug: null, storyPage: 0 };
   const initialCity = initialRoute.citySlug
     ? findCityByUrlSlug(initialRoute.citySlug, cities)
     : null;
@@ -2729,12 +2802,41 @@ export default function App() {
   const [requestedPanel, setRequestedPanel] = useState(initialRoute.panel);
   const [requestedWard, setRequestedWard] = useState(initialRoute.wardNumber);
   const [compareMode, setCompareMode] = useState(initialRoute.compareMode);
+  const [storySlug, setStorySlug] = useState(initialRoute.storySlug || null);
   const [compareList, setCompareList] = useState([]);
+
+  useLayoutEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const { history } = window;
+    const previousScrollRestoration = history.scrollRestoration;
+
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+
+    window.scrollTo(0, 0);
+
+    return () => {
+      if ("scrollRestoration" in history) {
+        history.scrollRestoration = previousScrollRestoration || "auto";
+      }
+    };
+  }, []);
 
   // Browser back/forward support — re-parse the URL and sync state.
   useEffect(() => {
     const handlePopState = () => {
       const route = parseUrl();
+      if (route.storySlug) {
+        setStorySlug(route.storySlug);
+        setSelectedCity(null);
+        setCompareMode(false);
+        return;
+      }
+      setStorySlug(null);
       if (route.compareMode) {
         setCompareMode(true);
         setSelectedCity(null);
@@ -2829,6 +2931,17 @@ export default function App() {
 
   const showCompare = compareMode && !selectedCity;
   const showCity = !!selectedCity && !compareMode;
+
+  if (storySlug) {
+    return (
+      <Suspense fallback={<div style={{ background: "#0d0d0d", height: "100vh" }} />}>
+        <StoryViewer
+          slug={storySlug}
+          onHome={() => { setStorySlug(null); updateUrlToHome(); }}
+        />
+      </Suspense>
+    );
+  }
 
   return (
     <>

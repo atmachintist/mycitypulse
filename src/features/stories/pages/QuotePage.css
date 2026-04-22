@@ -1,0 +1,40 @@
+.story-quote {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 32px;
+  box-sizing: border-box;
+}
+
+.story-quote__inner {
+  max-width: 600px;
+  position: relative;
+}
+
+.story-quote__mark {
+  display: block;
+  font-size: 120px;
+  line-height: 0.7;
+  color: rgba(255, 255, 255, 0.08);
+  font-family: Georgia, serif;
+  margin-bottom: 24px;
+  user-select: none;
+}
+
+.story-quote__text {
+  font-size: clamp(22px, 4vw, 34px);
+  font-weight: 500;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 28px;
+  font-style: italic;
+}
+
+.story-quote__attribution {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0;
+  letter-spacing: 0.04em;
+}
