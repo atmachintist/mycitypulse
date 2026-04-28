@@ -1,0 +1,18 @@
+app = "yash-nugget-bot"
+primary_region = "sin"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  # Secrets are set separately via:
+  # fly secrets set TELEGRAM_TOKEN=... ANTHROPIC_API_KEY=... TELEGRAM_USER_ID=...
+
+[[mounts]]
+  source = "nugget_data"
+  destination = "/root/.nugget"
+
+[[vm]]
+  memory = "256mb"
+  cpu_kind = "shared"
+  cpus = 1
