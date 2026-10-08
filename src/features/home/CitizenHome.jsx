@@ -33,6 +33,13 @@ function compose(t,values,topic) {
   ];
   return lines.filter(v=>v!==null).join("\n");
 }
+function sevenWeekdaysAfter(dateString) {
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(dateString||"")) return null;
+  const date=new Date(dateString+"T12:00:00");
+  if(Number.isNaN(date.getTime()))return null;
+  let count=0;while(count<7){date.setDate(date.getDate()+1);if(date.getDay()!==0&&date.getDay()!==6)count++;}
+  return date.toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"});
+}
 function readCases(){ const data=localRead(LOCAL_KEY,[]);return Array.isArray(data)?data.slice(0,20):[]; }
 function issueFor(value) {return topicList.find(x=>x.id===value)||topicList[topicList.length-1];}
 
@@ -44,6 +51,7 @@ export default function CitizenHome(){
   const [draft,setDraft]=useState("");
   const [cases,setCases]=useState(readCases);
   const [ref,setRef]=useState("");
+  const [filedDate,setFiledDate]=useState("");
   const [error,setError]=useState("");
   const [notice,setNotice]=useState("");
   const [precise,setPrecise]=useState(false);
@@ -91,7 +99,7 @@ export default function CitizenHome(){
     try{await navigator.clipboard.writeText(draft);setNotice(t.copied);}catch{setNotice(t.manualCopy);}
   }
   function save(){
-    const next=[{id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),topic:t[topic.id],area:form.area,city:form.city,landmark:form.landmark,digipin:digipin,reference:ref.trim().slice(0,100),created:new Date().toISOString()},...cases].slice(0,20);
+    const next=[{id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),topic:t[topic.id],area:form.area,city:form.city,landmark:form.landmark,digipin:digipin,reference:ref.trim().slice(0,100),filedDate:ref.trim()?filedDate:"",requestSeven:form.seven,created:new Date().toISOString()},...cases].slice(0,20);
     try{localStorage.setItem(LOCAL_KEY,JSON.stringify(next));setCases(next);setNotice(t.localSaved);setRef("");}
     catch{setNotice(t.cannotSave);}
   }
@@ -157,15 +165,15 @@ export default function CitizenHome(){
             <div className="mcp-form-actions"><button type="button" className="mcp-btn mcp-btn-orange" onClick={advance}>{t.create} →</button><button type="button" className="mcp-quiet" onClick={()=>setStage(1)}>← {t.back}</button></div>
           </div>}
           {stage===3&&<div className="mcp-result">
-            <label className="mcp-label" htmlFor="mcp-draft">{t.draftLabel}</label><textarea className="mcp-draft" id="mcp-draft" rows={12} value={draft} onChange={e=>setDraft(e.target.value)}/>
+            <label className="mcp-label" htmlFor="mcp-draft">{t.draftLabel}</label><button type="button" className="mcp-quiet" onClick={()=>setDraft(compose(t,form,topic))}>{t.retranslate} ↻</button><textarea className="mcp-draft" id="mcp-draft" rows={12} value={draft} onChange={e=>setDraft(e.target.value)}/>
             <div className="mcp-form-actions"><button type="button" onClick={copyMessage} className="mcp-btn mcp-btn-dark">{t.copy} ⧉</button><button type="button" className="mcp-quiet" onClick={()=>setStage(2)}>← {t.back}</button></div>
             <div className="mcp-official"><span>{t.officialTitle}</span><p>{t.officialInfo}</p>{inAhmedabad?<div className="mcp-link-row"><a href={OFFICIAL} target="_blank" rel="noopener noreferrer">{t.official}</a><a href={TRACK} target="_blank" rel="noopener noreferrer">{t.track}</a></div>:<p>{t.outOfArea}</p>}{inAhmedabad&&<p className="mcp-help">{t.jurisdiction}</p>}</div>
-            <div className="mcp-save"><label className="mcp-label" htmlFor="mcp-reference">{t.ref}</label><div className="mcp-save-row"><input id="mcp-reference" value={ref} maxLength={100} onChange={e=>setRef(e.target.value)} placeholder={t.refPlaceholder}/><button type="button" className="mcp-btn mcp-btn-outline" onClick={save}>{t.save} ✓</button></div></div>
+            <div className="mcp-save"><label className="mcp-label" htmlFor="mcp-reference">{t.ref}</label><div className="mcp-save-row"><input id="mcp-reference" value={ref} maxLength={100} onChange={e=>setRef(e.target.value)} placeholder={t.refPlaceholder}/><button type="button" className="mcp-btn mcp-btn-outline" onClick={save}>{t.save} ✓</button></div>{!!ref.trim()&&<div className="mcp-date-field"><label className="mcp-label" htmlFor="mcp-filed-date">{t.filedDate}</label><input id="mcp-filed-date" type="date" value={filedDate} max={new Date().toISOString().slice(0,10)} onChange={e=>setFiledDate(e.target.value)}/>{form.seven&&filedDate&&<p className="mcp-help"><strong>{t.followup}: {sevenWeekdaysAfter(filedDate)}</strong><br/>{t.followupDisclaimer}</p>}</div>}</div>
             {notice&&<p role="status" className="mcp-success">{notice}</p>}
           </div>}
         </section>}
         {mode==="saved"&&<section className="mcp-flow"><div className="mcp-flow-heading"><h2>{t.myCases}</h2><button type="button" className="mcp-quiet" onClick={()=>setMode("home")}>{t.close} ✕</button></div>
-          {!cases.length?<p className="mcp-empty">{t.noCases}</p>:<div className="mcp-saved-grid">{cases.map(x=><article key={x.id} className="mcp-saved-card"><small>{new Date(x.created).toLocaleDateString()}</small><h3>{x.topic}</h3><p>{[x.landmark,x.area,x.city].filter(Boolean).join(", ")}</p><p>{x.reference||t.noReference}</p><button type="button" onClick={()=>remove(x.id)}>{t.delete}</button></article>)}</div>}<p className="mcp-help">{t.deviceOnly}</p><button type="button" className="mcp-btn mcp-btn-orange" onClick={()=>start()}>{t.newCase} ↗</button>
+          {!cases.length?<p className="mcp-empty">{t.noCases}</p>:<div className="mcp-saved-grid">{cases.map(x=><article key={x.id} className="mcp-saved-card"><small>{new Date(x.created).toLocaleDateString()}</small><h3>{x.topic}</h3><p>{[x.landmark,x.area,x.city].filter(Boolean).join(", ")}</p><p>{x.reference||t.noReference}</p>{x.requestSeven&&x.filedDate&&<p><b>{t.followup}: {sevenWeekdaysAfter(x.filedDate)}</b><br/><small>{t.followupDisclaimer}</small></p>}<button type="button" onClick={()=>remove(x.id)}>{t.delete}</button></article>)}</div>}<p className="mcp-help">{t.deviceOnly}</p><button type="button" className="mcp-btn mcp-btn-orange" onClick={()=>start()}>{t.newCase} ↗</button>
         </section>}
       </div>
 
