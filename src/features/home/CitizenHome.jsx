@@ -11,7 +11,7 @@ const DIGIPIN_URL="https://dac.indiapost.gov.in/mydigipin";
 const LOCAL_KEY="mcp:citizen:saved:v2";
 const LANG_KEY="mcp:citizen:lang:v2";
 const EMAIL_VALID=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PIN_VALID=/^[23456789CFJKL MPT]{10}$/; // Exact permitted characters (spaces normalized first)
+const PIN_VALID=/^[23456789CFJKLMPT]{10}$/; // 10 valid DIGIPIN characters
 const AREAS=["South Bopal","Bopal","Ghuma","Shela","Shilaj","Bodakdev","Satellite","Vastrapur","Chandkheda","Thaltej","Gota"];
 
 function localRead(key,fallback) {
@@ -168,7 +168,7 @@ export default function CitizenHome(){
             <label className="mcp-label" htmlFor="mcp-draft">{t.draftLabel}</label><button type="button" className="mcp-quiet" onClick={()=>setDraft(compose(t,form,topic))}>{t.retranslate} ↻</button><textarea className="mcp-draft" id="mcp-draft" rows={12} value={draft} onChange={e=>setDraft(e.target.value)}/>
             <div className="mcp-form-actions"><button type="button" onClick={copyMessage} className="mcp-btn mcp-btn-dark">{t.copy} ⧉</button><button type="button" className="mcp-quiet" onClick={()=>setStage(2)}>← {t.back}</button></div>
             <div className="mcp-official"><span>{t.officialTitle}</span><p>{t.officialInfo}</p>{inAhmedabad?<div className="mcp-link-row"><a href={OFFICIAL} target="_blank" rel="noopener noreferrer">{t.official}</a><a href={TRACK} target="_blank" rel="noopener noreferrer">{t.track}</a></div>:<p>{t.outOfArea}</p>}{inAhmedabad&&<p className="mcp-help">{t.jurisdiction}</p>}</div>
-            <div className="mcp-save"><label className="mcp-label" htmlFor="mcp-reference">{t.ref}</label><div className="mcp-save-row"><input id="mcp-reference" value={ref} maxLength={100} onChange={e=>setRef(e.target.value)} placeholder={t.refPlaceholder}/><button type="button" className="mcp-btn mcp-btn-outline" onClick={save}>{t.save} ✓</button></div>{!!ref.trim()&&<div className="mcp-date-field"><label className="mcp-label" htmlFor="mcp-filed-date">{t.filedDate}</label><input id="mcp-filed-date" type="date" value={filedDate} max={new Date().toISOString().slice(0,10)} onChange={e=>setFiledDate(e.target.value)}/>{form.seven&&filedDate&&<p className="mcp-help"><strong>{t.followup}: {sevenWeekdaysAfter(filedDate)}</strong><br/>{t.followupDisclaimer}</p>}</div>}</div>
+            <div className="mcp-save"><label className="mcp-label" htmlFor="mcp-reference">{t.ref}</label><div className="mcp-save-row"><input id="mcp-reference" value={ref} maxLength={100} onChange={e=>setRef(e.target.value)} placeholder={t.refPlaceholder}/><button type="button" className="mcp-btn mcp-btn-outline" onClick={save}>{t.save} ✓</button></div>{!!ref.trim()&&<div className="mcp-date-field"><label className="mcp-label" htmlFor="mcp-filed-date">{t.filedDate}</label><input id="mcp-filed-date" type="date" value={filedDate} max={new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10)} onChange={e=>setFiledDate(e.target.value)}/>{form.seven&&filedDate&&<p className="mcp-help"><strong>{t.followup}: {sevenWeekdaysAfter(filedDate)}</strong><br/>{t.followupDisclaimer}</p>}</div>}</div>
             {notice&&<p role="status" className="mcp-success">{notice}</p>}
           </div>}
         </section>}
