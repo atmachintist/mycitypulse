@@ -1,225 +1,180 @@
 import { useEffect, useRef, useState } from "react";
+import { getLatLngFromDigiPin, normalizeDigipin } from "../../domain/location/digipin.js";
+import { TEXT, topicList, identify, languages } from "./citizenLocale.js";
 import "./CitizenHome.css";
+import "./CitizenHomeV2.css";
 
-const OFFICIAL = "https://www.amccrs.com/AMCPortal";
-const TRACK = "https://www.amccrs.com/AMCPortal/Complaint/TrackProgress?activeTab=token";
-const STORAGE_KEY = "mcp:citizen:cases:v1";
+const CONTACT_EMAIL="hello@mycitypulse.in";
+const OFFICIAL="https://www.amccrs.com/AMCPortal";
+const TRACK="https://www.amccrs.com/AMCPortal/Complaint/TrackProgress?activeTab=token";
+const DIGIPIN_URL="https://dac.indiapost.gov.in/mydigipin";
+const LOCAL_KEY="mcp:citizen:saved:v2";
+const LANG_KEY="mcp:citizen:lang:v2";
+const EMAIL_VALID=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PIN_VALID=/^[23456789CFJKL MPT]{10}$/; // Exact permitted characters (spaces normalized first)
+const AREAS=["South Bopal","Bopal","Ghuma","Shela","Shilaj","Bodakdev","Satellite","Vastrapur","Chandkheda","Thaltej","Gota"];
 
-const ISSUES = [
-  { id: "collection", icon: "↻", title: "Garbage not collected", department: "Sanitation / solid waste services", question: "Was the waste meant to be collected from a home, a society, or a public bin?", steps: "Record the missed collection dates. If it is a society service, check whether the society contractor or the municipal service is responsible." },
-  { id: "dumping", icon: "▦", title: "Waste dumped nearby", department: "Sanitation / solid waste services", question: "Is it on public land, a road, or inside a privately managed property?", steps: "Add a landmark and describe the type of waste. The authority may differ for public and private property." },
-  { id: "light", icon: "✳", title: "Streetlight not working", department: "Streetlighting / electrical services", question: "Is this a public streetlight or lighting inside a private society?", steps: "Look for a pole number or nearby landmark. Private lighting usually requires a different route." },
-  { id: "road", icon: "〰", title: "Pothole or broken road", department: "Roads / engineering services", question: "Is this a municipal road, state road, highway, or private internal road?", steps: "Note the precise stretch and a recognizable landmark. Road ownership needs verification before routing." },
-  { id: "water", icon: "◉", title: "Water or drainage issue", department: "Water supply / drainage services", question: "Is the problem with a municipal line or a society's internal system?", steps: "Record when it started and whether neighbouring properties are affected. Urgent flooding requires immediate local help." },
-  { id: "other", icon: "+", title: "Something else", department: "Service desk to be determined", question: "Which service is affected, and who maintains the location?", steps: "Describe the problem in plain words. Do not assume a particular department without verifying responsibility." }
-];
-
-const PILOT_AREAS = ["South Bopal", "Bopal", "Ghuma", "Shela", "Shilaj", "Another Ahmedabad locality", "Outside Ahmedabad"];
-const EMPTY = { issue: "collection", area: "", landmark: "", detail: "" };
-
-function safeLoad() {
-  try { const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); return Array.isArray(value) ? value.slice(0, 25) : []; }
-  catch { return []; }
+function localRead(key,fallback) {
+  try {const value=localStorage.getItem(key);return value===null?fallback:JSON.parse(value);} catch{return fallback;}
 }
-function draftFor(form, issue) {
-  const where = [form.landmark.trim(), form.area].filter(Boolean).join(", ");
-  return `Subject: Request for assistance: ${issue.title}
-
-Hello,
-
-I would like to report the following issue at ${where || "[location]"}.
-
-Issue: ${issue.title}
-Description: ${form.detail.trim() || "[Please describe what happened, since when, and how it affects people.]"}
-
-Please advise which department or service provider is responsible, register the complaint if this falls under your jurisdiction, and share a reference number for follow-up.
-
-Thank you.`;
+function compose(t,values,topic) {
+  const lines=[
+    `${t.mailSubj}: ${t[topic.id]}`,
+    "",t.greeting,"",t.intro,
+    `${t.labelIssue}: ${t[topic.id]}`,
+    `${t.labelPlace}: ${[values.landmark,values.area,values.city].filter(Boolean).join(", ")}`,
+    values.digipin?`${t.labelDigipin}: ${normalizeDigipin(values.digipin)}`:null,
+    values.placeType?`${t.labelType}: ${t[values.placeType]}`:null,
+    values.since?`${t.labelWhen}: ${t[values.since]}`:null,
+    `${t.labelDetail}: ${values.description}`,
+    values.email?`${t.labelReply}: ${values.email}`:null,
+    "",values.seven?t.letterRequest:t.letterGeneral,
+    "",t.thanks
+  ];
+  return lines.filter(v=>v!==null).join("\n");
 }
+function readCases(){ const data=localRead(LOCAL_KEY,[]);return Array.isArray(data)?data.slice(0,20):[]; }
+function issueFor(value) {return topicList.find(x=>x.id===value)||topicList[topicList.length-1];}
 
-export default function CitizenHome() {
-  const [mode, setMode] = useState("landing");
-  const [step, setStep] = useState(1);
-  const [form, setForm] = useState(EMPTY);
-  const [draft, setDraft] = useState("");
-  const [reference, setReference] = useState("");
-  const [cases, setCases] = useState(safeLoad);
-  const [notification, setNotification] = useState("");
-  const [error, setError] = useState("");
-  const flowRef = useRef(null);
-  const issue = ISSUES.find(item => item.id === form.issue) || ISSUES[0];
-  const inAhmedabad = !!form.area && form.area !== "Outside Ahmedabad";
-  const pilot = ["South Bopal", "Bopal", "Ghuma", "Shela", "Shilaj"].includes(form.area);
-  const progress = step === 1 ? "01 / 03" : step === 2 ? "02 / 03" : "03 / 03";
+export default function CitizenHome(){
+  const [lang,setLang]=useState(()=>{try{const s=localStorage.getItem(LANG_KEY);return TEXT[s]?s:"en";}catch{return"en";}});
+  const [mode,setMode]=useState("home");
+  const [stage,setStage]=useState(1);
+  const [form,setForm]=useState({description:"",city:"Ahmedabad",area:"",landmark:"",digipin:"",placeType:"",since:"",email:"",seven:false,topic:"auto"});
+  const [draft,setDraft]=useState("");
+  const [cases,setCases]=useState(readCases);
+  const [ref,setRef]=useState("");
+  const [error,setError]=useState("");
+  const [notice,setNotice]=useState("");
+  const [precise,setPrecise]=useState(false);
+  const [more,setMore]=useState(false);
+  const [languageRequest,setLanguageRequest]=useState(false);
+  const [requestedLanguage,setRequestedLanguage]=useState("");
+  const [emailBox,setEmailBox]=useState(false);
+  const [accountEmail,setAccountEmail]=useState("");
+  const [authBusy,setAuthBusy]=useState(false);
+  const [authState,setAuthState]=useState("");
+  const deskRef=useRef(null);
+  const t=TEXT[lang];
+  const topic=issueFor(form.topic==="auto"?identify(form.description):form.topic);
+  const digipin=normalizeDigipin(form.digipin);
+  const pinOkay=!digipin|| (PIN_VALID.test(digipin)&&(()=>{try{const x=getLatLngFromDigiPin(digipin);return Number.isFinite(x.latitude)&&Number.isFinite(x.longitude);}catch{return false;}})());
+  const inAhmedabad=form.city.trim().toLowerCase()==="ahmedabad"||form.city.trim()==="અમદાવાદ"||form.city.trim()==="अहमदाबाद";
+  const authUrl=(import.meta.env.VITE_SUPABASE_URL||"").replace(/\/$/,"");
+  const anonKey=import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const authConfigured=Boolean(authUrl&&anonKey);
 
-  useEffect(() => {
-    document.title = "MyCityPulse | Know where to start";
-  }, []);
-
-  useEffect(() => {
-    if (mode !== "flow" && mode !== "saved") return;
-    window.requestAnimationFrame(() => flowRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
-  }, [mode]);
-
-  function startFlow(selectedIssue = null) {
-    setMode("flow");
-    setStep(1);
-    setError("");
-    setNotification("");
-    if (selectedIssue) setForm(previous => ({ ...previous, issue: selectedIssue }));
-    else setForm(EMPTY);
-    window.requestAnimationFrame(() => flowRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  useEffect(()=>{document.documentElement.lang=lang;document.title="MyCityPulse | "+t.heroAccent;},[lang,t.heroAccent]);
+  function changeLang(next){setLang(next);try{localStorage.setItem(LANG_KEY,next);}catch{} }
+  function change(key,value){setForm(prev=>({...prev,[key]:value}));setError("");}
+  function start(topicId){
+    setMode("desk");setStage(1);setError("");setNotice("");setPrecise(false);setMore(false);
+    if(topicId){const i=issueFor(topicId);setForm(old=>({...old,topic:topicId,description:t[topicId]}));}
+    else setForm(old=>({...old,topic:"auto",description:""}));
+    requestAnimationFrame(()=>deskRef.current?.scrollIntoView({behavior:"smooth",block:"start"}));
   }
-  function next() {
+  function advance(){
     setError("");
-    if (step === 1 && !form.area) { setError("Choose a locality so we can give location-appropriate guidance."); return; }
-    if (step === 1) { setStep(2); return; }
-    if (step === 2) { setDraft(draftFor(form, issue)); setStep(3); }
-  }
-  async function copyDraft() {
-    try {
-      await navigator.clipboard.writeText(draft);
-      setNotification("Complaint draft copied. You can paste and edit it in the official channel.");
-    } catch {
-      setNotification("Clipboard access was blocked. Select the draft above and copy it manually.");
+    if(stage===1){
+      if(form.description.trim().length<4){setError(t.needDesc);return;}
+      if(!form.city.trim()){setError(t.needCity);return;}
+      if(!form.area.trim()&&!digipin){setError(t.needArea);return;}
+      if(!pinOkay){setError(t.invalidPin);return;}
+      setStage(2);
+    }else if(stage===2){
+      if(form.email.trim()&&!EMAIL_VALID.test(form.email.trim())){setError(t.invalidEmail);return;}
+      setDraft(compose(t,form,topic));setStage(3);
     }
+    deskRef.current?.scrollIntoView({behavior:"smooth",block:"start"});
   }
-  function saveCase() {
-    const entry = {
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
-      added: new Date().toISOString(),
-      issue: issue.title, area: form.area, landmark: form.landmark.trim(),
-      reference: reference.trim(), note: form.detail.trim().slice(0, 400)
-    };
-    const updated = [entry, ...cases].slice(0, 25);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      setCases(updated);
-      setNotification(reference.trim() ? "Saved on this device. This is not linked to the government portal." : "Saved as a draft on this device. No complaint has been submitted.");
-      setReference("");
-    } catch { setNotification("Local storage is unavailable. Copy the draft to keep it."); }
+  async function copyMessage(){
+    try{await navigator.clipboard.writeText(draft);setNotice(t.copied);}catch{setNotice(t.manualCopy);}
   }
-  function removeCase(id) {
-    const updated = cases.filter(item => item.id !== id);
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(updated)); setCases(updated); }
-    catch { setNotification("Couldn't update this browser's storage."); }
+  function save(){
+    const next=[{id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),topic:t[topic.id],area:form.area,city:form.city,landmark:form.landmark,digipin:digipin,reference:ref.trim().slice(0,100),created:new Date().toISOString()},...cases].slice(0,20);
+    try{localStorage.setItem(LOCAL_KEY,JSON.stringify(next));setCases(next);setNotice(t.localSaved);setRef("");}
+    catch{setNotice(t.cannotSave);}
+  }
+  function remove(id){const next=cases.filter(x=>x.id!==id);try{localStorage.setItem(LOCAL_KEY,JSON.stringify(next));setCases(next);}catch{setNotice(t.cannotSave);}}
+  function sendLangRequest(e){
+    e.preventDefault();if(!requestedLanguage.trim())return;
+    const subject=encodeURIComponent("MyCityPulse language request: "+requestedLanguage.trim());
+    const body=encodeURIComponent("Please consider adding "+requestedLanguage.trim()+" to MyCityPulse.\n\nSent from the website language selector.");
+    window.location.href=`mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+    setLanguageRequest(false);
+  }
+  async function requestSignIn(e){
+    e.preventDefault();if(!EMAIL_VALID.test(accountEmail.trim())){setAuthState(t.invalidEmail);return;}
+    if(!authConfigured){setAuthState(t.accessNotReady);return;}
+    setAuthBusy(true);setAuthState("");
+    try{
+      const resp=await fetch(`${authUrl}/auth/v1/otp`,{
+        method:"POST",headers:{"Content-Type":"application/json","apikey":anonKey},
+        body:JSON.stringify({email:accountEmail.trim(),create_user:true,options:{email_redirect_to:window.location.origin+"/"}})
+      });
+      if(!resp.ok)throw new Error("Unable to request email link");
+      setAuthState(t.checkInbox);
+    }catch{setAuthState(t.authError);}finally{setAuthBusy(false);}
   }
 
-  return (
-    <div className="mcp-citizen" id="top">
-      <div className="mcp-notice"><span className="mcp-signal" /> EARLY PILOT · AHMEDABAD FIRST <span className="mcp-sep">/</span> INDEPENDENT CIVIC GUIDE</div>
-      <header className="mcp-header mcp-wrap">
-        <a href="/" className="mcp-wordmark" aria-label="MyCityPulse home"><span className="mcp-logomark"><i /><i /><i /><i /></span><span>mycity<b>pulse</b><small>.in</small></span></a>
-        <nav aria-label="Website" className="mcp-nav">
-          <a href="/explore">Explore cities</a>
-          <a href="/ahmedabad">Ahmedabad</a>
-          <a href="/compare">Compare</a>
-          <button type="button" onClick={() => { setMode("saved"); setNotification(""); }}>Saved cases <span className="mcp-count">{cases.length}</span></button>
-        </nav>
-        <button type="button" className="mcp-btn mcp-btn-dark mcp-nav-cta" onClick={() => startFlow()}>Find my next step <span aria-hidden="true">↗</span></button>
-      </header>
+  return <div className="mcp-citizen mcp-v2" lang={lang}>
+    <header className="mcp-header mcp-wrap">
+      <a href="/" className="mcp-wordmark" aria-label="MyCityPulse home"><span className="mcp-logomark"><i/><i/><i/><i/></span><span>mycity<b>pulse</b><small>.in</small></span></a>
+      <nav className="mcp-nav" aria-label="Main navigation"><a href="/explore">{t.cities}</a><a href="/ahmedabad">{t.amd}</a><a href="/compare">{t.compare}</a><button type="button" onClick={()=>setMode("saved")}>{t.saved}<span className="mcp-count">{cases.length}</span></button></nav>
+      <div className="mcp-translate"><label htmlFor="mcp-language">{t.lang}</label><select id="mcp-language" aria-label={t.lang} value={lang} onChange={e=>changeLang(e.target.value)}>{languages.map(l=><option key={l.id} value={l.id}>{l.label}</option>)}</select><button type="button" title={t.otherLang} onClick={()=>setLanguageRequest(v=>!v)}>＋</button></div>
+    </header>
+    {languageRequest&&<form className="mcp-wrap mcp-lang-form" onSubmit={sendLangRequest}><label htmlFor="mcp-request-language">{t.languageName}</label><input id="mcp-request-language" value={requestedLanguage} onChange={e=>setRequestedLanguage(e.target.value)} placeholder={t.languagePlaceholder} maxLength={70} required/><button type="submit" className="mcp-btn mcp-btn-dark">{t.request} ↗</button><button type="button" className="mcp-quiet" onClick={()=>setLanguageRequest(false)}>{t.cancel}</button><small>{t.requestHint}</small></form>}
 
-      <main>
-        <section className="mcp-hero mcp-wrap" aria-labelledby="mcp-hero-title">
-          <div className="mcp-hero-content">
-            <div className="mcp-eyebrow"><span /> MAKING PUBLIC SYSTEMS USABLE</div>
-            <h1 id="mcp-hero-title">Your city has a problem.<br /><em>Where do you begin?</em></h1>
-            <p className="mcp-hero-lead">The garbage wasn't collected. A streetlight went dark. There's a pothole outside your gate. Who's supposed to handle it?</p>
-            <p className="mcp-hero-sub">Describe what happened. Understand the likely responsibility. Leave with a clear next step.</p>
-            <div className="mcp-hero-buttons">
-              <button type="button" className="mcp-btn mcp-btn-orange" onClick={() => startFlow()}>Find who handles it <span>↗</span></button>
-              <a href="#how" className="mcp-btn mcp-btn-outline">How it works <span>↓</span></a>
-            </div>
-            <div className="mcp-trust"><span>✓ No login</span><span>✓ No automatic submission</span><span>✓ Free pilot</span></div>
-          </div>
-          <div className="mcp-scene" aria-label="Illustration of a neighbourhood problem">
-            <div className="mcp-scene-top"><span><span className="mcp-signal" /> AN EVERYDAY CITY MOMENT</span><span>23° N / 72° E</span></div>
-            <div className="mcp-art">
-              <div className="mcp-sun" /><div className="mcp-cloud" />
-              <div className="mcp-house house-one"><div /><div /><div /></div>
-              <div className="mcp-house house-two"><div /><div /><div /></div>
-              <div className="mcp-house house-three"><div /><div /></div>
-              <div className="mcp-tree"><span /><i /></div>
-              <div className="mcp-road"><span /><span /></div>
-              <div className="mcp-pin">!</div>
-            </div>
-            <div className="mcp-scene-caption"><div><small>AN ORDINARY QUESTION</small><strong>“Kachra kyare uthse?”</strong><p>Garbage waiting outside the society gate.</p></div><span>↗</span></div>
-            <div className="mcp-scene-bottom"><span>START WITH WHAT YOU SEE</span><span>AHMEDABAD EDGE</span></div>
-          </div>
-        </section>
+    <main>
+      <section className="mcp-hero mcp-wrap" aria-labelledby="mcp-hero-title">
+        <div className="mcp-hero-content"><div className="mcp-eyebrow"><span/>{t.tagline}</div><h1 id="mcp-hero-title">{t.hero}<br/><em>{t.heroAccent}</em></h1><p className="mcp-hero-lead">{t.lead}</p><div className="mcp-hero-buttons"><button type="button" className="mcp-btn mcp-btn-orange" onClick={()=>start()}>{t.start}<span>↗</span></button><a href="#how" className="mcp-btn mcp-btn-outline">{t.explain} ↓</a></div><div className="mcp-trust"><span>✓ {t.privacy}</span><span>✓ {t.notFiled}</span><span>✓ {t.free}</span></div></div>
+        <div className="mcp-scene"><div className="mcp-scene-top"><span><i className="mcp-signal"/> CITY MOMENTS</span><span>23° N / 72° E</span></div><div className="mcp-art"><div className="mcp-sun"/><div className="mcp-cloud"/><div className="mcp-house house-one"><div/><div/><div/></div><div className="mcp-house house-two"><div/><div/><div/></div><div className="mcp-house house-three"><div/><div/></div><div className="mcp-tree"><span/><i/></div><div className="mcp-road"><span/><span/></div><div className="mcp-pin">!</div></div><div className="mcp-scene-caption"><div><small>THE EVERYDAY CITY</small><strong>“Kachra kyare uthse?”</strong><p>Ahmedabad, one ordinary morning.</p></div><span>↗</span></div></div>
+      </section>
+      <section className="mcp-issues"><div className="mcp-wrap"><div className="mcp-issues-head"><span>{t.common}</span><span>{t.yourWords} ↘</span></div><div className="mcp-issue-grid">{topicList.slice(0,4).map(x=><button key={x.id} type="button" className="mcp-issue" onClick={()=>start(x.id)}><span className="mcp-issue-icon">{x.symbol}</span><span>{t[x.id]}</span><span className="mcp-issue-arrow">↗</span></button>)}</div></div></section>
 
-        <section className="mcp-issues" aria-label="Common local problems">
-          <div className="mcp-wrap"><div className="mcp-issues-head"><span>DOES THIS SOUND FAMILIAR?</span><span>CHOOSE A STARTING POINT ↘</span></div>
-            <div className="mcp-issue-grid">{ISSUES.slice(0, 4).map(option => (
-              <button type="button" key={option.id} onClick={() => startFlow(option.id)} className="mcp-issue"><span className="mcp-issue-icon">{option.icon}</span><span>{option.title}</span><span className="mcp-issue-arrow">↗</span></button>
-            ))}</div>
-          </div>
-        </section>
+      <div className="mcp-wrap mcp-flow-wrap" id="citizen-desk" ref={deskRef}>
+        {mode==="desk"&&<section className="mcp-flow" aria-labelledby="mcp-flow-title">
+          <div className="mcp-flow-heading"><div><div className="mcp-eyebrow"><span/>{t.tagline}</div><h2 id="mcp-flow-title">{stage===1?t.stage1:stage===2?t.stage2:t.stage3}</h2></div><div className="mcp-step-count">{t.step} {stage}/3</div></div><div className="mcp-track"><span style={{width:`${stage/3*100}%`}}/></div>
+          {stage===1&&<form className="mcp-form" onSubmit={e=>{e.preventDefault();advance();}}>
+            <label htmlFor="mcp-description" className="mcp-label">{t.describe} *</label>
+            <textarea id="mcp-description" value={form.description} onChange={e=>change("description",e.target.value)} placeholder={t.descPlaceholder} rows={4} maxLength={1200} required autoFocus/>
+            <div className="mcp-discovered"><span>{t.issueType}: <b>{t[topic.id]}</b></span><button type="button" onClick={()=>setMore(s=>!s)}>{t.changeType} ⌄</button></div>
+            {more&&<div className="mcp-chooser">{topicList.map(x=><button type="button" key={x.id} aria-pressed={topic.id===x.id} className={topic.id===x.id?"mcp-choice selected":"mcp-choice"} onClick={()=>{change("topic",x.id);setMore(false);}}>{x.symbol} {t[x.id]}</button>)}</div>}
+            <label className="mcp-label" htmlFor="mcp-city">{t.city} *</label>
+            <select id="mcp-city" value={form.city==="Ahmedabad"?"Ahmedabad":"other"} onChange={e=>change("city",e.target.value==="Ahmedabad"?"Ahmedabad":"")}><option value="Ahmedabad">{t.cityAhmedabad}</option><option value="other">{t.cityOther}</option></select>
+            {!inAhmedabad&&<><label className="mcp-label" htmlFor="mcp-othercity">{t.cityName} *</label><input id="mcp-othercity" value={form.city} onChange={e=>change("city",e.target.value)} placeholder={t.cityNamePlaceholder} maxLength={100}/></>}
+            <div className="mcp-form-cols"><div><label className="mcp-label" htmlFor="mcp-area">{t.area}{!digipin?" *":""}</label><input list="mcp-area-choices" id="mcp-area" value={form.area} onChange={e=>change("area",e.target.value)} placeholder={t.areaPlaceholder} maxLength={120}/><datalist id="mcp-area-choices">{AREAS.map(x=><option key={x} value={x}/>)}</datalist></div><div><label className="mcp-label" htmlFor="mcp-landmark">{t.landmark}</label><input id="mcp-landmark" value={form.landmark} onChange={e=>change("landmark",e.target.value)} placeholder={t.landmarkPlaceholder} maxLength={160}/></div></div>
+            <button type="button" className="mcp-disclosure" aria-expanded={precise} onClick={()=>setPrecise(!precise)}>＋ {t.precision} <span>⌄</span></button>
+            {precise&&<div className="mcp-pin-area"><label className="mcp-label" htmlFor="mcp-digipin">{t.digipin}</label><input id="mcp-digipin" value={form.digipin} onChange={e=>change("digipin",normalizeDigipin(e.target.value).slice(0,10))} placeholder={t.digipinPlaceholder} maxLength={10} autoComplete="off" inputMode="text" aria-invalid={!pinOkay}/><div className="mcp-pin-help"><span>{t.digitip}</span><a href={DIGIPIN_URL} target="_blank" rel="noopener noreferrer">{t.findPin}</a></div>{!pinOkay&&<p className="mcp-error" role="alert">{t.invalidPin}</p>}</div>}
+            {error&&<p className="mcp-error" role="alert">{error}</p>}<div className="mcp-form-actions"><button type="submit" className="mcp-btn mcp-btn-orange">{t.next} →</button><button type="button" className="mcp-quiet" onClick={()=>setMode("home")}>{t.close}</button></div>
+          </form>}
+          {stage===2&&<div className="mcp-form">
+            <div className="mcp-result-card"><span className="mcp-result-tag">{t.result}</span><div className="mcp-result-grid"><div><small>{t.issueType}</small><strong>{t[topic.id]}</strong></div><div><small>{t.location}</small><strong>{[form.area,form.city].filter(Boolean).join(", ")||digipin}</strong></div><div><small>{t.service}</small><strong>{t[topic.desk]}</strong></div></div><h3>{t.check}</h3><p>{form.placeType==="private"?t.reasonPrivate:t.reasonPublic}</p><p className="mcp-help">{t.guidance}</p></div>
+            <div className="mcp-optional"><label className="mcp-label">{t.ownership}</label><div className="mcp-pills">{["public","private","unsure"].map(x=><button key={x} type="button" aria-pressed={form.placeType===x} className={form.placeType===x?"on":""} onClick={()=>change("placeType",x)}>{t[x]}</button>)}</div>
+            <label className="mcp-label">{t.since}</label><div className="mcp-pills">{["today","days","week","unknown"].map(x=><button key={x} type="button" aria-pressed={form.since===x} className={form.since===x?"on":""} onClick={()=>change("since",x)}>{t[x]}</button>)}</div></div>
+            <div className="mcp-followup"><h3>{t.contact}</h3><p>{t.contactInfo}</p><label className="mcp-check"><input type="checkbox" checked={form.seven} onChange={e=>change("seven",e.target.checked)}/><span>{t.deadline}</span></label><p className="mcp-help">{t.deadlineNote}</p><label htmlFor="mcp-email" className="mcp-label">{t.email}</label><input type="email" id="mcp-email" value={form.email} placeholder={t.emailPlaceholder} onChange={e=>change("email",e.target.value)} maxLength={180}/></div>
+            {error&&<p className="mcp-error" role="alert">{error}</p>}
+            <div className="mcp-form-actions"><button type="button" className="mcp-btn mcp-btn-orange" onClick={advance}>{t.create} →</button><button type="button" className="mcp-quiet" onClick={()=>setStage(1)}>← {t.back}</button></div>
+          </div>}
+          {stage===3&&<div className="mcp-result">
+            <label className="mcp-label" htmlFor="mcp-draft">{t.draftLabel}</label><textarea className="mcp-draft" id="mcp-draft" rows={12} value={draft} onChange={e=>setDraft(e.target.value)}/>
+            <div className="mcp-form-actions"><button type="button" onClick={copyMessage} className="mcp-btn mcp-btn-dark">{t.copy} ⧉</button><button type="button" className="mcp-quiet" onClick={()=>setStage(2)}>← {t.back}</button></div>
+            <div className="mcp-official"><span>{t.officialTitle}</span><p>{t.officialInfo}</p>{inAhmedabad?<div className="mcp-link-row"><a href={OFFICIAL} target="_blank" rel="noopener noreferrer">{t.official}</a><a href={TRACK} target="_blank" rel="noopener noreferrer">{t.track}</a></div>:<p>{t.outOfArea}</p>}{inAhmedabad&&<p className="mcp-help">{t.jurisdiction}</p>}</div>
+            <div className="mcp-save"><label className="mcp-label" htmlFor="mcp-reference">{t.ref}</label><div className="mcp-save-row"><input id="mcp-reference" value={ref} maxLength={100} onChange={e=>setRef(e.target.value)} placeholder={t.refPlaceholder}/><button type="button" className="mcp-btn mcp-btn-outline" onClick={save}>{t.save} ✓</button></div></div>
+            {notice&&<p role="status" className="mcp-success">{notice}</p>}
+          </div>}
+        </section>}
+        {mode==="saved"&&<section className="mcp-flow"><div className="mcp-flow-heading"><h2>{t.myCases}</h2><button type="button" className="mcp-quiet" onClick={()=>setMode("home")}>{t.close} ✕</button></div>
+          {!cases.length?<p className="mcp-empty">{t.noCases}</p>:<div className="mcp-saved-grid">{cases.map(x=><article key={x.id} className="mcp-saved-card"><small>{new Date(x.created).toLocaleDateString()}</small><h3>{x.topic}</h3><p>{[x.landmark,x.area,x.city].filter(Boolean).join(", ")}</p><p>{x.reference||t.noReference}</p><button type="button" onClick={()=>remove(x.id)}>{t.delete}</button></article>)}</div>}<p className="mcp-help">{t.deviceOnly}</p><button type="button" className="mcp-btn mcp-btn-orange" onClick={()=>start()}>{t.newCase} ↗</button>
+        </section>}
+      </div>
 
-        <section className="mcp-flow-wrap mcp-wrap" ref={flowRef} id="field-desk" aria-label="Citizen guidance">
-          {mode === "flow" && (
-            <div className="mcp-flow">
-              <div className="mcp-flow-heading"><div><span className="mcp-eyebrow"><span /> YOUR NEIGHBOURHOOD FIELD DESK</span><h2>{step === 1 ? "Tell us what happened." : step === 2 ? "Let's find the right starting point." : "Take the next step."}</h2></div><div className="mcp-step-count">STEP {progress}</div></div>
-              <div className="mcp-track"><span style={{ width: `${step * 100 / 3}%` }} /></div>
-              {step === 1 && (
-                <div className="mcp-form">
-                  <label className="mcp-label">What is the issue?</label>
-                  <div className="mcp-chooser">{ISSUES.map(option => <button type="button" key={option.id} className={form.issue === option.id ? "mcp-choice selected" : "mcp-choice"} aria-pressed={form.issue === option.id} onClick={() => setForm({ ...form, issue: option.id })}><span>{option.icon}</span>{option.title}</button>)}</div>
-                  <div className="mcp-form-cols"><div><label className="mcp-label" htmlFor="mcp-area">Where is it happening? *</label><select id="mcp-area" value={form.area} onChange={event => setForm({ ...form, area: event.target.value })}><option value="">Choose a locality</option>{PILOT_AREAS.map(area => <option key={area}>{area}</option>)}</select></div><div><label className="mcp-label" htmlFor="mcp-landmark">Landmark or society (optional)</label><input id="mcp-landmark" value={form.landmark} onChange={event => setForm({ ...form, landmark: event.target.value })} maxLength={140} placeholder="Near the society gate" /></div></div>
-                  <label className="mcp-label" htmlFor="mcp-detail">What exactly happened? (optional)</label><textarea id="mcp-detail" rows={4} maxLength={1200} value={form.detail} onChange={event => setForm({ ...form, detail: event.target.value })} placeholder="Collection has not happened for the past three days..." />
-                  <p className="mcp-help">No GPS, name or phone number required. Don't include personal information in your description.</p>
-                  {error && <p role="alert" className="mcp-error">{error}</p>}
-                  <div className="mcp-form-actions"><button type="button" className="mcp-btn mcp-btn-orange" onClick={next}>Understand the next step <span>→</span></button><button type="button" className="mcp-quiet" onClick={() => setMode("landing")}>Close</button></div>
-                </div>
-              )}
-              {step === 2 && (
-                <div className="mcp-result">
-                  <div className="mcp-result-card"><span className="mcp-result-tag">PROVISIONAL GUIDANCE, NOT VERIFIED ROUTING</span><div className="mcp-result-grid"><div><small>THE ISSUE</small><strong>{issue.title}</strong></div><div><small>LOCATION</small><strong>{form.area}</strong></div><div><small>LIKELY SERVICE AREA</small><strong>{issue.department}</strong></div></div><h3>First, ask the right question.</h3><p>{issue.question}</p><p>{issue.steps}</p><div className="mcp-caution"><strong>What we have not verified:</strong> The exact municipal jurisdiction, service provider, ward and desk for your specific address. {pilot ? "The pilot area spans places with different service arrangements." : "Outside the pilot area, the guidance is especially general."}</div></div>
-                  <div className="mcp-form-actions"><button type="button" className="mcp-btn mcp-btn-orange" onClick={next}>Prepare a complaint draft <span>→</span></button><button type="button" className="mcp-quiet" onClick={() => setStep(1)}>← Edit details</button></div>
-                </div>
-              )}
-              {step === 3 && (
-                <div className="mcp-result">
-                  <label className="mcp-label" htmlFor="mcp-draft">Your editable message</label><textarea id="mcp-draft" className="mcp-draft" rows={11} value={draft} onChange={event => setDraft(event.target.value)} />
-                  <div className="mcp-form-actions"><button type="button" className="mcp-btn mcp-btn-dark" onClick={copyDraft}>Copy complaint draft <span>⧉</span></button><button type="button" className="mcp-quiet" onClick={() => setStep(2)}>← Back to guidance</button></div>
-                  <div className="mcp-official">
-                    <span>OFFICIAL FILING IS A SEPARATE STEP</span>
-                    <p>MyCityPulse has not sent this complaint. Open an official service channel and confirm the correct jurisdiction before submitting.</p>
-                    {inAhmedabad ? <div className="mcp-link-row"><a href={OFFICIAL} target="_blank" rel="noopener noreferrer">AMC CCRS portal ↗</a><a href={TRACK} target="_blank" rel="noopener noreferrer">Track on AMC CCRS ↗</a><a href="tel:155303">AMC helpline: 155303 ↗</a></div> : <p className="mcp-caution">Outside Ahmedabad: identify your local authority's official service channel. This pilot cannot verify it for you.</p>}
-                    {inAhmedabad && <p className="mcp-help">AMC links are useful only for addresses and services within AMC jurisdiction. These are official external websites, not MyCityPulse integrations.</p>}
-                  </div>
-                  <div className="mcp-save"><label className="mcp-label" htmlFor="mcp-reference">Received an official reference number? (optional)</label><div className="mcp-save-row"><input id="mcp-reference" value={reference} onChange={event => setReference(event.target.value)} maxLength={80} placeholder="Paste official acknowledgement here" /><button type="button" className="mcp-btn mcp-btn-outline" onClick={saveCase}>Save privately ✓</button></div><p className="mcp-help">Cases stay only in this browser, not synced to the government or MyCityPulse servers.</p></div>
-                  {notification && <p className="mcp-success" role="status">{notification}</p>}
-                </div>
-              )}
-            </div>
-          )}
-          {mode === "saved" && (
-            <div className="mcp-flow"><div className="mcp-flow-heading"><div><span className="mcp-eyebrow"><span /> YOUR DEVICE ONLY</span><h2>Saved cases.</h2></div><button type="button" className="mcp-quiet" onClick={() => setMode("landing")}>Close ✕</button></div>
-              {!cases.length ? <p className="mcp-empty">Nothing saved here yet. Start with a neighbourhood issue.</p> : <div className="mcp-saved-grid">{cases.map(item => <article key={item.id} className="mcp-saved-card"><small>{new Date(item.added).toLocaleDateString("en-IN")}</small><h3>{item.issue}</h3><p>{[item.landmark,item.area].filter(Boolean).join(", ")}</p><p>Official reference: <strong>{item.reference || "Not yet filed"}</strong></p><button type="button" onClick={() => removeCase(item.id)}>Delete this local record</button></article>)}</div>}
-              <p className="mcp-help">These records cannot be seen on another device. Clearing browser data can remove them.</p>
-              <button type="button" className="mcp-btn mcp-btn-orange" onClick={() => startFlow()}>Start a new issue ↗</button>{notification && <p className="mcp-success">{notification}</p>}
-            </div>
-          )}
-        </section>
-
-        <section id="how" className="mcp-how mcp-wrap"><div className="mcp-section-heading"><div><span className="mcp-eyebrow"><span /> FROM QUESTION TO ACTION</span><h2>Less confusion.<br /><em>One practical next step.</em></h2></div><p>We help with the part before the complaint reaches a government system. We don't pretend to replace that system.</p></div><div className="mcp-how-grid">
-          <article><div className="mcp-number">01 <span>↘</span></div><span className="mcp-how-icon">◎</span><h3>Tell us what you see</h3><p>A broken light, missed collection or damaged road. Begin with the problem, not the department.</p></article>
-          <article><div className="mcp-number">02 <span>↘</span></div><span className="mcp-how-icon">⌁</span><h3>Understand responsibility</h3><p>See the likely service area and the questions that need answering before routing is certain.</p></article>
-          <article><div className="mcp-number">03 <span>✓</span></div><span className="mcp-how-icon">▤</span><h3>Act through the real channel</h3><p>Prepare your message, use the official portal, then privately save the acknowledgement for follow-up.</p></article>
-        </div></section>
-
-        <section className="mcp-pilot"><div className="mcp-wrap mcp-pilot-grid"><div><span className="mcp-eyebrow"><span /> SMALL PILOT, REAL QUESTIONS</span><h2>Starting at the<br /><em>Ahmedabad edge.</em></h2><p>On the city's western edge, a resident may live in a society, use a public road and depend on multiple service arrangements. Finding the responsible institution should be easier.</p><div className="mcp-tags">{["South Bopal","Bopal","Ghuma","Shela","Shilaj"].map(x=><span key={x}>{x}</span>)}</div><p className="mcp-caveat">Listed as study localities, not a claim of verified municipal coverage or uniform jurisdiction.</p></div><div className="mcp-pilot-panel"><div>YOUR NEIGHBOURHOOD ISN'T A DEPARTMENT</div><div className="mcp-concentric"><i/><i/><i/><span/></div><strong>One place.<br/>Many overlapping systems.</strong><small>MAKING THE NEXT STEP VISIBLE</small></div></div></section>
-
-        <section className="mcp-more mcp-wrap"><div className="mcp-section-heading"><div><span className="mcp-eyebrow"><span /> THERE'S MORE TO A CITY</span><h2>Explore the city<br /><em>beyond the complaint.</em></h2></div><p>The city atlas, ward information, comparison tools and civic stories from the existing MyCityPulse website are still here.</p></div><div className="mcp-more-grid">
-          <a href="/explore"><span>01 / EXPLORE</span><h3>Discover Indian cities</h3><p>Find city profiles and understand the places around you.</p><strong>Explore the city atlas ↗</strong></a>
-          <a href="/ahmedabad"><span>02 / LOCAL</span><h3>Get to know Ahmedabad</h3><p>Explore local civic context and ward-level information.</p><strong>Open Ahmedabad ↗</strong></a>
-          <a href="/compare"><span>03 / PERSPECTIVE</span><h3>Compare cities</h3><p>Understand how different cities grow and function.</p><strong>Compare cities ↗</strong></a>
-        </div></section>
-        <section className="mcp-last"><div className="mcp-wrap mcp-last-inner"><div><span>INDEPENDENT. EARLY. LEARNING.</span><h2>Not another complaint box.</h2><p>Government systems already accept complaints. We want to help people understand where to begin. No promise of official routing or resolution.</p></div><button type="button" className="mcp-btn mcp-btn-orange" onClick={() => startFlow()}>Try the citizen journey ↗</button></div></section>
-      </main>
-      <footer className="mcp-footer"><div className="mcp-wrap mcp-footer-grid"><div><a href="/" className="mcp-wordmark"><span className="mcp-logomark"><i/><i/><i/><i/></span><span>mycity<b>pulse</b><small>.in</small></span></a><p>Making complicated public systems usable by ordinary people.</p></div><div><b>BEFORE YOU FILE</b><p>This is an independent pilot. No government affiliation. Guidance is provisional; no official complaint is submitted here.</p></div><div><b>KEEP EXPLORING</b><a href="/explore">Explore cities ↗</a><a href="/ahmedabad/elections">Ahmedabad civic information ↗</a><a href={OFFICIAL} target="_blank" rel="noopener noreferrer">Official AMC CCRS ↗</a></div></div><div className="mcp-wrap mcp-footer-bottom"><span>© 2026 MyCityPulse · Pilot concept</span><span>See the issue. Find the way.</span></div></footer>
-      <div className="mcp-mobile-bar"><a href="/explore">⌕ <span>Explore</span></a><button type="button" onClick={() => startFlow()}>+ <span>New issue</span></button><button type="button" onClick={() => { setMode("saved"); setNotification(""); }}>▤ <span>Saved</span></button></div>
-    </div>
-  );
+      <section id="how" className="mcp-how mcp-wrap"><div className="mcp-section-heading"><div><span className="mcp-eyebrow"><span/>{t.explain}</span><h2>{t.stepsTitle}</h2></div><p>{t.stepsLead}</p></div><div className="mcp-how-grid">{[[t.how1,t.how1Body,"◎"],[t.how2,t.how2Body,"⌾"],[t.how3,t.how3Body,"▤"]].map(([head,body,icon],i)=><article key={head}><div className="mcp-number">0{i+1} <span>↘</span></div><span className="mcp-how-icon">{icon}</span><h3>{head}</h3><p>{body}</p></article>)}</div></section>
+      <section className="mcp-pilot"><div className="mcp-wrap mcp-pilot-grid"><div><span className="mcp-eyebrow"><span/> {t.tagline}</span><h2>{t.edgeTitle}</h2><p>{t.edgeBody}</p></div><div className="mcp-pilot-panel"><div>MYCITYPULSE · CIVIC CONTEXT</div><div className="mcp-concentric"><i/><i/><i/><span/></div><strong>ONE PLACE.<br/>MULTIPLE SYSTEMS.</strong><small>LOCATION IS NOT JURISDICTION</small></div></div></section>
+      <section className="mcp-more mcp-wrap"><div className="mcp-section-heading"><div><span className="mcp-eyebrow"><span/> CITY EXPLORER</span><h2>{t.exploreTitle}</h2></div><p>{t.exploreBody}</p></div><div className="mcp-more-grid"><a href="/explore"><span>01 / CITY ATLAS</span><h3>{t.atlas}</h3><strong>↗</strong></a><a href="/ahmedabad"><span>02 / LOCAL PROFILE</span><h3>{t.profile}</h3><strong>↗</strong></a><a href="/compare"><span>03 / COMPARE</span><h3>{t.compareTitle}</h3><strong>↗</strong></a></div></section>
+      <section className="mcp-accounts mcp-wrap"><h2>{t.account}</h2><p>{t.accountNote}</p><button type="button" className="mcp-btn mcp-btn-outline" onClick={()=>setEmailBox(x=>!x)}>{t.emailAccess} ↓</button>{emailBox&&<form onSubmit={requestSignIn} className="mcp-account-form"><label htmlFor="mcp-account-email" className="mcp-label">{t.email}</label><input type="email" required id="mcp-account-email" value={accountEmail} onChange={e=>setAccountEmail(e.target.value)} placeholder={t.emailPlaceholder}/>{authConfigured?<button type="submit" className="mcp-btn mcp-btn-dark" disabled={authBusy}>{t.accessReady}</button>:<p className="mcp-help">{t.accessNotReady}</p>}{authState&&<p role="status">{authState}</p>}</form>}</section>
+    </main>
+    <footer className="mcp-footer"><div className="mcp-wrap mcp-footer-grid"><div><a href="/" className="mcp-wordmark"><span className="mcp-logomark"><i/><i/><i/><i/></span><span>mycity<b>pulse</b><small>.in</small></span></a><p>{t.copyFooter}</p></div><div><b>{t.footer}</b></div><div><a href="/explore">{t.cities} ↗</a><a href={OFFICIAL} target="_blank" rel="noopener noreferrer">AMC CCRS ↗</a></div></div><div className="mcp-wrap mcp-footer-bottom"><span>© 2026 MyCityPulse</span><span>{t.footer}</span></div></footer>
+    <div className="mcp-mobile-bar"><a href="/explore">⌕<span>{t.cities}</span></a><button type="button" onClick={()=>start()}>+<span>{t.start}</span></button><button type="button" onClick={()=>setMode("saved")}>▤<span>{t.saved}</span></button></div>
+  </div>;
 }
