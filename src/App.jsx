@@ -18,6 +18,7 @@ import ContactDialog from "./components/ContactDialog.jsx";
 import useCitySearch from "./shared/hooks/useCitySearch.js";
 import { parseUrl, updateUrlForCity, findCityByUrlSlug, updateUrlForCompare, updateUrlToHome } from "./lib/routing.js";
 import HowItWorks from "./components/HowItWorks.jsx";
+import CitizenHome from "./features/home/CitizenHome.jsx";
 import { loadElectionData } from "./domain/elections/loadElectionData.js";
 import {
   CURRENT_GUJARAT_MUNICIPAL_ELECTION_CITIES_2026,
@@ -2804,6 +2805,7 @@ export default function App() {
   const [compareMode, setCompareMode] = useState(initialRoute.compareMode);
   const [storySlug, setStorySlug] = useState(initialRoute.storySlug || null);
   const [compareList, setCompareList] = useState([]);
+  const [explorerMode, setExplorerMode] = useState(typeof window !== "undefined" && window.location.pathname === "/explore");
 
   useLayoutEffect(() => {
     if (typeof window === "undefined") {
@@ -2830,6 +2832,7 @@ export default function App() {
   useEffect(() => {
     const handlePopState = () => {
       const route = parseUrl();
+      setExplorerMode(window.location.pathname === "/explore");
       if (route.storySlug) {
         setStorySlug(route.storySlug);
         setSelectedCity(null);
@@ -2876,6 +2879,7 @@ export default function App() {
     setRequestedWard(null);
     setCompareMode(false);
     updateUrlToHome();
+    setExplorerMode(false);
   };
 
   const handlePanelChange = (panel) => {
@@ -2931,6 +2935,9 @@ export default function App() {
 
   const showCompare = compareMode && !selectedCity;
   const showCity = !!selectedCity && !compareMode;
+  if (!showCity && !showCompare && !storySlug && !explorerMode) {
+    return <CitizenHome />;
+  }
 
   if (storySlug) {
     return (
