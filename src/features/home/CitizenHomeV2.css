@@ -1,0 +1,46 @@
+
+.mcp-v2 .mcp-header{gap:22px}
+.mcp-v2 .mcp-hero{padding-top:77px}
+.mcp-v2 .mcp-hero h1{font-size:clamp(41px,5vw,67px)}
+.mcp-v2 .mcp-hero-lead{max-width:565px}
+.mcp-v2 .mcp-translate{display:flex;align-items:center;gap:9px;margin-left:14px;flex-shrink:0}
+.mcp-v2 .mcp-translate label{font-size:11px;color:#6b776b;font-weight:800}
+.mcp-v2 .mcp-translate select{max-width:125px;background:#fffefa;border:1px solid #c6d0c3;color:#29483e;padding:9px 9px;border-radius:5px;font-size:12px;font-weight:800}
+.mcp-v2 .mcp-translate>button{border:1px solid #c5d0c2;border-radius:5px;background:#fffefa;color:#21463c;width:29px;height:36px;font-size:17px}
+.mcp-v2 .mcp-lang-form{display:flex;align-items:center;gap:12px;padding:16px;background:#e8eee7;border-radius:5px;flex-wrap:wrap}
+.mcp-v2 .mcp-lang-form label{font-weight:800;font-size:12px}
+.mcp-v2 .mcp-lang-form input{background:white;border:1px solid #a7b8a8;border-radius:6px;padding:12px;flex:1;min-width:160px}
+.mcp-v2 .mcp-lang-form small{color:#607469;width:100%}
+.mcp-v2 .mcp-form .mcp-label{margin-top:23px}
+.mcp-v2 .mcp-form input,.mcp-v2 .mcp-form textarea,.mcp-v2 .mcp-form select,.mcp-v2 .mcp-account-form input{width:100%;display:block;padding:15px;background:white;border:1px solid #b9c8bd;border-radius:7px;color:#18362f;font-size:16px;line-height:1.5}
+.mcp-v2 .mcp-form textarea{resize:vertical}
+.mcp-v2 .mcp-discovered{margin-top:11px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;background:#f0f3eb;padding:12px 16px;border-radius:6px;color:#46675c;font-size:13px}
+.mcp-v2 .mcp-discovered button{border:0;background:none;font-weight:800;color:#ba5c31;text-decoration:underline}
+.mcp-v2 .mcp-disclosure{width:100%;display:flex;justify-content:space-between;text-align:left;background:#f6f7f1;border:1px dashed #bac8b9;padding:14px 15px;margin-top:20px;border-radius:6px;font-weight:800;color:#3b6253}
+.mcp-v2 .mcp-pin-area{margin-top:10px;background:#f6f7f1;border:1px solid #d8e1d8;padding:16px;border-radius:7px}
+.mcp-v2 .mcp-pin-area .mcp-label{margin-top:0}
+.mcp-v2 .mcp-pin-help{display:flex;gap:15px;justify-content:space-between;flex-wrap:wrap;margin-top:10px;font-size:12px;color:#617767}
+.mcp-v2 .mcp-pin-help a{font-weight:800;color:#b5582d;text-decoration:underline}
+.mcp-v2 .mcp-optional{padding-top:16px}
+.mcp-v2 .mcp-pills{display:flex;flex-wrap:wrap;gap:7px}
+.mcp-v2 .mcp-pills button{border-radius:30px;background:white;border:1px solid #bdcabf;padding:10px 13px;color:#3c6253;font-size:12px;font-weight:700}
+.mcp-v2 .mcp-pills button.on{border-color:#e66d35;background:#fff0e8;color:#b04f2b;box-shadow:inset 0 0 0 1px #e66d35}
+.mcp-v2 .mcp-followup{margin-top:25px;background:#f5f4ec;border-radius:8px;padding:21px;border:1px solid #d6dacd}
+.mcp-v2 .mcp-followup h3{font-size:19px;margin:0 0 5px}
+.mcp-v2 .mcp-followup>p{font-size:13px;color:#526d5d}
+.mcp-v2 .mcp-check{display:flex;gap:11px;align-items:flex-start;font-size:14px;font-weight:800;color:#2e5948;margin:20px 0 8px;cursor:pointer}
+.mcp-v2 .mcp-check input{width:20px;height:20px;margin:2px 0 0;accent-color:#e66d35}
+.mcp-v2 .mcp-save-row input{width:100%;border:1px solid #b9c8bd;border-radius:6px;padding:14px;background:white}
+.mcp-v2 .mcp-accounts{border-top:1px solid #d8ded4;border-bottom:1px solid #d8ded4;padding-top:50px;padding-bottom:60px;margin-bottom:75px}
+.mcp-v2 .mcp-accounts h2{font:800 30px Manrope,sans-serif;letter-spacing:-1px;margin:0 0 10px}
+.mcp-v2 .mcp-accounts>p{max-width:730px;color:#667469;font-size:15px;line-height:1.7}
+.mcp-v2 .mcp-account-form{display:flex;flex-direction:column;gap:10px;margin-top:20px;max-width:520px;background:#edf2e9;border-radius:8px;padding:20px}
+.mcp-v2 .mcp-account-form .mcp-label{margin:0}
+.mcp-v2 .mcp-account-form .mcp-btn{align-self:flex-start}
+.mcp-v2 .mcp-more-grid a{min-height:180px}
+.mcp-v2 .mcp-more-grid h3{margin:22px 0}
+.mcp-v2 .mcp-footer-grid>div:last-child{display:flex;flex-direction:column;gap:12px;font-size:13px}
+.mcp-v2 .mcp-flow{scroll-margin-top:10px}
+.mcp-v2 .mcp-nav{margin-left:auto}
+@media(max-width:1000px){.mcp-v2 .mcp-nav{gap:14px}.mcp-v2 .mcp-nav>a:nth-child(2){display:none}.mcp-v2 .mcp-header{gap:8px}.mcp-v2 .mcp-translate{margin-left:5px}}
+@media(max-width:720px){.mcp-v2 .mcp-header{gap:10px;justify-content:space-between}.mcp-v2 .mcp-nav{display:none}.mcp-v2 .mcp-translate{margin:0}.mcp-v2 .mcp-translate label{display:none}.mcp-v2 .mcp-translate select{max-width:112px}.mcp-v2 .mcp-hero{padding-top:45px}.mcp-v2 .mcp-hero h1{font-size:clamp(37px,10vw,53px)}.mcp-v2 .mcp-issue-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mcp-v2 .mcp-form-cols{grid-template-columns:1fr}.mcp-v2 .mcp-result-grid{grid-template-columns:1fr 1fr}.mcp-v2 .mcp-result-grid>div:last-child{grid-column:1/-1}.mcp-v2 .mcp-flow{padding:19px}.mcp-v2 .mcp-followup{padding:15px}.mcp-v2 .mcp-accounts{padding-top:30px;padding-bottom:36px;margin-bottom:40px}.mcp-v2 .mcp-accounts h2{font-size:26px}.mcp-v2 .mcp-lang-form{display:grid;grid-template-columns:1fr auto}.mcp-v2 .mcp-lang-form label,.mcp-v2 .mcp-lang-form input,.mcp-v2 .mcp-lang-form small{grid-column:1/-1}.mcp-v2 .mcp-lang-form button{max-width:max-content}.mcp-v2 .mcp-pills button{font-size:12px}}
