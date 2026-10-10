@@ -19,6 +19,7 @@ import useCitySearch from "./shared/hooks/useCitySearch.js";
 import { parseUrl, updateUrlForCity, findCityByUrlSlug, updateUrlForCompare, updateUrlToHome } from "./lib/routing.js";
 import HowItWorks from "./components/HowItWorks.jsx";
 import CitizenHome from "./features/home/CitizenHome.jsx";
+import { HomeLanding, HowItWorksGuide } from "./features/home/CityGateway.jsx";
 import { loadElectionData } from "./domain/elections/loadElectionData.js";
 import {
   CURRENT_GUJARAT_MUNICIPAL_ELECTION_CITIES_2026,
@@ -2935,6 +2936,14 @@ export default function App() {
 
   const showCompare = compareMode && !selectedCity;
   const showCity = !!selectedCity && !compareMode;
+  // Keep the existing citizen desk and city explorer intact on dedicated routes.
+  // Home and how-it-works are navigation pages, not alternative complaint submissions.
+  if (typeof window !== "undefined" && !showCity && !showCompare && !storySlug && !explorerMode) {
+    const routePath = window.location.pathname.replace(/\/+$/, "") || "/";
+    if (routePath === "/") return <HomeLanding />;
+    if (routePath === "/how-it-works") return <HowItWorksGuide />;
+    if (routePath === "/help") return <CitizenHome />;
+  }
   if (!showCity && !showCompare && !storySlug && !explorerMode) {
     return <CitizenHome />;
   }
