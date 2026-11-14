@@ -7,6 +7,7 @@ on:
     branches: [main, master]
 
 jobs:
+  # Vercel's Git integration deploys the production branch separately.
   build:
     runs-on: ubuntu-latest
 
@@ -63,24 +64,3 @@ jobs:
 
       - name: Lint check
         run: npm run build 2>&1 | grep -E "error|Error" || echo "✓ No errors"
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: [build, test]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Deploy to Vercel
-        if: success()
-        uses: vercel/action@v4
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-        continue-on-error: true
-
-      - name: Deployment Status
-        if: success()
-        run: echo "✓ Deployment successful!"
