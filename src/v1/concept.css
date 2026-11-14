@@ -1,0 +1,163 @@
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap");
+
+/* Layout: same five sections as the live page, regrouped as one calm column of bands; the pulse line is the single moving motif. */
+.concept{
+  --chalk:#f4f3ec;      /* page ground */
+  --paper:#fbfaf5;      /* raised surfaces */
+  --ink:#16362e;        /* forest green, primary text and dark bands */
+  --ink-soft:#4b6159;   /* secondary text */
+  --line:#d9ddd1;       /* hairlines */
+  --marigold:#e9a23b;   /* the one bold accent */
+  --brick:#c25a3c;      /* small warm details only */
+  --sage:#d6e2d1;       /* quiet fills */
+  --sage-deep:#7fa08f;
+  --on-ink:#f4f1e4;     /* text on dark bands */
+  --on-ink-soft:#b9cbbf;
+  --band:#16362e;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Hanken Grotesk", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){.concept:not([data-theme="light"]){
+  --chalk:#0f1f1b;--paper:#162a25;--ink:#e8eee6;--ink-soft:#a9bcb2;--line:#2b423b;
+  --marigold:#f0b155;--brick:#e07a5c;--sage:#1e3832;--sage-deep:#6f9584;
+  --on-ink:#f4f1e4;--on-ink-soft:#b9cbbf;--band:#0a1714;color-scheme:dark}}
+.concept[data-theme="dark"]{
+  --chalk:#0f1f1b;--paper:#162a25;--ink:#e8eee6;--ink-soft:#a9bcb2;--line:#2b423b;
+  --marigold:#f0b155;--brick:#e07a5c;--sage:#1e3832;--sage-deep:#6f9584;
+  --on-ink:#f4f1e4;--on-ink-soft:#b9cbbf;--band:#0a1714;color-scheme:dark}
+
+.concept *{box-sizing:border-box}
+.concept{margin:0;background:var(--chalk);color:var(--ink);font:400 17px/1.6 var(--f-body);-webkit-font-smoothing:antialiased}
+.concept::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--chalk)}
+.concept a{color:inherit}
+.concept :focus-visible{outline:3px solid var(--marigold);outline-offset:3px;border-radius:6px}
+.concept .wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+@media (min-width:720px){.concept .wrap{padding-left:max(40px,env(safe-area-inset-left,0px));padding-right:max(40px,env(safe-area-inset-right,0px))}}
+.concept h1,.concept h2,.concept h3{font-family:var(--f-display);font-weight:600;letter-spacing:-.02em;text-wrap:balance;margin:0}
+.concept p{margin:0}
+.concept .label{font:500 12px/1.3 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+
+/* Header */
+.concept .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--chalk) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.concept .top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px}
+.concept .brand{display:flex;align-items:center;gap:10px;font:800 19px/1 var(--f-display);text-decoration:none;letter-spacing:-.01em}
+.concept .mark{display:flex;align-items:flex-end;gap:3px;height:20px}
+.concept .mark i{width:4px;border-radius:2px;background:var(--ink)}
+.concept .mark i:nth-child(1){height:9px;background:var(--brick)}.concept .mark i:nth-child(2){height:20px}.concept .mark i:nth-child(3){height:14px;background:var(--marigold)}
+.concept nav{display:flex;align-items:center;gap:6px}
+.concept nav a{font-weight:600;font-size:15px;text-decoration:none;padding:8px 12px;border-radius:8px}
+.concept nav a:hover{background:var(--sage)}
+.concept .nav-links{display:none}
+@media (min-width:640px){.concept .nav-links{display:flex;gap:2px}}
+.concept .btn{display:inline-flex;align-items:center;gap:10px;font:600 15px/1 var(--f-body);text-decoration:none;padding:14px 20px;border-radius:999px;border:0;cursor:pointer;transition:transform .15s ease,background .15s ease}
+.concept .btn:hover{transform:translateY(-1px)}
+.concept .btn-ink{background:var(--ink);color:var(--chalk)}
+.concept .btn-gold{background:var(--marigold);color:#1d2a20}
+.concept .btn-sm{padding:10px 16px;font-size:14px}
+.concept .btn-ghost{background:transparent;color:var(--ink);padding-inline:6px;border-bottom:2px solid var(--marigold);border-radius:0;padding-bottom:6px}
+
+/* Hero */
+.concept .hero{padding-block:56px 40px}
+.concept .hero .wrap{display:grid;gap:40px;align-items:center}
+@media (min-width:920px){.concept .hero .wrap{grid-template-columns:1fr 1.05fr;gap:56px}.concept .hero{padding-block:80px 64px}}
+.concept .hero-copy{display:grid;gap:24px;min-width:0}
+.concept .kicker{display:inline-flex;align-items:center;gap:10px}
+.concept .kicker b{width:8px;height:8px;border-radius:50%;background:var(--brick);box-shadow:0 0 0 0 var(--brick);animation:beat 2.4s ease-out infinite}
+@keyframes beat{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--brick) 60%,transparent)}70%,100%{box-shadow:0 0 0 10px transparent}}
+.concept .hero h1{font-size:clamp(46px,7.4vw,92px);line-height:.95;font-weight:800;letter-spacing:-.035em}
+.concept .hero h1 .hl{position:relative;white-space:nowrap;color:var(--ink)}
+.concept .hero h1 .hl svg{position:absolute;left:-2%;bottom:-.12em;width:104%;height:.32em;overflow:visible}
+.concept .hero h1 .hl path{fill:none;stroke:var(--marigold);stroke-width:10;stroke-linecap:round}
+.concept .lede{font-size:clamp(17px,1.6vw,20px);color:var(--ink-soft);max-width:34ch}
+.concept .actions{display:flex;flex-wrap:wrap;align-items:center;gap:18px 22px}
+.concept .foot-note{display:flex;gap:10px;align-items:center;color:var(--ink-soft)}
+.concept .foot-note::before{content:"";width:22px;height:1px;background:var(--ink-soft)}
+
+.concept .art{position:relative;border-radius:28px;overflow:hidden;background:var(--sage);aspect-ratio:640/480;max-width:100%}
+.concept .art svg{display:block;width:100%;height:100%}
+.concept .art .tag{position:absolute;left:18px;top:18px;background:var(--paper);color:var(--ink);padding:7px 12px;border-radius:999px}
+.concept .art-fig{margin:0;display:grid;gap:12px;min-width:0}
+.concept .art-fig figcaption{display:flex;align-items:center;gap:10px;font:600 16px/1.2 var(--f-display);color:var(--ink-soft)}
+.concept .art-fig figcaption::before{content:"";width:28px;height:3px;border-radius:2px;background:var(--brick)}
+.concept .pulse{fill:none;stroke:var(--brick);stroke-width:4;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:1400;stroke-dashoffset:0;animation:draw 4.5s ease-in-out 1}
+@keyframes draw{from{stroke-dashoffset:1400}to{stroke-dashoffset:0}}
+.concept .bus{animation:ride 14s linear infinite}
+@keyframes ride{from{transform:translateX(-120px)}to{transform:translateX(720px)}}
+
+/* Theme strip */
+.concept .strip{background:var(--band);color:var(--on-ink)}
+.concept .strip .wrap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0}
+@media (min-width:820px){.concept .strip .wrap{grid-template-columns:auto repeat(4,minmax(0,1fr))}}
+.concept .strip .s-head{grid-column:1/-1;padding-block:18px 4px;color:var(--marigold)}
+@media (min-width:820px){.concept .strip .s-head{grid-column:auto;padding-block:22px;padding-right:28px;align-self:center}}
+.concept .strip a{display:flex;align-items:center;gap:12px;padding-block:18px;text-decoration:none;font:600 16px/1.2 var(--f-display);border-top:1px solid color-mix(in srgb,var(--on-ink) 14%,transparent)}
+@media (min-width:820px){.concept .strip a{border-top:0;border-left:1px solid color-mix(in srgb,var(--on-ink) 14%,transparent);padding:22px 20px}}
+.concept .strip a span{font:500 11px/1 var(--f-mono);color:var(--on-ink-soft)}
+.concept .strip a:hover{color:var(--marigold)}
+
+/* Questions */
+.concept .questions{padding-block:72px}
+.concept .sec-head{display:grid;gap:14px;margin-bottom:28px}
+@media (min-width:860px){.concept .sec-head{grid-template-columns:1.4fr 1fr;align-items:end;gap:40px}}
+.concept .sec-head h2{font-size:clamp(34px,4.6vw,56px);line-height:1}
+.concept .sec-head p{color:var(--ink-soft);max-width:40ch}
+.concept .tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.concept .tabs button{flex:none;font:600 15px/1 var(--f-body);color:var(--ink);background:transparent;border:1.5px solid var(--line);padding:11px 18px;border-radius:999px;cursor:pointer}
+.concept .tabs button:hover{border-color:var(--ink)}
+.concept .tabs button[aria-pressed="true"]{background:var(--ink);color:var(--chalk);border-color:var(--ink)}
+.concept .q-grid{display:grid;gap:16px}
+@media (min-width:900px){.concept .q-grid{grid-template-columns:1.5fr 1fr}}
+.concept .q-main{background:var(--marigold);color:#1d2a20;border-radius:24px;padding:clamp(24px,3.5vw,44px);display:grid;gap:18px;align-content:start;min-height:300px;position:relative;overflow:hidden}
+.concept .q-main .label{color:#3f3a24}
+.concept .q-main h3{font-size:clamp(30px,3.6vw,46px);line-height:1.02;font-weight:800;max-width:16ch}
+.concept .q-main p{max-width:46ch;font-size:17px}
+.concept .q-main .ring{position:absolute;right:-60px;bottom:-60px;width:220px;height:220px;border-radius:50%;border:28px solid color-mix(in srgb,#fff 22%,transparent)}
+.concept .q-side{display:grid;gap:16px}
+.concept .q-card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:24px;display:grid;gap:12px}
+.concept .q-card h4{margin:0;font:600 22px/1.15 var(--f-display);letter-spacing:-.01em}
+.concept .q-card p{color:var(--ink-soft);font-size:16px}
+.concept .ruled{display:grid;gap:12px;margin-top:6px}
+.concept .ruled i{display:block;height:1px;background:var(--line)}
+.concept .ruled i:last-child{width:55%}
+.concept .disclaim{margin-top:16px;font-size:13px;color:var(--ink-soft)}
+
+/* Civic help */
+.concept .help{background:var(--band);color:var(--on-ink);padding-block:72px}
+.concept .help .wrap{display:grid;gap:36px;align-items:center}
+@media (min-width:900px){.concept .help .wrap{grid-template-columns:1fr 1fr;gap:64px}}
+.concept .help .label{color:var(--marigold)}
+.concept .help h2{font-size:clamp(34px,4.6vw,56px);line-height:1;margin-top:14px}
+.concept .help h2 em{font-style:normal;color:var(--marigold)}
+.concept .help p{color:var(--on-ink-soft);max-width:44ch;margin-block:18px 26px}
+.concept .steps{background:var(--paper);color:var(--ink);border-radius:24px;padding:clamp(22px,3vw,34px);display:grid;gap:4px}
+.concept .steps h3{font-size:26px;margin:8px 0 10px}
+.concept .steps ol{list-style:none;margin:0;padding:0;counter-reset:s}
+.concept .steps li{counter-increment:s;display:flex;align-items:center;gap:16px;padding-block:16px;border-top:1px solid var(--line);font-weight:500}
+.concept .steps li::before{content:counter(s);flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--sage);font:500 14px/1 var(--f-mono);color:var(--ink)}
+.concept .steps .small{max-width:none;margin:10px 0 0;font-size:14px;color:var(--ink-soft);border-top:1px solid var(--line);padding-top:16px}
+
+/* About + footer */
+.concept .about{padding-block:80px 64px}
+.concept .about .wrap{display:grid;gap:28px}
+@media (min-width:900px){.concept .about .wrap{grid-template-columns:1fr 1fr;gap:64px;align-items:start}}
+.concept .about h2{font-size:clamp(36px,5vw,64px);line-height:.98;font-weight:800;margin-top:14px}
+.concept .about .body{display:grid;gap:24px;min-width:0}
+.concept .about .body>p{font-size:19px;color:var(--ink-soft)}
+.concept .soon{display:flex;gap:16px;align-items:flex-start;padding:20px;border-radius:18px;background:var(--sage)}
+.concept .soon .dot{flex:none;margin-top:6px;width:10px;height:10px;border-radius:50%;background:var(--brick);animation:beat 2.4s ease-out infinite}
+.concept .soon b{display:block;font:600 17px/1.3 var(--f-display)}
+.concept .soon span{font-size:15px;color:var(--ink-soft)}
+.concept footer{border-top:1px solid var(--line)}
+.concept footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;padding-block:22px;font-size:13px;color:var(--ink-soft)}
+
+@media (prefers-reduced-motion:reduce){.concept *{animation:none!important;transition:none!important}}
+
+.concept footer { width:100%; margin:0; display:block; }
+.concept .brand { justify-self:auto; }
+.concept .btn { min-height:46px; }
+.concept .top .btn-sm { min-height:44px; }
+.concept .questions, .concept .about { scroll-margin-top:80px; }
+.concept .q-main .ring { pointer-events:none; }
+
+.concept footer a { text-decoration:underline; text-underline-offset:3px; }

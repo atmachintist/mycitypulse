@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ISSUE_TYPES, SOURCES, translate, LANGUAGES } from "./content";
 import "./styles.css";
+import Landing from "./Landing.jsx";
 
 const STORAGE_LANG="mcp:v1:lang";
 const STORAGE_NOTES="mcp:v1:notes";
@@ -208,6 +209,7 @@ export default function App(){
  const titles={"/":"MyCityPulse | Civic help for your city","/help":"Get civic help | MyCityPulse","/how-it-works":"How it works | MyCityPulse","/know-your-city":"Know your city | MyCityPulse","/saved":"Saved notes | MyCityPulse"};
  useEffect(()=>{document.title=titles[pathname]||"MyCityPulse";document.documentElement.lang=lang;window.scrollTo(0,0);},[pathname,lang]);
  const t=useMemo(()=>k=>translate(lang,k),[lang]);
+ if(pathname==="/") return <Landing/>;
  const current=pathname==="/help"?"help":pathname==="/how-it-works"?"how":pathname==="/know-your-city"?"city":"home";
  let page;
  switch(pathname){
